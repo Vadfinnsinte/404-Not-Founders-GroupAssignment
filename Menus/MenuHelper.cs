@@ -8,9 +8,35 @@ namespace _404_not_founders.Menus
         {
             Console.WriteLine("Coming Soon");
         }
-        public void LoggedInMenu()
+        public static void ShowWelcome()
         {
-            Console.WriteLine("Coming Soon");
+            Console.Clear();
+            Console.WriteLine("Välkommen till HM!");
+            Console.WriteLine("1. Logga in");
+            Console.WriteLine("2. Registrera dig");
+            Console.WriteLine("0. Avsluta");
+        }
+        public static int ShowLoginRegisterMenu()
+        {
+            ShowWelcome();
+            Console.Write("\nDitt val: ");
+            if (int.TryParse(Console.ReadLine(), out int choice))
+                return choice;
+            return -1;
+        }
+        public static int ShowLoggedInMenu(string username)
+        {
+            Console.Clear();
+            Console.WriteLine($"Inloggad som {username}");
+            Console.WriteLine("1. Lägg till projekt");
+            Console.WriteLine("2. Visa projekt");
+            Console.WriteLine("3. Senaste projekt");
+            Console.WriteLine("4. Redigera konto");
+            Console.WriteLine("0. Logga ut");
+            Console.Write("\nDitt val: ");
+            if (int.TryParse(Console.ReadLine(), out int choice))
+                return choice;
+            return -1;
         }
         public void ShowProjectMenu()
         {
@@ -36,7 +62,5 @@ namespace _404_not_founders.Menus
         {
             Console.WriteLine("Coming Soon");
         }
-
-
     }
 }
