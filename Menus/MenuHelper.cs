@@ -1,4 +1,6 @@
 ﻿
+using _404_not_founders.Models;
+
 namespace _404_not_founders.Menus
 {
     public class MenuHelper
@@ -23,6 +25,31 @@ namespace _404_not_founders.Menus
             if (int.TryParse(Console.ReadLine(), out int choice))
                 return choice;
             return -1;
+        }
+        public static User RegisterMenu()
+        {
+            Console.Clear();
+            Console.WriteLine("Registrera ny användare");
+            Console.Write("E-post: ");
+            string email = Console.ReadLine();
+
+            Console.Write("Användarnamn: ");
+            string username = Console.ReadLine();
+
+            Console.Write("Lösenord: ");
+            string password = Console.ReadLine();
+
+            // Här kan du lägga till kontroll för att kolla så att epost/username inte redan finns
+            // och ev. password hashing!
+
+            return new User
+            {
+                Email = email,
+                Username = username,
+                Password=password,
+                CreationDate = DateTime.Now,
+                Projects = new List<Project>()
+            };
         }
         public static int ShowLoggedInMenu(string username)
         {

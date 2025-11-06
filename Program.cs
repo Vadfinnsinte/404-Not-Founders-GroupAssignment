@@ -1,4 +1,5 @@
 ﻿using _404_not_founders.Menus;
+using _404_not_founders.Models;
 
 namespace _404_not_founders
 {
@@ -10,6 +11,8 @@ namespace _404_not_founders
             bool loggedIn = false;
             string currentUser = null;
 
+            List<User> users = new List<User>();
+
             while (running)
             {
                 if (!loggedIn)
@@ -18,15 +21,43 @@ namespace _404_not_founders
                     switch (choice)
                     {
                         case 1:
-                            // Logga in-logik
-                            // Om login lyckas:
-                            Console.WriteLine("Ange användarnamn:");
-                            currentUser = Console.ReadLine();
-                            loggedIn = true;
+                            // Login-logik (enkel, ingen hashing!)
+                            Console.Write("Användarnamn: ");
+                            string loginUsername = Console.ReadLine();
+                            Console.Write("Lösenord: ");
+                            string loginPassword = Console.ReadLine();
+
+                            var user = users.Find(u => u.Username == loginUsername);
+
+                            if (user != null && user.Password == loginPassword)
+                            {
+                                Console.WriteLine("Inloggning lyckades!");
+                                currentUser = loginUsername;
+                                loggedIn = true;
+                                Console.ReadKey(); // Vänta på knapptryck!
+                            }
+                            else
+                            {
+                                Console.WriteLine("Fel användarnamn eller lösenord.");
+                                Console.ReadKey(); // Vänta på knapptryck!
+                            }
                             break;
                         case 2:
-                            // Registreringslogik
-                            Console.WriteLine("Registrera nytt konto...");
+                            // Register
+                            User newUser = MenuHelper.RegisterMenu();
+
+                            // Kontroll: Finns användaren redan?
+                            if (users.Exists(u => u.Username == newUser.Username))
+                            {
+                                Console.WriteLine("Användarnamnet är redan taget. Försök igen.");
+                                Console.ReadKey(); // Vänta på knapptryck!
+                            }
+                            else
+                            {
+                                users.Add(newUser);
+                                Console.WriteLine("Registrering lyckades!");
+                                Console.ReadKey(); // Vänta på knapptryck!
+                            }
                             break;
                         case 0:
                             running = false;
@@ -69,5 +100,6 @@ namespace _404_not_founders
             }
             Console.WriteLine("Tack för att du använde appen!");
         }
+
     }
 }
