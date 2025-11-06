@@ -9,22 +9,22 @@ namespace _404_not_founders.Menus
     {
     public static void RunApp() // Huvudmetod för att köra appen
     {
-        bool running = true; // Huvudloop
-        bool loggedIn = false; // Inloggningsstatus
+        bool running = true; // Appens körstatus
+            bool loggedIn = false; // Inloggningsstatus
         string currentUser = null; // Aktuell användare
         List<User> users = new List<User>(); // Lista över användare
 
-            while (running)
+            while (running) // Huvudloop
             {
-                if (!loggedIn)
+                if (!loggedIn) // Om användaren inte är inloggad
                 {
-                    int choice = ShowLoginRegisterMenu();
+                    int choice = ShowLoginRegisterMenu(); // Visa inloggnings-/registreringsmeny
 
                     switch (choice)
                     {
                         case 1:
                             // Login via meny (med "Gå tillbaka"-stöd)
-                            if (LoginMenu(users, out string loggedInName))
+                            if (LoginMenu(users, out string loggedInName)) // Visa inloggningsmeny
                             {
                                 currentUser = loggedInName;
                                 loggedIn = true;
@@ -40,7 +40,7 @@ namespace _404_not_founders.Menus
                             // Registrera via meny (med "Gå tillbaka"-stöd)
                             while (true)
                             {
-                                User newUser = RegisterMenu();
+                                User newUser = RegisterMenu(); // Visa registreringsmeny
                                 if (newUser == null)
                                 {
                                     // Användaren valde "Gå tillbaka" - gå till huvudmenyn
@@ -48,7 +48,7 @@ namespace _404_not_founders.Menus
                                     break;
                                 }
 
-                                if (users.Exists(u => u.Username == newUser.Username))
+                                if (users.Exists(u => u.Username == newUser.Username)) // Kontrollera om användarnamnet redan finns
                                 {
                                     AnsiConsole.MarkupLine("[bold red]Användarnamnet är redan taget. Försök igen.[/]");
                                     Thread.Sleep(1000);
@@ -57,7 +57,7 @@ namespace _404_not_founders.Menus
                                 else
                                 {
                                     users.Add(newUser);
-                                    AnsiConsole.MarkupLine("[bold green]Registrering lyckades![/]");
+                                    AnsiConsole.MarkupLine("[bold green]Registreras...![/]");
                                     Thread.Sleep(800);
                                     currentUser = newUser.Username;
                                     loggedIn = true;
@@ -78,8 +78,8 @@ namespace _404_not_founders.Menus
                 }
                 else
                 {
-                    int menuChoice = ShowLoggedInMenu(currentUser);
-                    switch (menuChoice)
+                    int menuChoice = ShowLoggedInMenu(currentUser); // Visa meny för inloggad användare
+                    switch (menuChoice) // Hantera menyval
                     {
                         case 1:
                             AnsiConsole.MarkupLine("[blue]Lägger till projekt...[/]");
@@ -102,7 +102,7 @@ namespace _404_not_founders.Menus
                             Console.Clear();
                             break;
                         case 0:
-                            if (LogOutMenu())
+                            if (LogOutMenu()) // Bekräfta utloggning
                             {
                                 loggedIn = false;
                                 currentUser = null;
@@ -125,10 +125,10 @@ namespace _404_not_founders.Menus
                     }
                 }
             }
-            AnsiConsole.MarkupLine("[green]Tack för att du använde appen![/]");
-            AnsiConsole.MarkupLine("[green]Stänger ner...[/]");
-            Thread.Sleep(1000);
-            Console.Clear();
+            AnsiConsole.MarkupLine("[green]Tack för att du använde appen![/]"); // Avslutningsmeddelande
+            AnsiConsole.MarkupLine("[green]Stänger ner...[/]"); // Avslutningsmeddelande
+            Thread.Sleep(1000); // Vänta en sekund innan avslut
+            Console.Clear(); // Rensa konsolen
         }
 
         public static int ShowLoginRegisterMenu() // Visa inloggnings-/registreringsmeny
@@ -138,28 +138,28 @@ namespace _404_not_founders.Menus
                 new SelectionPrompt<string>() // Skapa meny
                     .Title("[green]Välj ett alternativ[/]")
                     .PageSize(3)
-                    .AddChoices(new[] { "Logga in", "Registrera dig", "Avsluta" })
+                    .AddChoices(new[] { "Logga in", "Registrera dig", "Avsluta" }) // Valmöjligheter
             );
-            if (menuChoice == "Logga in") return 1;
-            if (menuChoice == "Registrera dig") return 2;
-            if (menuChoice == "Avsluta") return 0;
-            return -1;
+            if (menuChoice == "Logga in") return 1; // Hantera menyval
+            if (menuChoice == "Registrera dig") return 2; // Hantera menyval
+            if (menuChoice == "Avsluta") return 0; // Hantera menyval
+            return -1; // Ogiltigt val
         }
 
-        public static bool LoginMenu(List<User> users, out string loggedInUser)
+        public static bool LoginMenu(List<User> users, out string loggedInUser) // Inloggningsmeny
         {
-            loggedInUser = null;
+            loggedInUser = null; // Initiera utdata
 
-            while (true)
+            while (true) // Loop för inloggning
             {
                 AnsiConsole.Clear();
                 var menuChoice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
+                    new SelectionPrompt<string>() // Menyval
                         .Title("Välj ett alternativ:")
-                        .AddChoices(new[] { "Logga in", "Gå tillbaka" })
+                        .AddChoices(new[] { "Logga in", "Gå tillbaka" }) // Valmöjligheter
                 );
-                if (menuChoice == "Gå tillbaka")
-                    return false;
+                if (menuChoice == "Gå tillbaka") // Avbryt inloggning
+                    return false; // Returnera false för att indikera avbrytning
 
                 // Fortsätt med login
                 string username = AnsiConsole.Ask<string>("[yellow]Användarnamn:[/]");
@@ -167,14 +167,14 @@ namespace _404_not_founders.Menus
                     new TextPrompt<string>("[yellow]Lösenord:[/]")
                         .PromptStyle("red")
                         .Secret());
-
+                // Kontrollera inloggningsuppgifter
                 var user = users.Find(u => u.Username == username);
                 if (user != null && user.Password == password)
                 {
                     AnsiConsole.MarkupLine("[bold green]Loggar in...[/]");
                     Thread.Sleep(800);
-                    loggedInUser = username;
-                    return true;
+                    loggedInUser = username; // Sätt utdata
+                    return true; // Inloggning lyckades
                 }
                 else
                 {
@@ -184,19 +184,19 @@ namespace _404_not_founders.Menus
             }
         }
 
-        public static User RegisterMenu()
+        public static User RegisterMenu() // Registreringsmeny
         {
-            while (true)
+            while (true) // Loop för registrering
             {
                 AnsiConsole.Clear();
                 AnsiConsole.MarkupLine("[underline blue]Registrera ny användare[/]");
                 var menuChoice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
+                    new SelectionPrompt<string>() // Menyval
                         .Title("Välj ett alternativ:")
-                        .AddChoices(new[] { "Registrera", "Gå tillbaka" })
+                        .AddChoices(new[] { "Registrera", "Gå tillbaka" }) // Valmöjligheter
                 );
-                if (menuChoice == "Gå tillbaka")
-                    return null;
+                if (menuChoice == "Gå tillbaka") // Avbryt registrering
+                    return null; // Returnera null för att indikera avbrytning
 
                 // Fortsätt med registrering
                 string email = AnsiConsole.Ask<string>("[grey]E-post:[/]");
@@ -204,14 +204,14 @@ namespace _404_not_founders.Menus
                 string password = AnsiConsole.Ask<string>("[grey]Lösenord:[/]");
 
                 // Bekräfta registrering
-                var confirm = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
+                var confirm = AnsiConsole.Prompt( // Bekräfta registrering
+                    new SelectionPrompt<string>() // Bekräfta meny
                         .Title("Vill du registrera denna användare?")
-                        .AddChoices(new[] { "Ja", "Nej, börja om" })
+                        .AddChoices(new[] { "Ja", "Nej, börja om" }) // Valmöjligheter
                 );
-                if (confirm == "Ja")
+                if (confirm == "Ja") // Skapa och returnera ny användare
                 {
-                    return new User
+                    return new User // Skapa ny användare
                     {
                         Email = email,
                         Username = username,
@@ -231,7 +231,7 @@ namespace _404_not_founders.Menus
             var menuChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>() // Menyval
                     .Title("Vad vill du göra nu?")
-                    .AddChoices(new[] {
+                    .AddChoices(new[] { // Menyvalsalternativ
                         "Lägg till projekt",
                         "Visa projekt",
                         "Senaste projekt",
@@ -246,14 +246,14 @@ namespace _404_not_founders.Menus
             if (menuChoice == "Logga ut") return 0; // Hantera menyval
             return -1; // Ogiltigt val
         }
-        public static bool LogOutMenu()
+        public static bool LogOutMenu() // Logga ut-meny
         {
-            var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
+            var choice = AnsiConsole.Prompt( // Bekräfta utloggning
+                new SelectionPrompt<string>() // Skapa meny
                     .Title("[yellow]Vill du logga ut?[/]")
                     .AddChoices(new[] { "Ja, logga ut", "Nej, gå tillbaka" })
             );
-            return choice == "Ja, logga ut";
+            return choice == "Ja, logga ut"; // Returnera true om användaren vill logga ut
         }
 
         public void ShowProjectMenu()
