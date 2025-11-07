@@ -157,7 +157,7 @@ namespace _404_not_founders.Menus
                     AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
 
                 // Fråga för aktuellt steg – byter vy i loopen, reset vid back
-                string value = step switch
+                var value = step switch
                 {
                     0 => AskInput("[#FFA500]E-post:[/]"),
                     1 => AskInput("[#FFA500]Användarnamn:[/]"),
