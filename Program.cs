@@ -1,4 +1,5 @@
 ﻿using _404_not_founders.Menus;
+using _404_not_founders.Models;
 
 namespace _404_not_founders
 {
@@ -6,9 +7,8 @@ namespace _404_not_founders
     {
         static void Main(string[] args)
         {
-            MenuHelper startMenu = new MenuHelper();
-            startMenu.StartMenu();
 
+            MenuHelper.RunApp(); // Start the application
         }
     }
 }
