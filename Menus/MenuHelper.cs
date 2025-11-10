@@ -88,8 +88,13 @@ namespace _404_not_founders.Menus
                 var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Avsluta");
                 if (choice == "Avsluta") { running = false; return; }
                 if (choice == "Logga in" && LoginMenu(users, out currentUser)) { loggedIn = true; Console.Clear(); break; }
-                if (choice == "Registrera dig" && new MenuHelper(_userService).RegisterMenu(users, out currentUser))
-                Console.Clear();
+                if (choice == "Registrera dig" && RegisterMenu(users, out currentUser))
+                {
+                    loggedIn = true;
+                    Console.Clear();
+                    break;
+                }
+                
             }
         }
 
@@ -205,10 +210,6 @@ namespace _404_not_founders.Menus
                 }
                 else if (step == 2)
                 {
-                    if (users.Exists(u => u.Password == value))
-                    {
-                        Result(false, "Lösenordet används redan av en annan användare."); DelayAndClear(1200); continue;
-                    }
                     password = value; step++;
                 }
 
