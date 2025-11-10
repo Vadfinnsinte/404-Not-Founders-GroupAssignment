@@ -2,19 +2,27 @@
 using _404_not_founders.Models;
 using System;
 using System.Collections.Generic;
+using _404_not_founders.Services;
 
 namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
         private const string MainTitleColor = "#FFA500";
+        private readonly UserService _userService;
 
+        public MenuHelper(UserService userService)
+        {
+            _userService = userService;
+        }
         // ----- APPENS START/HUVUDLOOP -----
-        public static void RunApp()
+        public void RunApp()
         {
             bool running = true, loggedIn = false;
             string currentUser = null;
-            var users = new List<User>();
+            var users = _userService.Users;
+
+            
 
             // Kör appens huvudflöde tills användaren avslutar
             while (running)
@@ -71,7 +79,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- HUVUDMENY (login/reg/avsluta) -----
-        public static void ShowLoginRegisterMenu(List<User> users, out bool loggedIn, out string currentUser, ref bool running)
+        public void ShowLoginRegisterMenu(List<User> users, out bool loggedIn, out string currentUser, ref bool running)
         {
             loggedIn = false; currentUser = null;
             while (running)
@@ -80,7 +88,7 @@ namespace _404_not_founders.Menus
                 var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Avsluta");
                 if (choice == "Avsluta") { running = false; return; }
                 if (choice == "Logga in" && LoginMenu(users, out currentUser)) { loggedIn = true; Console.Clear(); break; }
-                if (choice == "Registrera dig" && RegisterMenu(users, out currentUser)) { loggedIn = true; Console.Clear(); break; }
+                if (choice == "Registrera dig" && new MenuHelper(_userService).RegisterMenu(users, out currentUser))
                 Console.Clear();
             }
         }
@@ -138,7 +146,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- REGISTRERING, direktvalidering per prompt, stegbaserad vy och backa (B/E) support -----
-        public static bool RegisterMenu(List<User> users, out string registeredUser)
+        public bool RegisterMenu(List<User> users, out string registeredUser)
         {
             registeredUser = null;
             string email = "", username = "", password = "";
@@ -220,10 +228,12 @@ namespace _404_not_founders.Menus
                             CreationDate = DateTime.Now,
                             Projects = new List<Project>()
                         });
+                        _userService.SaveUserService();
                         Result(true, "Registreras...!");
                         DelayAndClear();
                         registeredUser = username;
                         return true;
+                        
                     }
                     step = 0;
                 }
