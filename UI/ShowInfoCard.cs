@@ -42,7 +42,7 @@ namespace _404_not_founders.UI
                 {
                     continue;
                 }
-                // Lägg till så att den visar namnet på karaktärer och världar när man kör storyline.
+                // Lägg till så att den visar namnet på karaktärer och världar när man kör storyline. - Använd de existerande listorna och kör t.ex worlds.Select(w => w.Name).ToList(); (gör sedan om till string och använd dessa i en row.
 
                 var value = prop.GetValue(obj) ?? "[grey]null[/]";
                 table.AddRow($"{prop.Name}:", value.ToString());
