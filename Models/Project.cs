@@ -1,4 +1,4 @@
-﻿
+﻿using Spectre.Console;
 
 namespace _404_not_founders.Models
 {
@@ -10,10 +10,29 @@ namespace _404_not_founders.Models
 
         public List<Storyline> Storylines;
 
+        // Static list to hold all projects, needs JSON to store to later
+        public List<Project> AllProjects = new List<Project>();
+
 
         public void Add()
         {
-            Console.WriteLine("Coming soon");
+            // Prompt user for project details
+            string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title: ");
+            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project title: ");
+
+            // Create new project and add to list
+            var newProject = new Project
+            {
+                title = addProjectName,
+                description = addProjectDescription,
+                dateOfCreation = DateTime.Now,
+                Storylines = new List<Storyline>()
+            };
+            AllProjects.Add(newProject);
+
+            //Sends user to where they can add a storyline to their new project
+            Change();
+
         }
         public void Show()
         {
