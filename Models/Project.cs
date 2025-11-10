@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using _404_not_founders.Menus;
+using Spectre.Console;
 
 namespace _404_not_founders.Models
 {
@@ -30,8 +31,9 @@ namespace _404_not_founders.Models
             };
             AllProjects.Add(newProject);
 
-            //Sends user to where they can add a storyline to their new project
-            Change();
+            //Sends user to their new project
+            MenuHelper menuHelper = new MenuHelper();
+            menuHelper.ProjectMenu();
 
         }
         public void Show()
