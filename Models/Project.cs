@@ -1,4 +1,5 @@
 ﻿using _404_not_founders.Menus;
+using _404_not_founders.Services;
 using Spectre.Console;
 
 namespace _404_not_founders.Models
@@ -11,17 +12,14 @@ namespace _404_not_founders.Models
 
         public List<Storyline> Storylines;
 
-        // Static list to hold all projects, needs JSON to store to later
-        public List<Project> AllProjects = new List<Project>();
 
-
-        public void Add()
+        public void Add(User currentUser, UserService userService)
         {
             // Prompt user for project details
             string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title: ");
-            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project title: ");
+            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project description: ");
 
-            // Create new project and add to list
+            // Create new project
             var newProject = new Project
             {
                 title = addProjectName,
@@ -29,11 +27,14 @@ namespace _404_not_founders.Models
                 dateOfCreation = DateTime.Now,
                 Storylines = new List<Storyline>()
             };
-            AllProjects.Add(newProject);
+
+            // Add project to user's project list and save
+            currentUser.Projects.Add(newProject);
+            userService.SaveUserService();
 
             //Sends user to their new project
-            MenuHelper menuHelper = new MenuHelper();
-            menuHelper.ProjectMenu();
+            //MenuHelper menuHelper = new MenuHelper();
+            //menuHelper.ProjectMenu();
 
         }
         public void Show()
