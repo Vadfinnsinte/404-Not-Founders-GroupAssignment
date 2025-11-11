@@ -10,6 +10,10 @@ namespace _404_not_founders.Menus
     {
         private const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
+        private readonly UserService _svc;
+        private readonly User _currentUser;
+
+
 
         public MenuHelper(UserService userService)
         {
@@ -242,7 +246,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        public static void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
+        public void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
         {
             while (running)
             {
@@ -262,9 +266,9 @@ namespace _404_not_founders.Menus
                         currentUser = null;
                         return;
                     case "Lägg till projekt":
-                        ShowProjectMenu(); break;
-                    case "Visa projekt":
                         ProjectMenu(); break;
+                    case "Visa projekt":
+                        ShowProjectMenu(); break;
                     case "Senaste projekt":
                         ShowLastProjectMenu(); break;
                     case "Redigera konto":
@@ -274,12 +278,73 @@ namespace _404_not_founders.Menus
         }
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
-        public static void ShowProjectMenu()
+        public void ShowProjectMenu()
         {
-            Info("Projektmeny");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
+           
+            while (true)
+            {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[#FFA500]Projekt Meny[/]")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices("Visa alla projekt", "Sök Projekt", "Tillbaka"));
+
+                if (choice == "Tillbaka") break;
+
+                if (choice == "Visa alla projekt")
+                    SelectFromList(_currentUser.Projects, "Välj projekt");
+                else if (choice == "Sök Projekt")
+                    SearchProjects();
+            }
         }
+
+        private void SearchProjects()
+        {
+            var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
+
+            var hits = _currentUser.Projects
+                .Where(p => p.title.Contains(term, StringComparison.OrdinalIgnoreCase)
+                         || p.description.Contains(term, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(p => p.dateOfCreation)
+                .ToList();
+
+            if (hits.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[Red]Inga träffar.[/]");
+                return;
+            }
+
+            SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
+        }
+
+        private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
+        {
+            // Tabell först (titel + datum)
+            var sorted = projects.OrderByDescending(p => p.dateOfCreation).ToList();
+
+            var table = new Table().Border(TableBorder.Rounded);
+            table.AddColumn("[#FFA500]Title[/]");
+            table.AddColumn("[Grey]Date[/]");
+            foreach (var p in sorted)
+                table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
+            AnsiConsole.Write(table);
+
+            // Valbar lista
+            var selected = AnsiConsole.Prompt(
+                new SelectionPrompt<Project>()
+                    .Title($"[bold]{title}[/]")
+                    .PageSize(10)
+                    .AddChoices(sorted)
+                    .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
+
+            // Sparar valet på användaren och skriv till JSON
+            _currentUser.LastSelectedProjectId = selected.Id;
+            _svc.SaveUserService();
+
+            AnsiConsole.MarkupLine($"[green]Val sparat:[/] {selected.title}");
+            return selected;
+        }
+            
         public static void ProjectMenu()
         {
             Info("Projekt");
