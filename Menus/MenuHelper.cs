@@ -12,6 +12,7 @@ namespace _404_not_founders.Menus
         private readonly UserService _userService;
         private readonly UserService _svc;
         private readonly User _currentUser;
+        private readonly ProjectService _projectService;
 
 
 
@@ -160,7 +161,7 @@ namespace _404_not_founders.Menus
             registeredUser = null;
             string email = "", username = "", password = "";
             int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
-
+            
             while (true)
             {
                 Console.Clear();
@@ -280,7 +281,7 @@ namespace _404_not_founders.Menus
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
         {
-           
+            
             while (true)
             {
                 var choice = AnsiConsole.Prompt(
@@ -292,44 +293,40 @@ namespace _404_not_founders.Menus
                 if (choice == "Tillbaka") break;
 
                 if (choice == "Visa alla projekt")
-                    SelectFromList(_currentUser.Projects, "Välj projekt");
+                {
+                    var list = _projectService.GetAll(_currentUser);
+                    var selected = SelectFromList(list, "Välj projekt");
+                    if (selected != null)
+                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                }
                 else if (choice == "Sök Projekt")
-                    SearchProjects();
+                {
+                    var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
+                    var hits = _projectService.Search(_currentUser, term);
+
+                    if (hits.Count == 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
+                        continue;
+                    }
+
+                    var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
+                    if (selected != null)
+                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                }
             }
         }
-
-        private void SearchProjects()
-        {
-            var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
-
-            var hits = _currentUser.Projects
-                .Where(p => p.title.Contains(term, StringComparison.OrdinalIgnoreCase)
-                         || p.description.Contains(term, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(p => p.dateOfCreation)
-                .ToList();
-
-            if (hits.Count == 0)
-            {
-                AnsiConsole.MarkupLine("[Red]Inga träffar.[/]");
-                return;
-            }
-
-            SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
-        }
-
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
         {
-            // Tabell först (titel + datum)
             var sorted = projects.OrderByDescending(p => p.dateOfCreation).ToList();
 
             var table = new Table().Border(TableBorder.Rounded);
             table.AddColumn("[#FFA500]Title[/]");
-            table.AddColumn("[Grey]Date[/]");
+            table.AddColumn("[grey]Date[/]");
             foreach (var p in sorted)
                 table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
             AnsiConsole.Write(table);
 
-            // Valbar lista
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Project>()
                     .Title($"[bold]{title}[/]")
@@ -337,14 +334,11 @@ namespace _404_not_founders.Menus
                     .AddChoices(sorted)
                     .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
 
-            // Sparar valet på användaren och skriv till JSON
-            _currentUser.LastSelectedProjectId = selected.Id;
-            _svc.SaveUserService();
-
-            AnsiConsole.MarkupLine($"[green]Val sparat:[/] {selected.title}");
+            AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
             return selected;
         }
-            
+
+
         public static void ProjectMenu()
         {
             Info("Projekt");
