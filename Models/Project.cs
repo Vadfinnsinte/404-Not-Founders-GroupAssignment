@@ -32,10 +32,6 @@ namespace _404_not_founders.Models
             currentUser.Projects.Add(newProject);
             userService.SaveUserService();
 
-            //Sends user to their new project
-            //MenuHelper menuHelper = new MenuHelper();
-            //menuHelper.ProjectMenu();
-
         }
         public void Show()
         {
