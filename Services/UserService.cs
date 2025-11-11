@@ -21,7 +21,7 @@ namespace _404_not_founders.Services
         //public List<Storyline> Storylines { get; set; } = new List<Storyline>();
         //public List<World> Worlds { get; set; } = new List<World>();
 
-        // !!Håll koll på strukturen(tydligare i README filen): 
+        // !!Håll koll på strukturen: 
         //      "Users": [
         //{
         //  "Email": "Testing",

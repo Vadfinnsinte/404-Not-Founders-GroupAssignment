@@ -6,63 +6,64 @@ using _404_not_founders.Services;
 
 namespace _404_not_founders.Menus
 {
+    // Hjälpklass för menyer, UI och navigering.
+    // Innehåller all interaktiv konsol-logik, och delegatar datalogik till t.ex. UserService eller User.
     public class MenuHelper
     {
-        private const string MainTitleColor = "#FFA500";
-        private readonly UserService _userService;
+        public const string MainTitleColor = "#FFA500";  // Används som grundfärg i UI för konsistens.
+        private readonly UserService _userservice; // Huvudservice för att hämta/spara användardata.
 
-        public MenuHelper(UserService userService)
-        {
-            _userService = userService;
-        }
-        // ----- APPENS START/HUVUDLOOP -----
+        // Konstruktor: Kräver userservice för datalagring.
+        public MenuHelper(UserService userservice) { _userservice = userservice; }
+
+        /// <summary>
+        /// Startar och driver programmets huvudflöde. växlar mellan inloggnings- och inloggade menyer.
+        /// </summary>
         public void RunApp()
         {
-            bool running = true, loggedIn = false;
-            string currentUser = null;
-            var users = _userService.Users;
+            bool running = true, loggedin = false;
+            string currentuser = null;
+            var users = _userservice.Users; // Hämtar användarlistan från service.
 
-            
-
-            // Kör appens huvudflöde tills användaren avslutar
+            // Programloop – växlar beroende på inloggad-status.
             while (running)
             {
-                if (!loggedIn)
-                    ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
+                if (!loggedin)
+                    ShowLoginRegisterMenu(users, out loggedin, out currentuser, ref running);
                 else
-                    ShowLoggedInMenu(currentUser, ref loggedIn, ref currentUser, ref running);
+                    ShowLoggedInMenu(currentuser, ref loggedin, ref currentuser, ref running);
             }
+            // Avslutningsmeddelande och grafisk tydlighet.
             Info("Tack för att du använde appen!");
             Info("Stänger ner...");
             DelayAndClear();
         }
 
-        // ----- UI-HELPERS OCH GEMENSAM LOGIK -----
+        // ----- UI Helpers: samtliga metoder nedan används både här och externt (User.cs osv) -----
 
-        /// Meny med Orange highlight (aktivt) och vita val (inaktivt)
-        private static string Menu(string title, params string[] choices) =>
+        // Vanlig meny med färgade val, anpassad för Spectre.console. 
+        // Använd alltid denna för val/menyer så får ni UI-konsistens.
+        public static string Menu(string title, params string[] choices) =>
             AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[#{MainTitleColor}]{title}[/]")
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(choices)
-                    .UseConverter(choice => $"[white]{choice}[/]")
-            );
+                    .UseConverter(choice => $"[white]{choice}[/]"));
 
-        /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
-        private static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
+        // Skriver ut underrubrik med appens huvudfärg och fet stil.
+        public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
 
-        /// Skriv ut instruktion till användaren om E och B
-        private static void InputInstruction(bool back = false) =>
-            AnsiConsole.MarkupLine(back
-                ? "[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]"
-                : "[grey italic]Skriv E för att gå tillbaka[/]");
+        // Resultat-feedback, röd/grön, alltid understruket, för tydlig feedback/konsekvent stil.
+        public static void Result(bool success, string text)
+        {
+            var color = success ? "green" : "red";
+            AnsiConsole.MarkupLine($"[underline {MainTitleColor}][bold {color}]{text}[/][/]");
+        }
 
-        /// Delay och skärmrens – anropas efter bekräftelse eller fel
-        private static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
-
-        /// Input helpers – AskInput hanterar både secret och vanlig, och alltid "E" för exit
-        private static string AskInput(string prompt, bool secret = false)
+        // Konsolinput – hanterar även "E" (exit/back) för konsekvens i navigationen.
+        // Secret-param för t.ex. lösenordsfält.
+        public static string AskInput(string prompt, bool secret = false)
         {
             var input = secret
                 ? AnsiConsole.Prompt(new TextPrompt<string>(prompt).PromptStyle(MainTitleColor).Secret())
@@ -71,67 +72,73 @@ namespace _404_not_founders.Menus
             return input.Trim();
         }
 
-        /// Gemensam feedback – skriver ut resultat med grön/röd + orange underline
-        private static void Result(bool success, string text)
-        {
-            var color = success ? "green" : "red";
-            AnsiConsole.MarkupLine($"[underline {MainTitleColor}][bold {color}]{text}[/][/]");
-        }
+        // Använd alltid denna efter feedback eller bekräftelse. rensar och skapar mjuka övergångar mellan views.
+        public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
 
-        // ----- HUVUDMENY (login/reg/avsluta) -----
-        public void ShowLoginRegisterMenu(List<User> users, out bool loggedIn, out string currentUser, ref bool running)
+        /// <summary>
+        /// Meny för inloggning, registrering, borttagning och avslut. hanterar loop och växling beroende på inloggningsstatus.
+        /// </summary>
+        /// <param name="users">Listan av alla användare</param>
+        /// <param name="loggedin">Ref till inloggningsflagga</param>
+        /// <param name="currentuser">Ref till nuvarande användare</param>
+        /// <param name="running">Ref till huvudloopflagga</param>
+        public void ShowLoginRegisterMenu(List<User> users, out bool loggedin, out string currentuser, ref bool running)
         {
-            loggedIn = false; currentUser = null;
+            loggedin = false; currentuser = null;
             while (running)
             {
                 Console.Clear();
-                var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Avsluta");
+                Info("Välkommen till Adventurer's Journal!");
+                var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Ta bort konto", "Avsluta");
                 if (choice == "Avsluta") { running = false; return; }
-                if (choice == "Logga in" && LoginMenu(users, out currentUser)) { loggedIn = true; Console.Clear(); break; }
-                if (choice == "Registrera dig" && RegisterMenu(users, out currentUser))
+                if (choice == "Logga in" && LoginMenu(users, out currentuser)) { loggedin = true; Console.Clear(); break; }
+                if (choice == "Registrera dig")
                 {
-                    loggedIn = true;
-                    Console.Clear();
-                    break;
+                    string newuser = null;
+                    // Endast logga in om registrering returnerar true och har ett användarnamn.
+                    if (User.RegisterMenu(users, out newuser, _userservice))
+                    {
+                        loggedin = true;
+                        currentuser = newuser;
+                        Console.Clear();
+                        break;
+                    }
                 }
-                
+                if (choice == "Ta bort konto")
+                {
+                    // Anropar användar-menyhelper i User.cs för borttagning från Login-meny.
+                    User.RemoveUserMenu(users, _userservice);
+                }
             }
         }
 
-        // ----- INLOGGNING (med stegbaserad backa och återanvändbar vy) -----
-        public static bool LoginMenu(List<User> users, out string loggedInUser)
+        /// <summary>
+        /// Inloggningsmeny, validerar Användarnamn+Lösen. 
+        /// Stegbaserad input med back-funktion ("B"), exit ("E") och tydlig feedback.
+        /// </summary>
+        public static bool LoginMenu(List<User> users, out string loggedinuser)
         {
-            loggedInUser = null;
-            // Lokala inputfält och step-variabel
-            string username = "", password = "";
-            int step = 0; // 0 = användarnamn, 1 = lösenord
-
+            loggedinuser = null;
+            string username = "", password = ""; int step = 0;
             while (true)
             {
                 Console.Clear();
+                Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                 Info("Logga in");
-                InputInstruction(true);
-                // Visa redan ifyllt användarnamn
                 if (step >= 1)
-                    AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
-
-                // Fråga och hantera input för det aktuella steget
+                    Info($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
                 string value = step == 0
                     ? AskInput("[#FFA500]Användarnamn:[/]")
                     : AskInput("[#FFA500]Lösenord:[/]", true);
-
-                // Avsluta/flöde bakåt?
                 if (value == null) return false;
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
                 {
                     if (step > 0) { if (step == 1) username = ""; step--; }
                     continue;
                 }
-                // Spara värde/flytta fram steget
                 if (step == 0) { username = value; step++; }
                 else if (step == 1) { password = value; step++; }
 
-                // När båda fält är ifyllda – försök logga in
                 if (step == 2)
                 {
                     var user = users.Find(u => u.Username == username);
@@ -139,117 +146,32 @@ namespace _404_not_founders.Menus
                     {
                         Result(true, "Loggar in...");
                         DelayAndClear();
-                        loggedInUser = username;
+                        loggedinuser = username;
                         return true;
                     }
                     Result(false, "Fel användarnamn eller lösenord!");
                     DelayAndClear(1200);
-                    // Starta om – nulställ bara password
                     password = ""; step = 1;
                 }
             }
         }
 
-        // ----- REGISTRERING, direktvalidering per prompt, stegbaserad vy och backa (B/E) support -----
-        public bool RegisterMenu(List<User> users, out string registeredUser)
+        /// <summary>
+        /// Meny för inloggade – visar alla möjliga handlingar man som inloggad användare kan göra.
+        /// Alla datamanipulationer är delegat till User.cs/metoder för separation och enkel testbarhet.
+        /// </summary>
+        public void ShowLoggedInMenu(string username, ref bool loggedin, ref string currentuser, ref bool running)
         {
-            registeredUser = null;
-            string email = "", username = "", password = "";
-            int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
+            var users = _userservice.Users;
+            var currentUserObj = users.Find(u => u.Username == username);
 
-            while (true)
-            {
-                Console.Clear();
-                Info("Registrera ny användare");
-                InputInstruction(true);
-
-                // Visa redan ifyllda/validerade fält
-                if (step >= 1)
-                    AnsiConsole.MarkupLine($"[grey]E-post:[/] [#FFA500]{email}[/]");
-                if (step >= 2)
-                    AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
-
-                // Fråga för aktuellt steg – byter vy i loopen, reset vid back
-                var value = step switch
-                {
-                    0 => AskInput("[#FFA500]E-post:[/]"),
-                    1 => AskInput("[#FFA500]Användarnamn:[/]"),
-                    2 => AskInput("[#FFA500]Lösenord:[/]", true),
-                    _ => null
-                };
-
-                // Avbrott – tillbaka till huvudmeny
-                if (value == null) return false;
-                // Backa till tidigare prompt
-                if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (step > 0)
-                    {
-                        if (step == 1) email = "";
-                        if (step == 2) username = "";
-                        step--;
-                    }
-                    continue;
-                }
-                // Direktvalidera per steg och lägg in/sätt fram
-                if (step == 0)
-                {
-                    if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        Result(false, "E-postadressen är redan registrerad."); DelayAndClear(1200); continue;
-                    }
-                    email = value; step++;
-                }
-                else if (step == 1)
-                {
-                    if (users.Exists(u => u.Username.Equals(value, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        Result(false, "Användarnamnet är redan taget."); DelayAndClear(1200); continue;
-                    }
-                    username = value; step++;
-                }
-                else if (step == 2)
-                {
-                    password = value; step++;
-                }
-
-                // Alla fält validerade – bekräfta!
-                if (step == 3)
-                {
-                    var confirm = Menu("Vill du registrera denna användare?", "Ja", "Nej", "Avsluta");
-                    if (confirm == "Avsluta") Environment.Exit(0);
-                    if (confirm == "Nej") { step = 0; continue; }
-                    if (confirm == "Ja")
-                    {
-                        users.Add(new User
-                        {
-                            Email = email,
-                            Username = username,
-                            Password = password,
-                            CreationDate = DateTime.Now,
-                            Projects = new List<Project>()
-                        });
-                        _userService.SaveUserService();
-                        Result(true, "Registreras...!");
-                        DelayAndClear();
-                        registeredUser = username;
-                        return true;
-                        
-                    }
-                    step = 0;
-                }
-            }
-        }
-
-        // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        public static void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
-        {
             while (running)
             {
                 Console.Clear();
-                Info($"Huvudmeny (inloggad som {username})");
-                var choice = Menu("Vad vill du göra?", "Lägg till projekt", "Visa projekt", "Senaste projekt", "Redigera konto", "Logga ut", "Avsluta");
-                Info(choice);
+                Info($"[grey]Användarnamn:[/] [#FFA500]{username})[/]");
+                var choice = Menu("Vad vill du göra?",
+                    "Lägg till projekt", "Visa projekt", "Senaste projekt",
+                    "Redigera konto", "Ta bort konto", "Logga ut", "Avsluta");
 
                 switch (choice)
                 {
@@ -258,64 +180,90 @@ namespace _404_not_founders.Menus
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
-                        loggedIn = false;
-                        currentUser = null;
+                        loggedin = false;
+                        currentuser = null;
                         return;
                     case "Lägg till projekt":
-                        ShowProjectMenu(); break;
+                        MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                        AddProject(currentUserObj, _userservice);
+                        break;
                     case "Visa projekt":
-                        ProjectMenu(); break;
+                        ShowProjects(currentUserObj);
+                        DelayAndClear();
+                        break;
                     case "Senaste projekt":
-                        ShowLastProjectMenu(); break;
+                        ShowLastProject(currentUserObj);
+                        DelayAndClear();
+                        break;
                     case "Redigera konto":
-                        UserMenu(); break;
+                        currentUserObj?.EditCurrentUserMenu(_userservice, ref currentuser);
+                        break;
+                    case "Ta bort konto":
+                        // Anrop till User-metoden. den nollställer LoggedIn och CurrentUser vid borttag.
+                        currentUserObj?.RemoveCurrentUserMenu(_userservice, ref loggedin, ref currentuser);
+                        // Om User är borta/loggad ut, gå tillbaka till login-menyn
+                        if (!loggedin || currentuser == null)
+                            Info("Du loggas nu ut...");
+                        DelayAndClear();
+                        return;
+                        break;
                 }
             }
         }
 
-        // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
-        public static void ShowProjectMenu()
+
+
+        // --- Projektfunktioner ---
+
+        /// <summary>
+        /// Adderar ett projekt till en användare. Har E och B-backning för användarvänlighet.
+        /// </summary>
+        public void AddProject(User user, UserService userService)
         {
-            Info("Projektmeny");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
+            while (true)
+            {
+                Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                string title = AskInput("[#FFA500]Projektnamn:[/]");
+                // E = exit/avbryt, tillbaka direkt
+                if (string.IsNullOrWhiteSpace(title) || title.Equals("E", StringComparison.OrdinalIgnoreCase)) return;
+                // B = backa, i detta enkla läge också exit, men kan bli step-logik
+                if (title.Equals("B", StringComparison.OrdinalIgnoreCase)) return;
+                user.Projects.Add(new Project { title = title, dateOfCreation = DateTime.Now });
+                userService.SaveUserService();
+                Result(true, $"Projekt '{title}' tillagt.");
+                DelayAndClear(800);
+                return;
+            }
         }
-        public static void ProjectMenu()
+
+        /// <summary>
+        /// Visar alla projekt för en användare.
+        /// </summary>
+        public static void ShowProjects(User user)
         {
-            Info("Projekt");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
+            Info($"Projekt för användare {user.Username}:");
+            foreach (var project in user.Projects)
+                Info($"- {project.title}");
+            if (user.Projects.Count == 0)
+                Info("Inga projekt inlagda.");
         }
-        public static void UserMenu()
+
+        /// <summary>
+        /// Visar senaste projektet.
+        /// </summary>
+        public static void ShowLastProject(User user)
         {
-            Info("Användarmenyn");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
+            if (user.Projects.Count == 0)
+                Info("Inga projekt.");
+            else
+                Info($"Senaste projektet: {user.Projects[^1].title}");
         }
-        public static void WorldMenu()
-        {
-            Info("Världsmenyn");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
-        public static void CharacterMenu()
-        {
-            Info("Karaktärsmenyn");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
-        public static void StorylineMenu()
-        {
-            Info("Storyline-meny");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
-        public static void ShowLastProjectMenu()
-        {
-            Info("Senaste projekt");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
+
+
+        // ---- Platshållare/under-menyer – för gruppexpansion, kan förfinas/utökas med moduler. ----
+        public static void WorldMenu() { Info("Världsmenyn"); Console.WriteLine("Coming soon"); DelayAndClear(); }
+        public static void CharacterMenu() { Info("Karaktärsmenyn"); Console.WriteLine("Coming soon"); DelayAndClear(); }
+        public static void StoryineMenu() { Info("Storyline-Meny"); Console.WriteLine("Coming soon"); DelayAndClear(); }
+        public static void ShowLastProjectMenu() { Info("Senaste Projekt"); Console.WriteLine("Coming soon"); DelayAndClear(); }
     }
 }
-
