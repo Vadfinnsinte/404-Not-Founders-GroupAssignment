@@ -10,7 +10,8 @@ namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
-        private const string MainTitleColor = "#FFA500";
+        Character character = new Character();
+        public const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
         private User? _currentUser;
         private readonly ProjectService _projectService;
@@ -62,17 +63,32 @@ namespace _404_not_founders.Menus
                     .UseConverter(choice => $"[white]{choice}[/]")
             );
 
+       
+        // Add this method to the MenuHelper class
+        public static string ReadBackOrExit()
+        {
+            var input = Console.ReadLine();
+            if (string.Equals(input, "E", StringComparison.OrdinalIgnoreCase))
+                return "E";
+            if (string.Equals(input, "B", StringComparison.OrdinalIgnoreCase))
+                return "B";
+            return input;
+        }
+
+
+
+
         /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
-        private static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
+        public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
 
         /// Skriv ut instruktion till användaren om E och B
-        private static void InputInstruction(bool back = false) =>
+        public static void InputInstruction(bool back = false) =>
             AnsiConsole.MarkupLine(back
                 ? "[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]"
                 : "[grey italic]Skriv E för att gå tillbaka[/]");
 
         /// Delay och skärmrens – anropas efter bekräftelse eller fel
-        private static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
+        public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
 
         /// Input helpers – AskInput hanterar både secret och vanlig, och alltid "E" för exit
         private static string AskInput(string prompt, bool secret = false)
