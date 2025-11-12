@@ -267,7 +267,26 @@ namespace _404_not_founders.Menus
                         currentUser = null;
                         return;
                     case "Lägg till projekt":
-                        ProjectMenu(); break;
+                        // Get the user who is logged in
+                        User loggedInUser = _userService.Users.FirstOrDefault(u => u.Username == username);
+
+                        if (loggedInUser != null)
+                        {
+                            // Create instance for Add
+                            Project NewProject = new Project();
+
+                            // Get user input and add project
+                            NewProject.Add(loggedInUser, _userService);
+
+                            // Goes back to Project Menu after adding
+                            ProjectMenu();
+                        }
+                        else
+                        {
+                            Result(false, "Error: Could not find user data.");
+                            DelayAndClear();
+                        }
+                        break;
                     case "Visa projekt":
                         ShowProjectMenu(); break;
                     case "Senaste projekt":
@@ -281,6 +300,8 @@ namespace _404_not_founders.Menus
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
         {
+//             Info("Projektmeny");
+//             DelayAndClear();
             
             while (true)
             {

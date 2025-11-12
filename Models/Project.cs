@@ -1,4 +1,6 @@
-﻿
+﻿using _404_not_founders.Menus;
+using _404_not_founders.Services;
+using Spectre.Console;
 
 namespace _404_not_founders.Models
 {
@@ -11,9 +13,25 @@ namespace _404_not_founders.Models
         public List<Storyline> Storylines;
 
 
-        public void Add()
+        public void Add(User currentUser, UserService userService)
         {
-            Console.WriteLine("Coming soon");
+            // Prompt user for project details
+            string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title:[/]");
+            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project description:[/]");
+
+            // Create new project
+            var newProject = new Project
+            {
+                title = addProjectName,
+                description = addProjectDescription,
+                dateOfCreation = DateTime.Now,
+                Storylines = new List<Storyline>()
+            };
+
+            // Add project to user's project list and save
+            currentUser.Projects.Add(newProject);
+            userService.SaveUserService();
+
         }
         public void Show()
         {
