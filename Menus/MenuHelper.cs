@@ -1,8 +1,9 @@
-﻿using Spectre.Console;
-using _404_not_founders.Models;
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
-using _404_not_founders.Services;
+using System.Globalization;
 
 namespace _404_not_founders.Menus
 {
@@ -279,7 +280,7 @@ namespace _404_not_founders.Menus
                             NewProject.Add(loggedInUser, _userService);
 
                             // Goes back to Project Menu after adding
-                            ProjectMenu();
+                            ProjectEditMenu(NewProject);
                         }
                         else
                         {
@@ -335,6 +336,8 @@ namespace _404_not_founders.Menus
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
                 }
+                // add sending user to ProjectEditMenu after choice is made. Bring selected info.
+                //ProjectEditMenu(selected);
             }
         }
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
@@ -357,13 +360,45 @@ namespace _404_not_founders.Menus
 
             AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
             return selected;
+     
         }
 
 
-        public static void ProjectMenu()
+        public static void ProjectEditMenu(Project project)
         {
             Info("Projekt");
-            Console.WriteLine("Coming Soon");
+            var choises = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold]What do you want to do?[/]")
+                    .PageSize(10)
+                    .AddChoices("Edit/Add Charachters", "Edit/Add worlds", "Edit/Add Storylines", "Show Everything")
+                    .HighlightStyle(Color.Orange1));
+
+            switch (choises)
+            {
+                case "Edit/Add Charachters":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Edit/Add worlds":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Edit/Add Storylines":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Show Everything":
+                    //if (project.Storylines != null && project.Storylines.Any())
+                    //{
+                    //    foreach (var story in project.Storylines)
+                    //        story.Show(); // <-- visar varje Storyline
+                    //}
+                    //else
+                    //{
+                    //    AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
+                    //} // testa när hämtingen av project fungerar. Flytta sedan till en helper. 
+                    Console.WriteLine("Coming soon");
+                    break;
+            }
+                    
             DelayAndClear();
         }
         public static void UserMenu()
