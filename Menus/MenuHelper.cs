@@ -242,7 +242,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        public static void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
+        public void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
         {
             while (running)
             {
@@ -262,7 +262,27 @@ namespace _404_not_founders.Menus
                         currentUser = null;
                         return;
                     case "Lägg till projekt":
-                        ShowProjectMenu(); break;
+                        // Get the user who is logged in
+                        User loggedInUser = _userService.Users.FirstOrDefault(u => u.Username == username);
+
+                        if (loggedInUser != null)
+                        {
+                            // Create instance for Add
+                            Project NewProject = new Project();
+
+                            // Get user input and add project
+                            NewProject.Add(loggedInUser, _userService);
+
+                            // Goes back to Project Menu after adding
+                            ProjectMenu();
+                        }
+                        else
+                        {
+                            Result(false, "Error: Could not find user data.");
+                            DelayAndClear();
+                        }
+                        break;
+
                     case "Visa projekt":
                         ProjectMenu(); break;
                     case "Senaste projekt":
@@ -277,7 +297,6 @@ namespace _404_not_founders.Menus
         public static void ShowProjectMenu()
         {
             Info("Projektmeny");
-            Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
         public static void ProjectMenu()

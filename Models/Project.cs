@@ -16,8 +16,8 @@ namespace _404_not_founders.Models
         public void Add(User currentUser, UserService userService)
         {
             // Prompt user for project details
-            string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title: ");
-            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project description: ");
+            string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title: [/]");
+            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project description: [/]");
 
             // Create new project
             var newProject = new Project
