@@ -8,7 +8,7 @@ namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
-
+        Character character = new Character();
         public const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
         private User? _currentUser;
@@ -23,6 +23,83 @@ namespace _404_not_founders.Menus
         public void SetCurrentUser(User user) => _currentUser = user;
 
         public User? CurrentUser => _currentUser;
+        
+        // ----- APPENS START/HUVUDLOOP -----
+        public void RunApp()
+        {
+            bool running = true, loggedIn = false;
+            string currentUser = null;
+            var users = _userService.Users;
+
+            while (running)
+            {
+                if (!loggedIn)
+                    ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
+                else
+                    ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
+            }
+
+            Info("Thank you for using the app, see you next time");
+            Info("Closing down...");
+            DelayAndClear();
+        }
+
+
+        // ----- UI-HELPERS OCH GEMENSAM LOGIK -----
+
+        /// Meny med Orange highlight (aktivt) och vita val (inaktivt)
+        public static string Menu(string title, params string[] choices) =>
+             AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[#{MainTitleColor}]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(choices)
+                    .UseConverter(choice => $"[white]{choice}[/]")
+            );
+
+       
+        // Add this method to the MenuHelper class
+        public static string ReadBackOrExit()
+        {
+            var input = Console.ReadLine();
+            if (string.Equals(input, "E", StringComparison.OrdinalIgnoreCase))
+                return "E";
+            if (string.Equals(input, "B", StringComparison.OrdinalIgnoreCase))
+                return "B";
+            return input;
+        }
+
+
+
+
+        /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
+        public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
+
+        /// Skriv ut instruktion till användaren om E och B
+        public static void InputInstruction(bool back = false) =>
+            AnsiConsole.MarkupLine(back
+                ? "[grey italic]Press E to go back or B to return to the previous step[/]"
+                : "[grey italic]Press E to go back[/]");
+
+        /// Delay och skärmrens – anropas efter bekräftelse eller fel
+        public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
+
+        /// Input helpers – AskInput hanterar både secret och vanlig, och alltid "E" för exit
+        public static string AskInput(string prompt, bool secret = false)
+        {
+            var input = secret
+                ? AnsiConsole.Prompt(new TextPrompt<string>(prompt).PromptStyle(MainTitleColor).Secret())
+                : AnsiConsole.Ask<string>(prompt);
+            if (input.Trim().Equals("E", StringComparison.OrdinalIgnoreCase)) return null;
+            return input.Trim();
+        }
+
+        /// Gemensam feedback – skriver ut resultat med grön/röd + orange underline
+        public static void Result(bool success, string text)
+        {
+            var color = success ? "green" : "red";
+            AnsiConsole.MarkupLine($"[underline {MainTitleColor}][bold {color}]{text}[/][/]");
+        }
 
         // ----- HUVUDMENY (login/reg/avsluta) -----
         public void ShowLoginRegisterMenu(List<User> users, out bool loggedIn, out string currentUser, ref bool running)
