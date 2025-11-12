@@ -9,7 +9,7 @@ namespace _404_not_founders.Models
         public string title { get; set; }
         public string description { get; set; }
         public DateTime dateOfCreation;
-
+        public Guid Id { get; set; } = Guid.NewGuid();
         public List<Storyline> Storylines;
 
 

@@ -10,6 +10,11 @@ namespace _404_not_founders.Menus
     {
         private const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
+        private readonly UserService _svc;
+        private readonly User _currentUser;
+        private readonly ProjectService _projectService;
+
+
 
         public MenuHelper(UserService userService)
         {
@@ -156,7 +161,7 @@ namespace _404_not_founders.Menus
             registeredUser = null;
             string email = "", username = "", password = "";
             int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
-
+            
             while (true)
             {
                 Console.Clear();
@@ -285,6 +290,8 @@ namespace _404_not_founders.Menus
 
                     case "Visa projekt":
                         ProjectMenu(); break;
+                    case "Visa projekt":
+                        ShowProjectMenu(); break;
                     case "Senaste projekt":
                         ShowLastProjectMenu(); break;
                     case "Redigera konto":
@@ -294,11 +301,68 @@ namespace _404_not_founders.Menus
         }
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
-        public static void ShowProjectMenu()
+        public void ShowProjectMenu()
         {
-            Info("Projektmeny");
-            DelayAndClear();
+//             Info("Projektmeny");
+//             DelayAndClear();
+            
+            while (true)
+            {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[#FFA500]Projekt Meny[/]")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices("Visa alla projekt", "Sök Projekt", "Tillbaka"));
+
+                if (choice == "Tillbaka") break;
+
+                if (choice == "Visa alla projekt")
+                {
+                    var list = _projectService.GetAll(_currentUser);
+                    var selected = SelectFromList(list, "Välj projekt");
+                    if (selected != null)
+                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                }
+                else if (choice == "Sök Projekt")
+                {
+                    var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
+                    var hits = _projectService.Search(_currentUser, term);
+
+                    if (hits.Count == 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
+                        continue;
+                    }
+
+                    var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
+                    if (selected != null)
+                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                }
+            }
         }
+        private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
+        {
+            var sorted = projects.OrderByDescending(p => p.dateOfCreation).ToList();
+
+            var table = new Table().Border(TableBorder.Rounded);
+            table.AddColumn("[#FFA500]Title[/]");
+            table.AddColumn("[grey]Date[/]");
+            foreach (var p in sorted)
+                table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
+            AnsiConsole.Write(table);
+
+            var selected = AnsiConsole.Prompt(
+                new SelectionPrompt<Project>()
+                    .Title($"[bold]{title}[/]")
+                    .PageSize(10)
+                    .AddChoices(sorted)
+                    .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
+
+            AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
+            return selected;
+        }
+
+
         public static void ProjectMenu()
         {
             Info("Projekt");
