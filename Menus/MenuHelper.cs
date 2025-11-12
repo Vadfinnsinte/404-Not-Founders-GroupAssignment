@@ -287,9 +287,6 @@ namespace _404_not_founders.Menus
                             DelayAndClear();
                         }
                         break;
-
-                    case "Visa projekt":
-                        ProjectMenu(); break;
                     case "Visa projekt":
                         ShowProjectMenu(); break;
                     case "Senaste projekt":
