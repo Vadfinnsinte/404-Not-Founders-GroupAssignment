@@ -1,5 +1,7 @@
 ﻿
 
+using _404_not_founders.UI;
+
 namespace _404_not_founders.Models
 {
     public class Storyline
@@ -23,7 +25,7 @@ namespace _404_not_founders.Models
         }
         public void Show()
         {
-            Console.WriteLine("Coming soon");
+            ShowInfoCard.ShowObject(this);
         }
         public void Change()
         {

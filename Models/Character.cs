@@ -1,16 +1,18 @@
 ﻿
+using _404_not_founders.UI;
+
 namespace _404_not_founders.Models
 {
     public class Character
     {
-        public string Name;
-        public string Race;
-        public string Description;
-        public string Gender;
-        public int Age;
-        public int Level;
-        public string Class;
-        public string OtherInfo;
+        public string Name { get; set; }
+        public string Race { get; set; }
+        public string Description { get; set; }
+        public string Gender { get; set; }
+        public int Age { get; set; }
+        public int Level { get; set; }
+        public string Class { get; set; }
+        public string OtherInfo { get; set; }
 
 
         public void Add()
@@ -19,7 +21,7 @@ namespace _404_not_founders.Models
         }
         public void Show()
         {
-            Console.WriteLine("Coming soon");
+            ShowInfoCard.ShowObject(this);
         }
         public void Change()
         {
