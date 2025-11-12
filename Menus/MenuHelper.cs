@@ -11,7 +11,7 @@ namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
-  
+        Character character = new Character();
         public const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
         private User? _currentUser;
@@ -74,6 +74,9 @@ namespace _404_not_founders.Menus
                 return "B";
             return input;
         }
+
+
+
 
         /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
         public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
