@@ -27,7 +27,7 @@ namespace _404_not_founders.Menus
             string currentUser = null;
             var users = _userService.Users;
 
-            
+
 
             // Kör appens huvudflöde tills användaren avslutar
             while (running)
@@ -99,7 +99,7 @@ namespace _404_not_founders.Menus
                     Console.Clear();
                     break;
                 }
-                
+
             }
         }
 
@@ -161,7 +161,7 @@ namespace _404_not_founders.Menus
             registeredUser = null;
             string email = "", username = "", password = "";
             int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
-            
+
             while (true)
             {
                 Console.Clear();
@@ -239,7 +239,7 @@ namespace _404_not_founders.Menus
                         DelayAndClear();
                         registeredUser = username;
                         return true;
-                        
+
                     }
                     step = 0;
                 }
@@ -300,9 +300,9 @@ namespace _404_not_founders.Menus
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
         {
-//             Info("Projektmeny");
-//             DelayAndClear();
-            
+            //             Info("Projektmeny");
+            //             DelayAndClear();
+
             while (true)
             {
                 var choice = AnsiConsole.Prompt(
@@ -395,6 +395,44 @@ namespace _404_not_founders.Menus
             Info("Senaste projekt");
             Console.WriteLine("Coming Soon");
             DelayAndClear();
+        }
+
+        // ----- WORLD MENU -----
+
+        public void WorldMenu(User loggedInUser)
+        {
+
+            while (true)
+            {
+                Console.Clear();
+                Info("World Menu");
+                var choice = Menu("", 
+                    "Add World", 
+                    "Show World", 
+                    "Edit World", 
+                    "Remove World", 
+                    "Back");
+
+                switch (choice)
+                {
+                    case "Add World":
+                        World newWorld = new World();
+                        newWorld.Add(loggedInUser, _userService);
+                        break;
+
+                    case "Show World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Edit World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Remove World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Back":
+                        return;
+                }
+            }
         }
     }
 }

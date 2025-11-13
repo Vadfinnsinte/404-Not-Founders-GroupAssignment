@@ -9,6 +9,9 @@ namespace _404_not_founders.Models
         public string Password { get; set; }
         public DateTime CreationDate { get; set; }
         public List<Project> Projects { get; set; }
+
+        // Added Worlds list to be able to store worlds for the user
+        public List<World> Worlds { get; set; } = new List<World>();
         public Guid? LastSelectedProjectId { get; set; }
 
         public void Add()

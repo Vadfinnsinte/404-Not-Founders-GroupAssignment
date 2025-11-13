@@ -1,6 +1,8 @@
 ﻿
 
+using _404_not_founders.Services;
 using _404_not_founders.UI;
+using Spectre.Console;
 
 namespace _404_not_founders.Models
 {
@@ -15,9 +17,36 @@ namespace _404_not_founders.Models
 
 
 
-        public void Add()
+        public void Add(User user, UserService userService)
         {
-            Console.WriteLine("Coming soon");
+            // Prompt user for world details
+            string worldName = AnsiConsole.Ask<string>("[#FFA500]Enter world name:[/]");
+            string worldClimate = AnsiConsole.Ask<string>("[#FFA500]Climate:[/]");
+            string worldRegions = AnsiConsole.Ask<string>("[#FFA500]Regions:[/]");
+            string worldEnemies = AnsiConsole.Ask<string>("[#FFA500]Enemies:[/]");
+            string worldFactions = AnsiConsole.Ask<string>("[#FFA500]Factions:[/]");
+            string worldOtherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
+
+            // Create new World object
+            var newWorld = new World
+            {
+                Name = worldName,
+                Climate = worldClimate,
+                Regions = worldRegions,
+                Enemies = worldEnemies,
+                Factions = worldFactions,
+                OtherInfo = worldOtherInfo
+            };
+
+            // Add to user's worlds
+            user.Worlds.Add(newWorld);
+
+            // Save changes to JSON
+            userService.SaveUserService();
+
+            AnsiConsole.MarkupLine($"Världen '[#FFA500]{newWorld.Name}[/]' har sparats!");
+            Thread.Sleep(1200);
+
         }
         public void Show()
         {
