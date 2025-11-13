@@ -352,6 +352,8 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
+
+                    AnsiConsole.Clear();
                 }
             }
         }
