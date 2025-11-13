@@ -342,6 +342,7 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
+                        ProjectEditMenu(selected);
                 }
                 else if (choice == "Sök Projekt")
                 {
@@ -359,9 +360,9 @@ namespace _404_not_founders.Menus
                         _projectService.SetLastSelected(_currentUser, selected.Id);
 
                     AnsiConsole.Clear();
+                    ProjectEditMenu(selected);
                 }
-                // add sending user to ProjectEditMenu after choice is made. Bring selected info.
-                //ProjectEditMenu(selected);
+
             }
         }
 
@@ -386,13 +387,13 @@ namespace _404_not_founders.Menus
                     .AddChoices(sorted)
                     .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
 
-            AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
+            AnsiConsole.Clear();
             return selected;
 
         }
 
 
-        public static void ProjectMenu()
+        public static void ProjectEditMenu(Project project)
         {
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
@@ -409,18 +410,12 @@ namespace _404_not_founders.Menus
                     Console.WriteLine("Coming soon");
                     break;
                 case "Show Everything":
-                    //if (project.Storylines != null && project.Storylines.Any())
-                    //{
-                    //    foreach (var story in project.Storylines)
-                    //        story.Show(); // <-- visar varje Storyline
-                    //}
-                    //else
-                    //{
-                    //    AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
-                    //} // testa när hämtingen av project fungerar. Flytta sedan till en helper. 
+                   
                     Console.WriteLine("Coming soon");
+                    DelayAndClear();
                     break;
                 case "Back to main manu":
+                    Console.Clear();
                     return;
                 default:
                     Console.WriteLine("Somthing went wrong..going back to menu");

@@ -12,12 +12,14 @@ namespace _404_not_founders.UI
     {
         public static string ShowEditMenu(Project project)
         {
-            var shortDesc = project.description?.Length > 20
+            
+            var shortDesc = project.description?.Length > 25
             ? project.description.Substring(0, 25) + "..."
             : project.description;
 
-            AnsiConsole.MarkupLine($"Title: {project.title}");
-            AnsiConsole.MarkupLine($"Description: {shortDesc}");
+            AnsiConsole.MarkupLine(""); // to create some air
+            AnsiConsole.MarkupLine("[bold #FFA500]Title: [/]" + $"{project.title}");
+            AnsiConsole.MarkupLine("[bold #FFA500]Description: [/]" + $"{shortDesc}");
             var choises = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold]What do you want to do?[/]")
