@@ -1,5 +1,6 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.Services;
+using _404_not_founders.UI;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,8 @@ namespace _404_not_founders.Menus
             string currentUser = null;
             var users = _userService.Users;
 
-            
+
+
 
             // Kör appens huvudflöde tills användaren avslutar
             while (running)
@@ -100,7 +102,7 @@ namespace _404_not_founders.Menus
                     Console.Clear();
                     break;
                 }
-                
+
             }
         }
 
@@ -162,7 +164,7 @@ namespace _404_not_founders.Menus
             registeredUser = null;
             string email = "", username = "", password = "";
             int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
-            
+
             while (true)
             {
                 Console.Clear();
@@ -240,7 +242,7 @@ namespace _404_not_founders.Menus
                         DelayAndClear();
                         registeredUser = username;
                         return true;
-                        
+
                     }
                     step = 0;
                 }
@@ -277,9 +279,11 @@ namespace _404_not_founders.Menus
                             Project NewProject = new Project();
 
                             // Get user input and add project
-                            NewProject.Add(loggedInUser, _userService);
+                            //NewProject.Add(loggedInUser, _userService);
+                            NewProject = NewProject.Add(loggedInUser, _userService);
 
                             // Goes back to Project Menu after adding
+                            DelayAndClear();
                             ProjectEditMenu(NewProject);
                         }
                         else
@@ -301,9 +305,9 @@ namespace _404_not_founders.Menus
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
         {
-//             Info("Projektmeny");
-//             DelayAndClear();
-            
+            //             Info("Projektmeny");
+            //             DelayAndClear();
+
             while (true)
             {
                 var choice = AnsiConsole.Prompt(
@@ -360,19 +364,14 @@ namespace _404_not_founders.Menus
 
             AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
             return selected;
-     
+
         }
 
 
-        public static void ProjectEditMenu(Project project)
+        public void ProjectEditMenu(Project project)
         {
             Info("Projekt");
-            var choises = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[bold]What do you want to do?[/]")
-                    .PageSize(10)
-                    .AddChoices("Edit/Add Charachters", "Edit/Add worlds", "Edit/Add Storylines", "Show Everything")
-                    .HighlightStyle(Color.Orange1));
+            string choises = ProjectEditVisuals.ShowEditMenu(project);
 
             switch (choises)
             {
@@ -397,8 +396,13 @@ namespace _404_not_founders.Menus
                     //} // testa när hämtingen av project fungerar. Flytta sedan till en helper. 
                     Console.WriteLine("Coming soon");
                     break;
+                case "Back to main manu":
+                    return;
+                default:
+                    Console.WriteLine("Somthing went wrong..going back to menu");
+                    return;
             }
-                    
+
             DelayAndClear();
         }
         public static void UserMenu()
