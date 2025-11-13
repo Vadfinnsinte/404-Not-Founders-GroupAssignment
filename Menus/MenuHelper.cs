@@ -10,16 +10,21 @@ namespace _404_not_founders.Menus
     {
         private const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
-        private readonly UserService _svc;
-        private readonly User _currentUser;
+        private User? _currentUser;
         private readonly ProjectService _projectService;
+       
 
 
 
-        public MenuHelper(UserService userService)
+
+        public MenuHelper(UserService userService, ProjectService projectService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
+
+
         }
+        public void SetCurrentUser(User user) => _currentUser = user;
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
         {
@@ -46,7 +51,7 @@ namespace _404_not_founders.Menus
 
         /// Meny med Orange highlight (aktivt) och vita val (inaktivt)
         private static string Menu(string title, params string[] choices) =>
-            AnsiConsole.Prompt(
+             AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[#{MainTitleColor}]{title}[/]")
                     .HighlightStyle(new Style(Color.Orange1))
@@ -104,7 +109,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- INLOGGNING (med stegbaserad backa och återanvändbar vy) -----
-        public static bool LoginMenu(List<User> users, out string loggedInUser)
+        public bool LoginMenu(List<User> users, out string loggedInUser)
         {
             loggedInUser = null;
             // Lokala inputfält och step-variabel
@@ -144,6 +149,7 @@ namespace _404_not_founders.Menus
                     {
                         Result(true, "Loggar in...");
                         DelayAndClear();
+                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
                         loggedInUser = username;
                         return true;
                     }
@@ -235,6 +241,7 @@ namespace _404_not_founders.Menus
                             Projects = new List<Project>()
                         });
                         _userService.SaveUserService();
+                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
                         Result(true, "Registreras...!");
                         DelayAndClear();
                         registeredUser = username;
@@ -300,9 +307,14 @@ namespace _404_not_founders.Menus
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
         {
-//             Info("Projektmeny");
-//             DelayAndClear();
-            
+            //             Info("Projektmeny");
+            //             DelayAndClear();
+            if (_currentUser == null)
+            {
+                AnsiConsole.MarkupLine("[red]Du måste vara inloggad för att se projekt.[/]");
+                Console.WriteLine(_currentUser);
+            }// 
+
             while (true)
             {
                 var choice = AnsiConsole.Prompt(
@@ -316,6 +328,12 @@ namespace _404_not_founders.Menus
                 if (choice == "Visa alla projekt")
                 {
                     var list = _projectService.GetAll(_currentUser);
+                    if (list == null || list.Count == 0)
+                    {
+                        AnsiConsole.MarkupLine("[yellow]Inga projekt ännu.[/]");
+                        continue;
+                    }
+
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
@@ -325,7 +343,7 @@ namespace _404_not_founders.Menus
                     var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
                     var hits = _projectService.Search(_currentUser, term);
 
-                    if (hits.Count == 0)
+                    if (hits == null || hits.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
                         continue;
@@ -334,30 +352,38 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
+
+                    AnsiConsole.Clear();
                 }
             }
         }
+
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
         {
+            if (projects == null || projects.Count == 0) return null;
+
             var sorted = projects.OrderByDescending(p => p.dateOfCreation).ToList();
 
-            var table = new Table().Border(TableBorder.Rounded);
-            table.AddColumn("[#FFA500]Title[/]");
-            table.AddColumn("[grey]Date[/]");
-            foreach (var p in sorted)
-                table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
-            AnsiConsole.Write(table);
+            //var table = new Table().Border(TableBorder.Rounded);
+            //table.AddColumn("[#FFA500]Title[/]");
+            //table.AddColumn("[grey]Date[/]");
+            //foreach (var p in sorted)
+            //table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
+            //AnsiConsole.Write(table);
 
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Project>()
                     .Title($"[bold]{title}[/]")
                     .PageSize(10)
+                    .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(sorted)
                     .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
 
             AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
             return selected;
         }
+           
+        
 
 
         public static void ProjectMenu()

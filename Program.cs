@@ -10,10 +10,13 @@ namespace _404_not_founders
         {
             // Skapa och initiera UserService (laddar/läser JSON - en gång vid start)
             var userService = new UserService();
+            var projectService = new ProjectService(userService);
+
             userService.LoadUserService();
 
             // Skapa huvudmenyn och skicka med userService så att den kan hantera användare och sparning
-            var menuHelper = new MenuHelper(userService);
+            var menuHelper = new MenuHelper(userService, projectService);
+                
 
             // Starta applikationens huvudloop
             menuHelper.RunApp();
