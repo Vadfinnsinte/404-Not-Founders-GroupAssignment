@@ -27,24 +27,21 @@ namespace _404_not_founders.Models
             string worldFactions = AnsiConsole.Ask<string>("[#FFA500]Factions:[/]");
             string worldOtherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
 
-            // Create new World object
-            var newWorld = new World
-            {
-                Name = worldName,
-                Climate = worldClimate,
-                Regions = worldRegions,
-                Enemies = worldEnemies,
-                Factions = worldFactions,
-                OtherInfo = worldOtherInfo
-            };
+            // Create new world instance
+            this.Name = worldName;
+            this.Climate = worldClimate;
+            this.Regions = worldRegions;
+            this.Enemies = worldEnemies;
+            this.Factions = worldFactions;
+            this.OtherInfo = worldOtherInfo;
 
             // Add to user's worlds
-            user.Worlds.Add(newWorld);
+            user.Worlds.Add(this);
 
             // Save changes to JSON
             userService.SaveUserService();
 
-            AnsiConsole.MarkupLine($"Världen '[#FFA500]{newWorld.Name}[/]' har sparats!");
+            AnsiConsole.MarkupLine($"Världen '[#FFA500]{this.Name}[/]' har sparats!");
             Thread.Sleep(1200);
 
         }
