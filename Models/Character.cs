@@ -51,7 +51,8 @@ namespace _404_not_founders.Models
         public void ChracterMenu2()
         {
             UserService userService = new UserService();
-            MenuHelper menuHelper = new MenuHelper(new UserService());
+            ProjectService projectService = new ProjectService(userService);
+            MenuHelper menuHelper = new MenuHelper(userService, projectService);
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
