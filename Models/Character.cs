@@ -227,7 +227,6 @@ namespace _404_not_founders.Models
             }
         }
 
-
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
