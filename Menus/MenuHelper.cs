@@ -1,8 +1,10 @@
-﻿using Spectre.Console;
-using _404_not_founders.Models;
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
-using _404_not_founders.Services;
+using System.Globalization;
 
 namespace _404_not_founders.Menus
 {
@@ -32,7 +34,8 @@ namespace _404_not_founders.Menus
             string currentUser = null;
             var users = _userService.Users;
 
-            
+
+
 
             // Kör appens huvudflöde tills användaren avslutar
             while (running)
@@ -104,7 +107,7 @@ namespace _404_not_founders.Menus
                     Console.Clear();
                     break;
                 }
-                
+
             }
         }
 
@@ -167,7 +170,7 @@ namespace _404_not_founders.Menus
             registeredUser = null;
             string email = "", username = "", password = "";
             int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
-            
+
             while (true)
             {
                 Console.Clear();
@@ -246,7 +249,7 @@ namespace _404_not_founders.Menus
                         DelayAndClear();
                         registeredUser = username;
                         return true;
-                        
+
                     }
                     step = 0;
                 }
@@ -283,10 +286,12 @@ namespace _404_not_founders.Menus
                             Project NewProject = new Project();
 
                             // Get user input and add project
-                            NewProject.Add(loggedInUser, _userService);
+                            //NewProject.Add(loggedInUser, _userService);
+                            NewProject = NewProject.Add(loggedInUser, _userService);
 
                             // Goes back to Project Menu after adding
-                            ProjectMenu();
+                            DelayAndClear();
+                            ProjectEditMenu(NewProject);
                         }
                         else
                         {
@@ -337,6 +342,7 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
+                        ProjectEditMenu(selected);
                 }
                 else if (choice == "Sök Projekt")
                 {
@@ -354,7 +360,9 @@ namespace _404_not_founders.Menus
                         _projectService.SetLastSelected(_currentUser, selected.Id);
 
                     AnsiConsole.Clear();
+                    ProjectEditMenu(selected);
                 }
+
             }
         }
 
@@ -379,17 +387,41 @@ namespace _404_not_founders.Menus
                     .AddChoices(sorted)
                     .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
 
-            AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
+            AnsiConsole.Clear();
             return selected;
+
         }
-           
-        
 
 
-        public static void ProjectMenu()
+        public static void ProjectEditMenu(Project project)
         {
             Info("Projekt");
-            Console.WriteLine("Coming Soon");
+            string choises = ProjectEditVisuals.ShowEditMenu(project);
+
+            switch (choises)
+            {
+                case "Edit/Add Charachters":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Edit/Add worlds":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Edit/Add Storylines":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Show Everything":
+                   
+                    Console.WriteLine("Coming soon");
+                    DelayAndClear();
+                    break;
+                case "Back to main manu":
+                    Console.Clear();
+                    return;
+                default:
+                    Console.WriteLine("Somthing went wrong..going back to menu");
+                    return;
+            }
+
             DelayAndClear();
         }
         public static void UserMenu()
