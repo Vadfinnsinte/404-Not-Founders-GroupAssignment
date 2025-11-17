@@ -1,8 +1,10 @@
-﻿using Spectre.Console;
-using _404_not_founders.Models;
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
-using _404_not_founders.Services;
+using System.Globalization;
 
 namespace _404_not_founders.Menus
 {
@@ -10,22 +12,28 @@ namespace _404_not_founders.Menus
     {
         private const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
-        private readonly UserService _svc;
-        private readonly User _currentUser;
+        private User? _currentUser;
         private readonly ProjectService _projectService;
+       
 
 
 
-        public MenuHelper(UserService userService)
+
+        public MenuHelper(UserService userService, ProjectService projectService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
+
+
         }
+        public void SetCurrentUser(User user) => _currentUser = user;
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
         {
             bool running = true, loggedIn = false;
             string currentUser = null;
             var users = _userService.Users;
+
 
 
 
@@ -46,7 +54,7 @@ namespace _404_not_founders.Menus
 
         /// Meny med Orange highlight (aktivt) och vita val (inaktivt)
         private static string Menu(string title, params string[] choices) =>
-            AnsiConsole.Prompt(
+             AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[#{MainTitleColor}]{title}[/]")
                     .HighlightStyle(new Style(Color.Orange1))
@@ -104,7 +112,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- INLOGGNING (med stegbaserad backa och återanvändbar vy) -----
-        public static bool LoginMenu(List<User> users, out string loggedInUser)
+        public bool LoginMenu(List<User> users, out string loggedInUser)
         {
             loggedInUser = null;
             // Lokala inputfält och step-variabel
@@ -144,6 +152,7 @@ namespace _404_not_founders.Menus
                     {
                         Result(true, "Loggar in...");
                         DelayAndClear();
+                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
                         loggedInUser = username;
                         return true;
                     }
@@ -235,6 +244,7 @@ namespace _404_not_founders.Menus
                             Projects = new List<Project>()
                         });
                         _userService.SaveUserService();
+                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
                         Result(true, "Registreras...!");
                         DelayAndClear();
                         registeredUser = username;
@@ -276,10 +286,12 @@ namespace _404_not_founders.Menus
                             Project NewProject = new Project();
 
                             // Get user input and add project
-                            NewProject.Add(loggedInUser, _userService);
+                            //NewProject.Add(loggedInUser, _userService);
+                            NewProject = NewProject.Add(loggedInUser, _userService);
 
                             // Goes back to Project Menu after adding
-                            ProjectMenu();
+                            DelayAndClear();
+                            ProjectEditMenu(NewProject);
                         }
                         else
                         {
@@ -302,6 +314,11 @@ namespace _404_not_founders.Menus
         {
             //             Info("Projektmeny");
             //             DelayAndClear();
+            if (_currentUser == null)
+            {
+                AnsiConsole.MarkupLine("[red]Du måste vara inloggad för att se projekt.[/]");
+                Console.WriteLine(_currentUser);
+            }// 
 
             while (true)
             {
@@ -316,16 +333,23 @@ namespace _404_not_founders.Menus
                 if (choice == "Visa alla projekt")
                 {
                     var list = _projectService.GetAll(_currentUser);
+                    if (list == null || list.Count == 0)
+                    {
+                        AnsiConsole.MarkupLine("[yellow]Inga projekt ännu.[/]");
+                        continue;
+                    }
+
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
+                        ProjectEditMenu(selected);
                 }
                 else if (choice == "Sök Projekt")
                 {
                     var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
                     var hits = _projectService.Search(_currentUser, term);
 
-                    if (hits.Count == 0)
+                    if (hits == null || hits.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
                         continue;
@@ -334,36 +358,70 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
+
+                    AnsiConsole.Clear();
+                    ProjectEditMenu(selected);
                 }
+
             }
         }
+
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
         {
+            if (projects == null || projects.Count == 0) return null;
+
             var sorted = projects.OrderByDescending(p => p.dateOfCreation).ToList();
 
-            var table = new Table().Border(TableBorder.Rounded);
-            table.AddColumn("[#FFA500]Title[/]");
-            table.AddColumn("[grey]Date[/]");
-            foreach (var p in sorted)
-                table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
-            AnsiConsole.Write(table);
+            //var table = new Table().Border(TableBorder.Rounded);
+            //table.AddColumn("[#FFA500]Title[/]");
+            //table.AddColumn("[grey]Date[/]");
+            //foreach (var p in sorted)
+            //table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
+            //AnsiConsole.Write(table);
 
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Project>()
                     .Title($"[bold]{title}[/]")
                     .PageSize(10)
+                    .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(sorted)
                     .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
 
-            AnsiConsole.MarkupLine($"[green]Valt:[/] {selected.title}");
+            AnsiConsole.Clear();
             return selected;
+
         }
 
 
-        public static void ProjectMenu()
+        public static void ProjectEditMenu(Project project)
         {
             Info("Projekt");
-            Console.WriteLine("Coming Soon");
+            string choises = ProjectEditVisuals.ShowEditMenu(project);
+
+            switch (choises)
+            {
+                case "Edit/Add Charachters":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Edit/Add worlds":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Edit/Add Storylines":
+                    Console.WriteLine("Coming soon");
+                    break;
+                case "Show Everything":
+                   
+                    Console.WriteLine("Coming soon");
+                    DelayAndClear();
+                    break;
+                case "Back to main manu":
+                    Console.Clear();
+                    return;
+                default:
+                    Console.WriteLine("Somthing went wrong..going back to menu");
+                    return;
+            }
+
             DelayAndClear();
         }
         public static void UserMenu()

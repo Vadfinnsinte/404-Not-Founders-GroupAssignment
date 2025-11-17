@@ -13,7 +13,7 @@ namespace _404_not_founders.Models
         public List<Storyline> Storylines;
 
 
-        public void Add(User currentUser, UserService userService)
+        public Project Add(User currentUser, UserService userService)
         {
             // Prompt user for project details
             string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title:[/]");
@@ -31,6 +31,7 @@ namespace _404_not_founders.Models
             // Add project to user's project list and save
             currentUser.Projects.Add(newProject);
             userService.SaveUserService();
+            return (newProject);
 
         }
         public void Show()
