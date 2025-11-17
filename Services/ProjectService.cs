@@ -33,5 +33,15 @@ namespace _404_not_founders.Services
             user.LastSelectedProjectId = projectId;
             _userService.SaveUserService();
         }
+
+        public Project? GetLastSelected(User user)
+        {
+            if (user.LastSelectedProjectId == Guid.Empty)
+                return null;
+
+            return user.Projects
+                .FirstOrDefault(p => p.Id == user.LastSelectedProjectId);
+        }
+
     }
 }

@@ -8,9 +8,9 @@ namespace _404_not_founders.Models
     {
         public string title { get; set; }
         public string description { get; set; }
-        public DateTime dateOfCreation;
+        public DateTime dateOfCreation { get; set; } = DateTime.Now;
         public Guid Id { get; set; } = Guid.NewGuid();
-        public List<Storyline> Storylines;
+        public List<Storyline> Storylines { get; set; } = new List<Storyline>();
 
 
         public void Add(User currentUser, UserService userService)

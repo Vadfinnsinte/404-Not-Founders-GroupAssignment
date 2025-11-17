@@ -19,6 +19,7 @@ namespace _404_not_founders.Menus
         public MenuHelper(UserService userService)
         {
             _userService = userService;
+            _projectService = new ProjectService(userService);
         }
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
@@ -288,7 +289,15 @@ namespace _404_not_founders.Menus
                         }
                         break;
                     case "Visa projekt":
-                        ShowProjectMenu(); break;
+                        var user = _userService.Users.FirstOrDefault(u => u.Username == username);
+                        if (user != null)
+                            ShowProjectMenu(user);
+                        else
+                        {
+                            Result(false, "Error: Could not find user data.");
+                            DelayAndClear();
+                        }
+                        break;
                     case "Senaste projekt":
                         ShowLastProjectMenu(); break;
                     case "Redigera konto":
@@ -298,7 +307,7 @@ namespace _404_not_founders.Menus
         }
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
-        public void ShowProjectMenu()
+        public void ShowProjectMenu(User currentUser)
         {
 //             Info("Projektmeny");
 //             DelayAndClear();
@@ -315,15 +324,16 @@ namespace _404_not_founders.Menus
 
                 if (choice == "Visa alla projekt")
                 {
-                    var list = _projectService.GetAll(_currentUser);
+                    var list = _projectService.GetAll(currentUser);
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
-                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                        _projectService.SetLastSelected(currentUser, selected.Id);
+                    ShowProjectDetailMenu(currentUser, selected);
                 }
                 else if (choice == "Sök Projekt")
                 {
                     var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
-                    var hits = _projectService.Search(_currentUser, term);
+                    var hits = _projectService.Search(currentUser, term);
 
                     if (hits.Count == 0)
                     {
@@ -333,7 +343,8 @@ namespace _404_not_founders.Menus
 
                     var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
                     if (selected != null)
-                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                        _projectService.SetLastSelected(currentUser, selected.Id);
+                    ShowProjectDetailMenu(currentUser, selected);
                 }
             }
         }
@@ -384,11 +395,232 @@ namespace _404_not_founders.Menus
             Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
-        public static void StorylineMenu()
+        public void ShowProjectDetailMenu(User currentUser, Project project)
         {
-            Info("Storyline-meny");
-            Console.WriteLine("Coming Soon");
+            while (true)
+            {
+                Console.Clear();
+                Info($"Projekt: [#FFA500]{project.title}[/]");
+                AnsiConsole.MarkupLine($"[grey]{project.description}[/]");
+                AnsiConsole.MarkupLine($"[grey]Skapad:[/] {project.dateOfCreation:yyyy-MM-dd}");
+                AnsiConsole.WriteLine();
+
+                var choice = Menu(
+                    "Vad vill du göra i detta projekt?",
+                    "Redigera storylines",
+                    "Redigera karaktärer",
+                    "Redigera världar",
+                    "Visa allt",
+                    "Tillbaka");
+
+                switch (choice)
+                {
+                    case "Redigera storylines":
+                       
+                        StorylineMenu(currentUser, project);
+                        break;
+
+                    case "Redigera karaktärer":
+                        CharacterMenu(); 
+                        break;
+
+                    case "Redigera världar":
+                        WorldMenu();     
+                        break;
+
+                    case "Visa allt":
+                        AnsiConsole.MarkupLine("[grey]Visa allt kommer senare.[/]");
+                        Console.ReadKey(true);
+                        break;
+
+                    case "Tillbaka":
+                        return;
+                }
+            }
+        }
+        public void StorylineMenu(User currentUser, Project project)
+        {
+
+            while (true)
+            {
+                Console.Clear();
+                Info($"Storylines i projektet [#FFA500]{project.title}[/]");
+
+                var choice = Menu("Storyline-meny",
+                    "Lägg till storyline",      
+                    "Visa befintliga",          
+                    "Ändra storyline",          
+                    "Ta bort storyline",        
+                    "Tillbaka till projekt");
+
+                switch (choice)
+                {
+                    case "Lägg till storyline":
+                        AddStorylineToProject(project);
+                        break;
+
+                    case "Visa befintliga":
+                        ShowStorylines(project);
+                        break;
+
+                    case "Ändra storyline":
+                        EditStoryline(project);
+                        break;
+
+                    case "Ta bort storyline":
+                        DeleteStoryline(project);
+                        break;
+
+                    case "Tillbaka till projekt":
+                        return;
+                }
+            }
+        }
+        private void AddStorylineToProject(Project project)
+        {
+            Console.Clear();
+            Info("Skapa ny storyline");
+
+            var title = AnsiConsole.Ask<string>("[#FFA500]Titel:[/]");
+            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (kort beskrivning):[/]");
+            var theme = AnsiConsole.Ask<string>("[#FFA500]Tema:[/]");
+            var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Själva storyn (kort):[/]");
+            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idéanteckningar:[/]");
+            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Övrig info:[/]");
+
+            project.Storylines ??= new List<Storyline>();
+
+            var storyline = new Storyline
+            {
+                Title = title,
+                Synopsis = synopsis,
+                Theme = theme,
+                Genre = genre,
+                Story = story,
+                IdeaNotes = ideaNotes,
+                OtherInfo = otherInfo,
+                orderInProject = project.Storylines.Count + 1,
+                dateOfLastEdit = DateTime.Now
+            };
+
+            project.Storylines.Add(storyline);
+            _userService.SaveUserService();
+
+            Result(true, "Storyline sparad!");
             DelayAndClear();
+        }
+        private void ShowStorylines(Project project)
+        {
+            Console.Clear();
+            Info($"Storylines i projektet {project.title}");
+
+            if (project.Storylines == null || project.Storylines.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]Inga storylines ännu.[/]");
+                DelayAndClear();
+                return;
+            }
+
+            var table = new Table().Border(TableBorder.Rounded);
+            table.AddColumn("[#FFA500]Ordning[/]");
+            table.AddColumn("[#FFA500]Titel[/]");
+            table.AddColumn("[grey]Synopsis[/]");
+
+            foreach (var s in project.Storylines.OrderBy(s => s.orderInProject))
+            {
+                table.AddRow(
+                    s.orderInProject.ToString(),
+                    s.Title ?? "",
+                    s.Synopsis ?? "");
+            }
+
+            AnsiConsole.Write(table);
+            AnsiConsole.MarkupLine("[grey italic]Tryck valfri tangent för att gå tillbaka...[/]");
+            Console.ReadKey(true);
+        }
+        private void EditStoryline(Project project)
+        {
+            var s = SelectStoryline(project, "Välj storyline att ändra");
+            if (s == null) return;
+
+            Console.Clear();
+            Info($"Ändra storyline: [#FFA500]{s.Title}[/]");
+
+            string title = AnsiConsole.Ask<string>(
+                $"[#FFA500]Titel[/] ([grey]{s.Title}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(title)) s.Title = title;
+
+            string synopsis = AnsiConsole.Ask<string>(
+                $"[#FFA500]Synopsis[/] ([grey]{s.Synopsis}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(synopsis)) s.Synopsis = synopsis;
+
+            string theme = AnsiConsole.Ask<string>(
+                $"[#FFA500]Tema[/] ([grey]{s.Theme}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(theme)) s.Theme = theme;
+
+            string genre = AnsiConsole.Ask<string>(
+                $"[#FFA500]Genre[/] ([grey]{s.Genre}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(genre)) s.Genre = genre;
+
+            string story = AnsiConsole.Ask<string>(
+                $"[#FFA500]Story[/] ([grey]{s.Story}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(story)) s.Story = story;
+
+            string notes = AnsiConsole.Ask<string>(
+                $"[#FFA500]Idéanteckningar[/] ([grey]{s.IdeaNotes}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(notes)) s.IdeaNotes = notes;
+
+            string other = AnsiConsole.Ask<string>(
+                $"[#FFA500]Övrig info[/] ([grey]{s.OtherInfo}[/], lämna tom för att behålla):");
+            if (!string.IsNullOrWhiteSpace(other)) s.OtherInfo = other;
+
+            s.dateOfLastEdit = DateTime.Now;
+            _userService.SaveUserService();
+
+            Result(true, "Storyline uppdaterad!");
+            DelayAndClear();
+        }
+        private void DeleteStoryline(Project project)
+        {
+            var s = SelectStoryline(project, "Välj storyline att ta bort");
+            if (s == null) return;
+
+            var confirm = Menu($"Ta bort \"{s.Title}\"?", "Ja", "Nej");
+            if (confirm != "Ja") return;
+
+            project.Storylines.Remove(s);
+
+            int ord = 1;
+            foreach (var sl in project.Storylines.OrderBy(x => x.orderInProject))
+                sl.orderInProject = ord++;
+
+            _userService.SaveUserService();
+
+            Result(true, "Storyline borttagen.");
+            DelayAndClear();
+        }
+        private Storyline? SelectStoryline(Project project, string title)
+        {
+            if (project.Storylines == null || project.Storylines.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]Inga storylines ännu.[/]");
+                DelayAndClear();
+                return null;
+            }
+
+            var sorted = project.Storylines
+                .OrderBy(s => s.orderInProject)
+                .ToList();
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<Storyline>()
+                    .Title($"[bold]{title}[/]")
+                    .PageSize(10)
+                    .AddChoices(sorted)
+                    .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
+
+            return choice;
         }
         public static void ShowLastProjectMenu()
         {
