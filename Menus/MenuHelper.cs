@@ -393,7 +393,7 @@ namespace _404_not_founders.Menus
         }
 
 
-        public static void ProjectEditMenu(Project project)
+        public void ProjectEditMenu(Project project)
         {
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
@@ -404,7 +404,15 @@ namespace _404_not_founders.Menus
                     Console.WriteLine("Coming soon");
                     break;
                 case "Edit/Add worlds":
-                    Console.WriteLine("Coming soon");
+                    if (_currentUser != null)
+                    {
+                        WorldMenu(_currentUser, project);
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
+                        DelayAndClear();
+                    }
                     break;
                 case "Edit/Add Storylines":
                     Console.WriteLine("Coming soon");
@@ -430,12 +438,6 @@ namespace _404_not_founders.Menus
             Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
-        public static void WorldMenu()
-        {
-            Info("Världsmenyn");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
         public static void CharacterMenu()
         {
             Info("Karaktärsmenyn");
@@ -457,7 +459,7 @@ namespace _404_not_founders.Menus
 
         // ----- WORLD MENU -----
 
-        public void WorldMenu(User loggedInUser)
+        public void WorldMenu(User loggedInUser, Project currentProject)
         {
 
             while (true)
@@ -466,7 +468,7 @@ namespace _404_not_founders.Menus
                 Info("World Menu");
                 var choice = Menu("", 
                     "Add World", 
-                    "Show World", 
+                    "Show Worlds", 
                     "Edit World", 
                     "Remove World", 
                     "Back");
@@ -475,10 +477,10 @@ namespace _404_not_founders.Menus
                 {
                     case "Add World":
                         World newWorld = new World();
-                        newWorld.Add(loggedInUser, _userService);
+                        newWorld.Add(loggedInUser, currentProject, _userService);
                         break;
 
-                    case "Show World":
+                    case "Show Worlds":
                         Console.WriteLine("Coming soon");
                         break;
                     case "Edit World":

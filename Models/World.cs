@@ -17,7 +17,7 @@ namespace _404_not_founders.Models
 
 
 
-        public void Add(User user, UserService userService)
+        public void Add(User user, Project project, UserService userService)
         {
             // Prompt user for world details
             string worldName = AnsiConsole.Ask<string>("[#FFA500]Enter world name:[/]");
@@ -36,7 +36,7 @@ namespace _404_not_founders.Models
             this.OtherInfo = worldOtherInfo;
 
             // Add to user's worlds
-            user.Worlds.Add(this);
+            project.Worlds.Add(this);
 
             // Save changes to JSON
             userService.SaveUserService();

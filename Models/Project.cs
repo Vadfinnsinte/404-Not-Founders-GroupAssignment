@@ -11,6 +11,7 @@ namespace _404_not_founders.Models
         public DateTime dateOfCreation;
         public Guid Id { get; set; } = Guid.NewGuid();
         public List<Storyline> Storylines;
+        public List<World> Worlds { get; set; } = new List<World>();
 
 
         public Project Add(User currentUser, UserService userService)
