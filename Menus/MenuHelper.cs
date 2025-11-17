@@ -24,7 +24,7 @@ namespace _404_not_founders.Menus
         }
         
         public void SetCurrentUser(User user) => _currentUser = user;
-       
+
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
         {
@@ -32,18 +32,19 @@ namespace _404_not_founders.Menus
             string currentUser = null;
             var users = _userService.Users;
 
-            // Kör appens huvudflöde tills användaren avslutar
             while (running)
             {
                 if (!loggedIn)
                     ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
                 else
-                    ShowLoggedInMenu(currentUser, ref loggedIn, ref currentUser, ref running);
+                    ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
             }
+
             Info("Tack för att du använde appen!");
             Info("Stänger ner...");
             DelayAndClear();
         }
+
 
         // ----- UI-HELPERS OCH GEMENSAM LOGIK -----
 
@@ -95,15 +96,25 @@ namespace _404_not_founders.Menus
                 Console.Clear();
                 var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Avsluta");
                 if (choice == "Avsluta") { running = false; return; }
-                if (choice == "Logga in" && LoginMenu(users, out currentUser)) { loggedIn = true; Console.Clear(); break; }
+                if (choice == "Logga in" && LoginMenu(users, out currentUser))
+                {
+                    loggedIn = true;
+                    string tempUser = currentUser; // Kopiera ref-värdet!
+                    var foundUser = users.FirstOrDefault(u => u.Username == tempUser);
+                    _currentUser = foundUser;
+                    Console.Clear();
+                    break;
+                }
                 string newUser = null;
                 if (choice == "Registrera dig" && User.RegisterUser(users, out newUser, _userService))
                 {
                     loggedIn = true;
+                    currentUser = newUser;
+                    // Sätt rätt user-objekt!
+                    _currentUser = users.FirstOrDefault(u => u.Username == newUser);
                     Console.Clear();
                     break;
                 }
-
             }
         }
 
@@ -111,36 +122,28 @@ namespace _404_not_founders.Menus
         public bool LoginMenu(List<User> users, out string loggedInUser)
         {
             loggedInUser = null;
-            // Lokala inputfält och step-variabel
-            string username = "", password = "";
-            int step = 0; // 0 = användarnamn, 1 = lösenord
-
+            string username = "", password = ""; int step = 0;
             while (true)
             {
                 Console.Clear();
                 Info("Logga in");
                 InputInstruction(true);
-                // Visa redan ifyllt användarnamn
                 if (step >= 1)
                     AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
 
-                // Fråga och hantera input för det aktuella steget
                 string value = step == 0
                     ? AskInput("[#FFA500]Användarnamn:[/]")
                     : AskInput("[#FFA500]Lösenord:[/]", true);
 
-                // Avsluta/flöde bakåt?
                 if (value == null) return false;
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
                 {
                     if (step > 0) { if (step == 1) username = ""; step--; }
                     continue;
                 }
-                // Spara värde/flytta fram steget
                 if (step == 0) { username = value; step++; }
                 else if (step == 1) { password = value; step++; }
 
-                // När båda fält är ifyllda – försök logga in
                 if (step == 2)
                 {
                     var user = users.Find(u => u.Username == username);
@@ -148,70 +151,71 @@ namespace _404_not_founders.Menus
                     {
                         Result(true, "Loggar in...");
                         DelayAndClear();
-                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
                         loggedInUser = username;
+                        _currentUser = user;
                         return true;
                     }
                     Result(false, "Fel användarnamn eller lösenord!");
                     DelayAndClear(1200);
-                    // Starta om – nulställ bara password
                     password = ""; step = 1;
                 }
             }
         }
 
         // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        public void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
+        public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser, ref bool running)
         {
             while (running)
             {
+                if (_currentUser == null)
+                {
+                    Result(false, "Ingen användare är inloggad!");
+                    DelayAndClear();
+                    loggedIn = false;
+                    currentUser = null;
+                    return;
+                }
+
                 Console.Clear();
-                Info($"Huvudmeny (inloggad som {username})");
-                var choice = Menu("Vad vill du göra?", "Lägg till projekt", "Visa projekt", "Senaste projekt", "Redigera konto", "Logga ut", "Avsluta");
-                Info(choice);
+                Info($"Huvudmeny (inloggad som {_currentUser.Username})");
+                var choice = Menu("Vad vill du göra?",
+                                  "Lägg till projekt",
+                                  "Visa projekt",
+                                  "Senaste projekt",
+                                  "Redigera konto",
+                                  "Logga ut",
+                                  "Avsluta");
 
                 switch (choice)
                 {
                     case "Avsluta":
-                        running = false; return;
+                        running = false;
+                        return;
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
+                        _currentUser = null;
                         return;
                     case "Lägg till projekt":
-                        // Get the user who is logged in
-                        User loggedInUser = _userService.Users.FirstOrDefault(u => u.Username == username);
-
-                        if (loggedInUser != null)
-                        {
-                            // Create instance for Add
-                            Project NewProject = new Project();
-
-                            // Get user input and add project
-                            //NewProject.Add(loggedInUser, _userService);
-                            NewProject = NewProject.Add(loggedInUser, _userService);
-
-                            // Goes back to Project Menu after adding
-                            DelayAndClear();
-                            ProjectEditMenu(NewProject);
-                        }
-                        else
-                        {
-                            Result(false, "Error: Could not find user data.");
-                            DelayAndClear();
-                        }
+                        Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                        var newProject = new Project();
+                        var addedProject = newProject.Add(_currentUser, _userService);
                         break;
                     case "Visa projekt":
-                        ShowProjectMenu(); break;
+                        ShowProjectMenu();
+                        break;
                     case "Senaste projekt":
-                        ShowLastProjectMenu(); break;
+                        ShowLastProjectMenu();
+                        break;
                     case "Redigera konto":
-                        UserMenu(); break;
+                        // Lägg till redigeringslogik här om behövs.
+                        break;
                 }
             }
         }
+
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
@@ -246,7 +250,7 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
-                        ProjectEditMenu(selected);
+                    ProjectEditMenu(selected);
                 }
                 else if (choice == "Sök Projekt")
                 {
