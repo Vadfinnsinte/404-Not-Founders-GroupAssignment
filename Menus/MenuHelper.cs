@@ -173,7 +173,7 @@ namespace _404_not_founders.Menus
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-                    return;
+                    
                 }
 
                 Console.Clear();
@@ -190,14 +190,15 @@ namespace _404_not_founders.Menus
                 {
                     case "Avsluta":
                         running = false;
-                        return;
+                        break;
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        return;
+                        RunApp();
+                        break;
                     case "Lägg till projekt":
                         Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                         var newProject = new Project();
@@ -305,16 +306,26 @@ namespace _404_not_founders.Menus
 
         public void ProjectEditMenu(Project project)
         {
+            bool running = true, loggedIn = true;
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
-
+            string user;
+            user = _currentUser.Username; 
             switch (choises)
             {
                 case "Edit/Add Charachters":
                     Console.WriteLine("Coming soon");
                     break;
                 case "Edit/Add worlds":
-                    Console.WriteLine("Coming soon");
+                    if (_currentUser != null)
+                    {
+                        WorldMenu(_currentUser, project);
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
+                        DelayAndClear();
+                    }
                     break;
                 case "Edit/Add Storylines":
                     StorylineMenu(project);
@@ -326,7 +337,8 @@ namespace _404_not_founders.Menus
                     break;
                 case "Back to main menu":
                     Console.Clear();
-                    return;
+                    ShowLoggedInMenu( ref loggedIn, ref user, ref running);
+                    break;
                 default:
                     Console.WriteLine("Somthing went wrong..going back to menu");
                     return;
@@ -337,12 +349,6 @@ namespace _404_not_founders.Menus
         public static void UserMenu()
         {
             Info("Användarmenyn");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
-        public static void WorldMenu()
-        {
-            Info("Världsmenyn");
             Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
@@ -373,7 +379,8 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Back":
-                        return;
+                        ProjectEditMenu(project);
+                        break;
                 }
             }
         }
@@ -509,8 +516,44 @@ namespace _404_not_founders.Menus
             DelayAndClear();
         }
 
+        // ----- WORLD MENU -----
 
-        
+        public void WorldMenu(User loggedInUser, Project currentProject)
+        {
+
+            while (true)
+            {
+                Console.Clear();
+                Info("World Menu");
+                var choice = Menu("", 
+                    "Add World", 
+                    "Show Worlds", 
+                    "Edit World", 
+                    "Remove World", 
+                    "Back");
+
+                switch (choice)
+                {
+                    case "Add World":
+                        World newWorld = new World();
+                        newWorld.Add(loggedInUser, currentProject, _userService);
+                        break;
+
+                    case "Show Worlds":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Edit World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Remove World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Back":
+                        ProjectEditMenu(currentProject);
+                        break;
+                }
+            }
+        }
     }
 }
 
