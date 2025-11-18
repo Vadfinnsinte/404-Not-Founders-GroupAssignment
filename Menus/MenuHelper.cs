@@ -318,6 +318,7 @@ namespace _404_not_founders.Menus
 
         public void ProjectEditMenu(Project project)
         {
+            Character character = new Character();
             bool running = true, loggedIn = true;
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
