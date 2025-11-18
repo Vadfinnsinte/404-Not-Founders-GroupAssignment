@@ -48,8 +48,8 @@ namespace _404_not_founders.Models
         // NOTE: added a Project parameter so the menu can operate on the selected project's characters.
         public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
-            // Use the actual logged-in user from MenuHelper when available
-            User currentUser = userService.Users.FirstOrDefault();
+            // Use the MenuHelper's tracked current user instead of taking first user from UserService
+            User? currentUser = menuHelper.CurrentUser;
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
