@@ -45,17 +45,15 @@ namespace _404_not_founders.Models
             }
         }
 
-        // NOTE: added a Project parameter so the menu can operate on the selected project's characters.
+       
         public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
-            // Use the MenuHelper's tracked current user instead of taking first user from UserService
+            
             User? currentUser = menuHelper.CurrentUser;
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
                 case "Add Character":
-                    // existing Add still works (it finds project via LastSelectedProjectId or first project),
-                    // but when entering from ProjectEditMenu we already have currentProject.
                     Add(currentUser, projectService, userService, menuHelper);
                     ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
@@ -82,9 +80,205 @@ namespace _404_not_founders.Models
             }
         }
 
-        // New helper: show and select characters from a specific project
+       
+
+        public void Add(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper)
+        {
+            // Lokala variabler för fältet som byggs upp stegvis
+            string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
+            int age = 0, level = 0;
+            // step styr vilken input som efterfrågas; 0..8 där 8 = bekräftelse
+            int step = 0;
+
+            while (true)
+            {
+                Console.Clear();
+                MenuHelper.Info("Create New Character");
+                MenuHelper.InputInstruction(true);
+
+                // Visa redan ifyllda fält som kontext för användaren
+                if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
+                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{race}[/]");
+                if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{description}[/]");
+                if (step >= 4) AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{gender}[/]");
+                if (step >= 5) AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{age}[/]");
+                if (step >= 6) AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{level}[/]");
+                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{characterClass}[/]");
+                if (step >= 8) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{otherInfo}[/]");
+
+                string input;
+
+                switch (step)
+                {
+                    case 0:
+                        // Namn: enkel textinput
+                        Console.Write("Name: ");
+                        input = MenuHelper.ReadBackOrExit();
+                        break;
+                    case 1:
+                        // Race: enkel textinput
+                        Console.Write("Race: ");
+                        input = MenuHelper.ReadBackOrExit();
+                        break;
+                    case 2:
+                        // Description: längre text, inga särskilda valideringar här
+                        Console.Write("Description: ");
+                        input = MenuHelper.ReadBackOrExit();
+                        break;
+                    case 3:
+                        // Gender: fri text; överväg enum eller valmeny om du vill begränsa alternativ
+                        Console.Write("Gender: ");
+                        input = MenuHelper.ReadBackOrExit();
+                        break;
+                    case 4:
+                        // Age: tillåter tomt = 0, validerar heltal
+                        Console.Write("Age (leave empty for 0): ");
+                        input = MenuHelper.ReadBackOrExit();
+                        if (input != "E" && input != "B")
+                        {
+                            if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
+                            if (!int.TryParse(input.Trim(), out age))
+                            {
+                                Console.WriteLine("Invalid number — please enter an integer or leave empty.");
+                                Console.WriteLine("Press any key to try again...");
+                                Console.ReadKey(true);
+                                continue;
+                            }
+                        }
+                        break;
+                    case 5:
+                        // Level: samma logik som age
+                        Console.Write("Level (leave empty for 0): ");
+                        input = MenuHelper.ReadBackOrExit();
+                        if (input != "E" && input != "B")
+                        {
+                            if (string.IsNullOrWhiteSpace(input)) { level = 0; step++; continue; }
+                            if (!int.TryParse(input.Trim(), out level))
+                            {
+                                Console.WriteLine("Invalid number — please enter an integer or leave empty.");
+                                Console.WriteLine("Press any key to try again...");
+                                Console.ReadKey(true);
+                                continue;
+                            }
+                        }
+                        break;
+                    case 6:
+                        // Class: fri text, överväg att kalla detta "characterClass" för tydlighet
+                        Console.Write("Class: ");
+                        input = MenuHelper.ReadBackOrExit();
+                        break;
+                    case 7:
+                        // Other info: valfri extra text
+                        Console.Write("Other info: ");
+                        input = MenuHelper.ReadBackOrExit();
+                        break;
+                    case 8:
+                        // Bekräftelsesteg: ja/nej/avsluta
+                        Project project = null;
+                        var confirm = ChracterMenu1("Confirm character creation", "Ja", "Nej", "Avsluta");
+                        if (confirm == "Avsluta") Environment.Exit(0); // HÄR: Exit avslutar hela programmet
+                        if (confirm == "Nej") { step = 0; continue; }  // Börjar om från början
+                        if (confirm == "Ja")
+                        {
+                            // Hitta målet för karaktären: använder currentUser.LastSelectedProjectId eller första projektet
+                            if (currentUser != null)
+                            {
+                                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
+                                {
+                                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
+                                }
+                                if (project == null && currentUser.Projects != null)
+                                {
+                                    project = currentUser.Projects.FirstOrDefault();
+                                }
+                            }
+
+                            if (project == null)
+                            {
+                                // HÄR: Informerar användaren om att inget projekt är valt
+                                Console.WriteLine("No project found. Create or select a project before adding characters.");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey(true);
+                                return;
+                            }
+
+                            // Bygg ny Character-instans
+                            var newCharacter = new Character
+                            {
+                                Names = name,
+                                Race = race,
+                                Description = description,
+                                Gender = gender,
+                                Age = age,
+                                Level = level,
+                                Class = characterClass,
+                                OtherInfo = otherInfo,
+                            };
+
+                            try
+                            {
+                                // Central logik för att lägga till karaktär (validering/duplicering/spara hanteras i Project.AddCharacter)
+                                project.AddCharacter(newCharacter, userService);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // Visa fel från Project.AddCharacter och återställ till börja om
+                                Console.WriteLine(ex.Message);
+                                Console.WriteLine("Press any key to try again...");
+                                Console.ReadKey(true);
+                                step = 0;
+                                continue;
+                            }
+
+                            Console.WriteLine();
+                            Console.WriteLine($"Character '{name}' created.");
+                            Console.WriteLine("Press any key to continue...");
+                            MenuHelper.DelayAndClear();
+
+                            return; // Klart
+                        }
+                        // Om annat resultat, fortsätt loopen
+                        continue;
+                    default:
+                        return;
+                }
+
+                // Hantera specialkommandon "E" = Exit, "B" = Back från MenuHelper.ReadBackOrExit
+                if (input == "E")
+                {
+                    // HÄR: Anropar menymetod och skickar null som currentProject — se till att metoden accepterar null
+                    Console.Clear();
+                    ChracterMenu2(userService, projectService, menuHelper, null);
+                }
+
+                if (input == "B")
+                {
+                    // Gå ett steg bakåt i formuläret (om möjligt)
+                    if (step > 0) step--;
+                    continue;
+                }
+
+                // Spara input i rätt variabel för textstegen
+                switch (step)
+                {
+                    case 0: name = input?.Trim() ?? ""; break;
+                    case 1: race = input?.Trim() ?? ""; break;
+                    case 2: description = input?.Trim() ?? ""; break;
+                    case 3: gender = input?.Trim() ?? ""; break;
+                    case 6: characterClass = input?.Trim() ?? ""; break;
+                    case 7: otherInfo = input?.Trim() ?? ""; break;
+                }
+
+                // Gå till nästa steg
+                step++;
+            }
+        }
+
+
+
         public void ShowCharacters(Project project)
         {
+            // Kontrollera att ett projekt faktiskt skickats in
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
@@ -92,6 +286,7 @@ namespace _404_not_founders.Models
                 return;
             }
 
+            // Säkra att projektet har en lista med karaktärer och att den inte är tom
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
@@ -116,193 +311,6 @@ namespace _404_not_founders.Models
             MenuHelper.DelayAndClear();
         }
 
-        public void Add(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper  )
-        {
-            // existing Add implementation unchanged
-            string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
-            int age = 0, level = 0;
-            int step = 0; // 0 = name, 1 = race, 2 = description, 3 = gender, 4 = age, 5 = level, 6 = class, 7 = otherInfo, 8 = confirm
-
-            while (true)
-            {
-                Console.Clear();
-                MenuHelper.Info("Create New Character");
-                MenuHelper.InputInstruction(true);
-
-                // Show already filled values for context
-                if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
-                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{race}[/]");
-                if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{description}[/]");
-                if (step >= 4) AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{gender}[/]");
-                if (step >= 5) AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{age}[/]");
-                if (step >= 6) AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{level}[/]");
-                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{characterClass}[/]");
-                if (step >= 8) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{otherInfo}[/]");
-
-                string input;
-
-                switch (step)
-                {
-                    case 0:
-                        Console.Write("Name: ");
-                        input = MenuHelper.ReadBackOrExit();
-                        break;
-                    case 1:
-                        Console.Write("Race: ");
-                        input = MenuHelper.ReadBackOrExit();
-                        break;
-                    case 2:
-                        Console.Write("Description: ");
-                        input = MenuHelper.ReadBackOrExit();
-                        break;
-                    case 3:
-                        Console.Write("Gender: ");
-                        input = MenuHelper.ReadBackOrExit();
-                        break;
-                    case 4:
-                        // Age — allow empty for 0, validate integer
-                        Console.Write("Age (leave empty for 0): ");
-                        input = MenuHelper.ReadBackOrExit();
-                        if (input != "E" && input != "B")
-                        {
-                            if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
-                            if (!int.TryParse(input.Trim(), out age))
-                            {
-                                Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
-                                continue;
-                            }
-                        }
-                        break;
-                    case 5:
-                        Console.Write("Level (leave empty for 0): ");
-                        input = MenuHelper.ReadBackOrExit();
-                        if (input != "E" && input != "B")
-                        {
-                            if (string.IsNullOrWhiteSpace(input)) { level = 0; step++; continue; }
-                            if (!int.TryParse(input.Trim(), out level))
-                            {
-                                Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
-                                continue;
-                            }
-                        }
-                        break;
-                    case 6:
-                        Console.Write("Class: ");
-                        input = MenuHelper.ReadBackOrExit();
-                        break;
-                    case 7:
-                        Console.Write("Other info: ");
-                        input = MenuHelper.ReadBackOrExit();
-                        break;
-                    case 8:
-                        // Confirm
-                        Project project = null;
-                        var confirm = ChracterMenu1("Confirm character creation", "Ja", "Nej", "Avsluta");
-                        if (confirm == "Avsluta") Environment.Exit(0);
-                        if (confirm == "Nej") { step = 0; continue; }
-                        if (confirm == "Ja")
-                        {
-                            // Find the target project (last selected or the first project)
-                            if (currentUser != null)
-                            {
-                                // Try to use last selected project id if available and Projects exists
-                                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
-                                {
-                                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
-                                }
-
-                                // Fallback to first project if none found
-                                if (project == null && currentUser.Projects != null)
-                                {
-                                    project = currentUser.Projects.FirstOrDefault();
-                                }
-                            }
-
-                            if (project == null)
-                            {
-                                Console.WriteLine("No project found. Create or select a project before adding characters.");
-                                Console.WriteLine("Press any key to continue...");
-                                Console.ReadKey(true);
-                                return;
-                            }
-
-                            // assign to properties and finish
-                            var newCharacter = new Character
-                            {
-                                Names = name,
-                                Race = race,
-                                Description = description,
-                                Gender = gender,
-                                Age = age,
-                                Level = level,
-                                Class = characterClass,
-                                OtherInfo = otherInfo,
-                            };
-
-                            try
-                            {
-                                // Use Project.AddCharacter to centrally handle duplicates and saving
-                                project.AddCharacter(newCharacter, userService);
-                            }
-                            catch (InvalidOperationException ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
-                                step = 0;
-                                continue;
-                            }
-
-                            Console.WriteLine();
-                            Console.WriteLine($"Character '{name}' created.");
-                            Console.WriteLine("Press any key to continue...");
-                            MenuHelper.DelayAndClear();
-
-                            return;
-                        }
-                        // if somehow other result, loop
-                        
-                        continue;
-                    default:
-                        return;
-                }
-
-                // Handle Back/Exit inputs for non-age/level steps
-                if (input == "E")
-                {
-                    Console.Clear();
-                    ChracterMenu2(userService, projectService, menuHelper, null);
-                }
-                
-                if (input == "B")
-                {
-                    if (step > 0) step--;
-                    continue;
-                }
-
-                // Store input to the right variable for steps that use string input
-                switch (step)
-                {
-                    case 0: name = input?.Trim() ?? ""; break;
-                    case 1: race = input?.Trim() ?? ""; break;
-                    case 2: description = input?.Trim() ?? ""; break;
-                    case 3: gender = input?.Trim() ?? ""; break;
-                    case 6: characterClass = input?.Trim() ?? ""; break;
-                    case 7: otherInfo = input?.Trim() ?? ""; break;
-                }
-
-                step++;
-            }
-        }
-
-        public void Show()
-        {
-            ShowInfoCard.ShowObject(this);
-        }
         public void Change()
         {
             Console.WriteLine("Coming soon");
