@@ -202,6 +202,7 @@ namespace _404_not_founders.Menus
                         Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
+                        
                         break;
                     case "Visa projekt":
                         ShowProjectMenu();
@@ -384,7 +385,7 @@ namespace _404_not_founders.Menus
             var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (kort beskrivning):[/]");
             var theme = AnsiConsole.Ask<string>("[#FFA500]Tema:[/]");
             var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
-            var story = AnsiConsole.Ask<string>("[#FFA500]Själva storyn (kort):[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Själva storyn:[/]");
             var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idéanteckningar:[/]");
             var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Övrig info:[/]");
 
@@ -407,28 +408,78 @@ namespace _404_not_founders.Menus
             _userService.SaveUserService();
 
             Info("Storyline skapad!");
-            Console.ReadKey(true);
+            DelayAndClear();
         }
         private void EditStoryline(Project project)
         {
             var s = SelectStoryline(project, "Välj storyline att ändra");
             if (s == null) return;
 
-            Console.Clear();
-            Info($"Ändra storyline: [#FFA500]{s.Title}[/]");
+            while (true)
+            {
+                Console.Clear();
+                Info($"Ändra storyline: [#FFA500]{s.Title}[/]");
 
-            string title = AnsiConsole.Ask<string>(
-                $"[#FFA500]Ny titel[/] (lämna tom för att behålla \"{s.Title}\"):");
-            if (!string.IsNullOrWhiteSpace(title)) s.Title = title;
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Vad vill du ändra?")
+                        .AddChoices(
+                            "Titel",
+                            "Synopsis",
+                            "Tema",
+                            "Genre",
+                            "Story",
+                            "Idéanteckningar",
+                            "Övrig info",
+                            "Klar")
+                        .HighlightStyle(Color.Orange1));
 
-            string synopsis = AnsiConsole.Ask<string>(
-                "[#FFA500]Ny synopsis[/] (lämna tom för att behålla):");
-            if (!string.IsNullOrWhiteSpace(synopsis)) s.Synopsis = synopsis;
-            s.dateOfLastEdit = DateTime.Now;
-            _userService.SaveUserService();
+                if (choice == "Klar")
+                {
+                    s.dateOfLastEdit = DateTime.Now;
+                    _userService.SaveUserService();
+                    Info("Storyline uppdaterad!");
+                    DelayAndClear();
+                    return;
+                }
 
-            Info("Storyline uppdaterad!");
-            Console.ReadKey(true);
+                string PromptNonEmpty(string prompt)
+                {
+                    while (true)
+                    {
+                        var value = AnsiConsole.Ask<string>(prompt);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            return value;
+
+                        AnsiConsole.MarkupLine("[red]Värdet får inte vara tomt.[/]");
+                    }
+                }
+
+                switch (choice)
+                {
+                    case "Titel":
+                        s.Title = PromptNonEmpty("[#FFA500]Ny titel:[/]");
+                        break;
+                    case "Synopsis":
+                        s.Synopsis = PromptNonEmpty("[#FFA500]Ny synopsis:[/]");
+                        break;
+                    case "Tema":
+                        s.Theme = PromptNonEmpty("[#FFA500]Nytt tema:[/]");
+                        break;
+                    case "Genre":
+                        s.Genre = PromptNonEmpty("[#FFA500]Ny genre:[/]");
+                        break;
+                    case "Story":
+                        s.Story = PromptNonEmpty("[#FFA500]Ny story:[/]");
+                        break;
+                    case "Idéanteckningar":
+                        s.IdeaNotes = PromptNonEmpty("[#FFA500]Nya idéanteckningar:[/]");
+                        break;
+                    case "Övrig info":
+                        s.OtherInfo = PromptNonEmpty("[#FFA500]Ny övrig info:[/]");
+                        break;
+                }
+            }
         }
         private Storyline? SelectStoryline(Project project, string title)
         {
