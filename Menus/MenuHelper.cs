@@ -184,7 +184,7 @@ namespace _404_not_founders.Menus
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-                    return;
+                    
                 }
 
                 Console.Clear();
@@ -201,18 +201,21 @@ namespace _404_not_founders.Menus
                 {
                     case "Avsluta":
                         running = false;
-                        return;
+                        break;
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        return;
+                        RunApp();
+                        break;
                     case "Lägg till projekt":
                         Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
+                        DelayAndClear();
+                        ProjectEditMenu(addedProject);
                         break;
                     case "Visa projekt":
                         ShowProjectMenu();
@@ -315,29 +318,39 @@ namespace _404_not_founders.Menus
 
         public void ProjectEditMenu(Project project)
         {
-            Character character = new Character();
+            bool running = true, loggedIn = true;
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
-
+            string user;
+            user = _currentUser.Username; 
             switch (choises)
             {
                 case "Edit/Add Charachters":
                     character.ChracterMenu2(_userService, _projectService, this, project);
                     break;
                 case "Edit/Add worlds":
-                    Console.WriteLine("Coming soon");
+                    if (_currentUser != null)
+                    {
+                        WorldMenu(_currentUser, project);
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
+                        DelayAndClear();
+                    }
                     break;
                 case "Edit/Add Storylines":
-                    Console.WriteLine("Coming soon");
+                    StorylineMenu(project);
                     break;
                 case "Show Everything":
                    
                     Console.WriteLine("Coming soon");
                     DelayAndClear();
                     break;
-                case "Back to main manu":
+                case "Back to main menu":
                     Console.Clear();
-                    return;
+                    ShowLoggedInMenu( ref loggedIn, ref user, ref running);
+                    break;
                 default:
                     Console.WriteLine("Somthing went wrong..going back to menu");
                     return;
@@ -351,29 +364,207 @@ namespace _404_not_founders.Menus
             Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
-        public static void WorldMenu()
-        {
-            Info("Världsmenyn");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
-        }
         public static void CharacterMenu()
         {
             Info("Karaktärsmenyn");
             Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
-        public static void StorylineMenu()
+        public void StorylineMenu(Project project)
         {
-            Info("Storyline-meny");
-            Console.WriteLine("Coming Soon");
+            while (true)
+            {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[bold]Storylines[/]")
+                        .AddChoices("Add Storyline", "Edit Storyline", "Back")
+                        .HighlightStyle(Color.Orange1));
+
+                switch (choice)
+                {
+                    case "Add Storyline":
+                        AddStorylineToProject(project);
+                        break;
+
+                    case "Edit Storyline":
+                        EditStoryline(project);
+                        break;
+
+                    case "Back":
+                        ProjectEditMenu(project);
+                        break;
+                }
+            }
+        }
+        private void AddStorylineToProject(Project project)
+        {
+            Console.Clear();
+            Info("Add new storyline");
+
+            var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
+            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (Short description):[/]");
+            var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
+            var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Story:[/]");
+            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Ideanotes:[/]");
+            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other info:[/]");
+
+            project.Storylines ??= new List<Storyline>();
+
+            var s = new Storyline
+            {
+                Title = title,
+                Synopsis = synopsis,
+                Theme = theme,
+                Genre = genre,             
+                Story = story,
+                IdeaNotes = ideaNotes,
+                OtherInfo = otherInfo,
+                orderInProject = project.Storylines.Count + 1,
+                dateOfLastEdit = DateTime.Now
+            };
+
+            project.Storylines.Add(s);
+            _userService.SaveUserService();
+
+            Info("Storyline created!");
             DelayAndClear();
         }
+        private void EditStoryline(Project project)
+        {
+            var s = SelectStoryline(project, "Choose storyline to edit");
+            if (s == null) return;
+
+            while (true)
+            {
+                Console.Clear();
+                Info($"Edit storyline: [#FFA500]{s.Title}[/]");
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("What do you want to edit?")
+                        .AddChoices(
+                            "Title",
+                            "Synopsis",
+                            "Theme",
+                            "Genre",
+                            "Story",
+                            "Ideanotes",
+                            "Other info",
+                            "Done")
+                        .HighlightStyle(Color.Orange1));
+
+                if (choice == "Done")
+                {
+                    s.dateOfLastEdit = DateTime.Now;
+                    _userService.SaveUserService();
+                    Info("Storyline uppdated!");
+                    DelayAndClear();
+                    return;
+                }
+
+                string PromptNonEmpty(string prompt)
+                {
+                    while (true)
+                    {
+                        var value = AnsiConsole.Ask<string>(prompt);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            return value;
+
+                        AnsiConsole.MarkupLine("[red]Value must not be empty.[/]");
+                    }
+                }
+
+                switch (choice)
+                {
+                    case "Title":
+                        s.Title = PromptNonEmpty("[#FFA500]New title:[/]");
+                        break;
+                    case "Synopsis":
+                        s.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
+                        break;
+                    case "Theme":
+                        s.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
+                        break;
+                    case "Genre":
+                        s.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
+                        break;
+                    case "Story":
+                        s.Story = PromptNonEmpty("[#FFA500]New story:[/]");
+                        break;
+                    case "Ideanotes":
+                        s.IdeaNotes = PromptNonEmpty("[#FFA500]New ideanotes:[/]");
+                        break;
+                    case "Other info":
+                        s.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
+                        break;
+                }
+            }
+        }
+        private Storyline? SelectStoryline(Project project, string title)
+        {
+            if (project.Storylines == null || project.Storylines.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            var sorted = project.Storylines
+                .OrderBy(s => s.orderInProject)
+                .ToList();
+
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<Storyline>()
+                    .Title($"[bold]{title}[/]")
+                    .AddChoices(sorted)
+                    .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
+        }
+
         public static void ShowLastProjectMenu()
         {
             Info("Senaste projekt");
             Console.WriteLine("Coming Soon");
             DelayAndClear();
+        }
+
+        // ----- WORLD MENU -----
+
+        public void WorldMenu(User loggedInUser, Project currentProject)
+        {
+
+            while (true)
+            {
+                Console.Clear();
+                Info("World Menu");
+                var choice = Menu("", 
+                    "Add World", 
+                    "Show Worlds", 
+                    "Edit World", 
+                    "Remove World", 
+                    "Back");
+
+                switch (choice)
+                {
+                    case "Add World":
+                        World newWorld = new World();
+                        newWorld.Add(loggedInUser, currentProject, _userService);
+                        break;
+
+                    case "Show Worlds":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Edit World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Remove World":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Back":
+                        ProjectEditMenu(currentProject);
+                        break;
+                }
+            }
         }
     }
 }

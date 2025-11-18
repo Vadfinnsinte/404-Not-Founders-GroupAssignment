@@ -13,8 +13,9 @@ namespace _404_not_founders.Models
         public string description { get; set; }
         public DateTime dateOfCreation;
         public Guid Id { get; set; } = Guid.NewGuid();
-        public List<Storyline> Storylines;
-        
+        //public List<Storyline> Storylines;
+        public List<World> Worlds { get; set; } = new List<World>();
+        public List<Storyline> Storylines { get; set; } = new();
 
         public List<Character> Characters { get; set; } = new List<Character>();
 

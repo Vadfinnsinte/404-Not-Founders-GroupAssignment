@@ -13,6 +13,7 @@ namespace _404_not_founders.Models
         public string Story {  get; set; }
         public string IdeaNotes { get; set; }
         public string OtherInfo { get; set; }
+        public int orderInProject { get; set; }
         public List<World> worlds;
         public List<Character> chracters;
         public DateTime dateOfLastEdit;
