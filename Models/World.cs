@@ -1,5 +1,6 @@
 ﻿
 
+using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using _404_not_founders.UI;
 using Spectre.Console;
@@ -108,6 +109,131 @@ namespace _404_not_founders.Models
                 }
 
                 step++;
+            }
+        }
+        public void EditWorld(UserService userService)
+        {
+            
+            var temp = new World
+            {
+                Name = this.Name,
+                Climate = this.Climate,
+                Regions = this.Regions,
+                Enemies = this.Enemies,
+                Factions = this.Factions,
+                OtherInfo = this.OtherInfo
+            };
+
+            while (true)
+            {
+                Console.Clear();
+                MenuHelper.Info($"Edit world: [#FFA500]{temp.Name}[/]");
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("What do you want to change?")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices(
+                            "Name",
+                            "Climate",
+                            "Regions",
+                            "Enemies",
+                            "Factions",
+                            "Other info",
+                            "Done"));
+
+                
+                string PromptNonEmpty(string prompt)
+                {
+                    while (true)
+                    {
+                        var value = AnsiConsole.Ask<string>(prompt);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            return value;
+
+                        AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
+                    }
+                }
+
+                if (choice == "Done")
+                {
+                    
+                    Console.Clear();
+                    MenuHelper.Info("World summary:");
+                    AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{temp.Name}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Climate:[/]   {temp.Climate}");
+                    AnsiConsole.MarkupLine($"[grey]Regions:[/]   {temp.Regions}");
+                    AnsiConsole.MarkupLine($"[grey]Enemies:[/]   {temp.Enemies}");
+                    AnsiConsole.MarkupLine($"[grey]Factions:[/]  {temp.Factions}");
+                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+
+                    Console.WriteLine();
+                    var confirm = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[#FFA500]Are you happy with this world?[/]")
+                            .HighlightStyle(new Style(Color.Orange1))
+                            .AddChoices("Yes", "No (Start over)", "Exit"));
+
+                    if (confirm == "Exit")
+                    {
+                        
+                        Thread.Sleep(800);
+                        Console.Clear();
+                        return;
+                    }
+
+                    if (confirm == "No (Start over)")
+                    {
+                        
+                        temp.Name = this.Name;
+                        temp.Climate = this.Climate;
+                        temp.Regions = this.Regions;
+                        temp.Enemies = this.Enemies;
+                        temp.Factions = this.Factions;
+                        temp.OtherInfo = this.OtherInfo;
+                        continue;
+                    }
+
+                    if (confirm == "Yes")
+                    {
+                        
+                        this.Name = temp.Name;
+                        this.Climate = temp.Climate;
+                        this.Regions = temp.Regions;
+                        this.Enemies = temp.Enemies;
+                        this.Factions = temp.Factions;
+                        this.OtherInfo = temp.OtherInfo;
+
+                        userService.SaveUserService();
+                        AnsiConsole.MarkupLine("[green]World updated![/]");
+                        Thread.Sleep(1000);
+                        Console.Clear();
+                        return;
+                    }
+                }
+
+                
+                switch (choice)
+                {
+                    case "Name":
+                        temp.Name = PromptNonEmpty("[#FFA500]New name:[/]");
+                        break;
+                    case "Climate":
+                        temp.Climate = PromptNonEmpty("[#FFA500]New climate:[/]");
+                        break;
+                    case "Regions":
+                        temp.Regions = PromptNonEmpty("[#FFA500]New regions:[/]");
+                        break;
+                    case "Enemies":
+                        temp.Enemies = PromptNonEmpty("[#FFA500]New enemies:[/]");
+                        break;
+                    case "Factions":
+                        temp.Factions = PromptNonEmpty("[#FFA500]New factions:[/]");
+                        break;
+                    case "Other info":
+                        temp.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
+                        break;
+                }
             }
         }
         public void Show()
