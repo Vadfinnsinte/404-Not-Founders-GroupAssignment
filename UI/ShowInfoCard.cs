@@ -55,6 +55,7 @@ namespace _404_not_founders.UI
             var panel = new Panel(table)
             {
                 Border = BoxBorder.Rounded,
+                Expand = false
             }.BorderColor(Color.Orange1);
 
             AnsiConsole.Write(panel);

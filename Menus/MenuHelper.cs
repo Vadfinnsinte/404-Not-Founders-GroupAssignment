@@ -331,9 +331,9 @@ namespace _404_not_founders.Menus
                     StorylineMenu(project);
                     break;
                 case "Show Everything":
-                   
-                    Console.WriteLine("Coming soon");
                     DelayAndClear();
+                    Project storyline = new Project();
+                    storyline.ShowAll(project);
                     break;
                 case "Back to main menu":
                     Console.Clear();
@@ -344,7 +344,7 @@ namespace _404_not_founders.Menus
                     return;
             }
 
-            DelayAndClear();
+            //DelayAndClear();
         }
         public static void UserMenu()
         {
