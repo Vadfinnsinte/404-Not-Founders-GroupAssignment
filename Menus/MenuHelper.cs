@@ -375,7 +375,8 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Back":
-                        return;
+                        ProjectEditMenu(project);
+                        break;
                 }
             }
         }
@@ -544,7 +545,8 @@ namespace _404_not_founders.Menus
                         Console.WriteLine("Coming soon");
                         break;
                     case "Back":
-                        return;
+                        ProjectEditMenu(currentProject);
+                        break;
                 }
             }
         }
