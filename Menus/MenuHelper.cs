@@ -379,15 +379,15 @@ namespace _404_not_founders.Menus
         private void AddStorylineToProject(Project project)
         {
             Console.Clear();
-            Info("Skapa ny storyline");
+            Info("Add new storyline");
 
-            var title = AnsiConsole.Ask<string>("[#FFA500]Titel:[/]");
-            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (kort beskrivning):[/]");
-            var theme = AnsiConsole.Ask<string>("[#FFA500]Tema:[/]");
+            var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
+            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (Short description):[/]");
+            var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
             var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
-            var story = AnsiConsole.Ask<string>("[#FFA500]Själva storyn:[/]");
-            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idéanteckningar:[/]");
-            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Övrig info:[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Story:[/]");
+            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Ideanotes:[/]");
+            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other info:[/]");
 
             project.Storylines ??= new List<Storyline>();
 
@@ -407,38 +407,38 @@ namespace _404_not_founders.Menus
             project.Storylines.Add(s);
             _userService.SaveUserService();
 
-            Info("Storyline skapad!");
+            Info("Storyline created!");
             DelayAndClear();
         }
         private void EditStoryline(Project project)
         {
-            var s = SelectStoryline(project, "Välj storyline att ändra");
+            var s = SelectStoryline(project, "Choose storyline to edit");
             if (s == null) return;
 
             while (true)
             {
                 Console.Clear();
-                Info($"Ändra storyline: [#FFA500]{s.Title}[/]");
+                Info($"Edit storyline: [#FFA500]{s.Title}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("Vad vill du ändra?")
+                        .Title("What do you want to edit?")
                         .AddChoices(
-                            "Titel",
+                            "Title",
                             "Synopsis",
-                            "Tema",
+                            "Theme",
                             "Genre",
                             "Story",
-                            "Idéanteckningar",
-                            "Övrig info",
-                            "Klar")
+                            "Ideanotes",
+                            "Other info",
+                            "Done")
                         .HighlightStyle(Color.Orange1));
 
-                if (choice == "Klar")
+                if (choice == "Done")
                 {
                     s.dateOfLastEdit = DateTime.Now;
                     _userService.SaveUserService();
-                    Info("Storyline uppdaterad!");
+                    Info("Storyline uppdated!");
                     DelayAndClear();
                     return;
                 }
@@ -451,32 +451,32 @@ namespace _404_not_founders.Menus
                         if (!string.IsNullOrWhiteSpace(value))
                             return value;
 
-                        AnsiConsole.MarkupLine("[red]Värdet får inte vara tomt.[/]");
+                        AnsiConsole.MarkupLine("[red]Value must not be empty.[/]");
                     }
                 }
 
                 switch (choice)
                 {
-                    case "Titel":
-                        s.Title = PromptNonEmpty("[#FFA500]Ny titel:[/]");
+                    case "Title":
+                        s.Title = PromptNonEmpty("[#FFA500]New title:[/]");
                         break;
                     case "Synopsis":
-                        s.Synopsis = PromptNonEmpty("[#FFA500]Ny synopsis:[/]");
+                        s.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
                         break;
-                    case "Tema":
-                        s.Theme = PromptNonEmpty("[#FFA500]Nytt tema:[/]");
+                    case "Theme":
+                        s.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
                         break;
                     case "Genre":
-                        s.Genre = PromptNonEmpty("[#FFA500]Ny genre:[/]");
+                        s.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
                         break;
                     case "Story":
-                        s.Story = PromptNonEmpty("[#FFA500]Ny story:[/]");
+                        s.Story = PromptNonEmpty("[#FFA500]New story:[/]");
                         break;
-                    case "Idéanteckningar":
-                        s.IdeaNotes = PromptNonEmpty("[#FFA500]Nya idéanteckningar:[/]");
+                    case "Ideanotes":
+                        s.IdeaNotes = PromptNonEmpty("[#FFA500]New ideanotes:[/]");
                         break;
-                    case "Övrig info":
-                        s.OtherInfo = PromptNonEmpty("[#FFA500]Ny övrig info:[/]");
+                    case "Other info":
+                        s.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
                         break;
                 }
             }
@@ -485,7 +485,7 @@ namespace _404_not_founders.Menus
         {
             if (project.Storylines == null || project.Storylines.Count == 0)
             {
-                AnsiConsole.MarkupLine("[grey]Inga storylines ännu.[/]");
+                AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
                 Console.ReadKey(true);
                 return null;
             }
