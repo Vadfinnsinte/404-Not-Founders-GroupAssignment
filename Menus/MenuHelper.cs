@@ -15,10 +15,6 @@ namespace _404_not_founders.Menus
         private User? _currentUser;
         private readonly ProjectService _projectService;
        
-
-
-
-
         public MenuHelper(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -26,7 +22,9 @@ namespace _404_not_founders.Menus
 
 
         }
+        
         public void SetCurrentUser(User user) => _currentUser = user;
+
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
         {
@@ -34,26 +32,24 @@ namespace _404_not_founders.Menus
             string currentUser = null;
             var users = _userService.Users;
 
-
-
-
-            // Kör appens huvudflöde tills användaren avslutar
             while (running)
             {
                 if (!loggedIn)
                     ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
                 else
-                    ShowLoggedInMenu(currentUser, ref loggedIn, ref currentUser, ref running);
+                    ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
             }
+
             Info("Tack för att du använde appen!");
             Info("Stänger ner...");
             DelayAndClear();
         }
 
+
         // ----- UI-HELPERS OCH GEMENSAM LOGIK -----
 
         /// Meny med Orange highlight (aktivt) och vita val (inaktivt)
-        private static string Menu(string title, params string[] choices) =>
+        public static string Menu(string title, params string[] choices) =>
              AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[#{MainTitleColor}]{title}[/]")
@@ -63,19 +59,19 @@ namespace _404_not_founders.Menus
             );
 
         /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
-        private static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
+        public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
 
         /// Skriv ut instruktion till användaren om E och B
-        private static void InputInstruction(bool back = false) =>
+        public static void InputInstruction(bool back = false) =>
             AnsiConsole.MarkupLine(back
                 ? "[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]"
                 : "[grey italic]Skriv E för att gå tillbaka[/]");
 
         /// Delay och skärmrens – anropas efter bekräftelse eller fel
-        private static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
+        public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
 
         /// Input helpers – AskInput hanterar både secret och vanlig, och alltid "E" för exit
-        private static string AskInput(string prompt, bool secret = false)
+        public static string AskInput(string prompt, bool secret = false)
         {
             var input = secret
                 ? AnsiConsole.Prompt(new TextPrompt<string>(prompt).PromptStyle(MainTitleColor).Secret())
@@ -85,7 +81,7 @@ namespace _404_not_founders.Menus
         }
 
         /// Gemensam feedback – skriver ut resultat med grön/röd + orange underline
-        private static void Result(bool success, string text)
+        public static void Result(bool success, string text)
         {
             var color = success ? "green" : "red";
             AnsiConsole.MarkupLine($"[underline {MainTitleColor}][bold {color}]{text}[/][/]");
@@ -100,14 +96,25 @@ namespace _404_not_founders.Menus
                 Console.Clear();
                 var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Avsluta");
                 if (choice == "Avsluta") { running = false; return; }
-                if (choice == "Logga in" && LoginMenu(users, out currentUser)) { loggedIn = true; Console.Clear(); break; }
-                if (choice == "Registrera dig" && RegisterMenu(users, out currentUser))
+                if (choice == "Logga in" && LoginMenu(users, out currentUser))
                 {
                     loggedIn = true;
+                    string tempUser = currentUser; // Kopiera ref-värdet!
+                    var foundUser = users.FirstOrDefault(u => u.Username == tempUser);
+                    _currentUser = foundUser;
                     Console.Clear();
                     break;
                 }
-
+                string newUser = null;
+                if (choice == "Registrera dig" && User.RegisterUser(users, out newUser, _userService))
+                {
+                    loggedIn = true;
+                    currentUser = newUser;
+                    // Sätt rätt user-objekt!
+                    _currentUser = users.FirstOrDefault(u => u.Username == newUser);
+                    Console.Clear();
+                    break;
+                }
             }
         }
 
@@ -115,36 +122,28 @@ namespace _404_not_founders.Menus
         public bool LoginMenu(List<User> users, out string loggedInUser)
         {
             loggedInUser = null;
-            // Lokala inputfält och step-variabel
-            string username = "", password = "";
-            int step = 0; // 0 = användarnamn, 1 = lösenord
-
+            string username = "", password = ""; int step = 0;
             while (true)
             {
                 Console.Clear();
                 Info("Logga in");
                 InputInstruction(true);
-                // Visa redan ifyllt användarnamn
                 if (step >= 1)
                     AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
 
-                // Fråga och hantera input för det aktuella steget
                 string value = step == 0
                     ? AskInput("[#FFA500]Användarnamn:[/]")
                     : AskInput("[#FFA500]Lösenord:[/]", true);
 
-                // Avsluta/flöde bakåt?
                 if (value == null) return false;
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
                 {
                     if (step > 0) { if (step == 1) username = ""; step--; }
                     continue;
                 }
-                // Spara värde/flytta fram steget
                 if (step == 0) { username = value; step++; }
                 else if (step == 1) { password = value; step++; }
 
-                // När båda fält är ifyllda – försök logga in
                 if (step == 2)
                 {
                     var user = users.Find(u => u.Username == username);
@@ -152,162 +151,73 @@ namespace _404_not_founders.Menus
                     {
                         Result(true, "Loggar in...");
                         DelayAndClear();
-                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
                         loggedInUser = username;
+                        _currentUser = user;
                         return true;
                     }
                     Result(false, "Fel användarnamn eller lösenord!");
                     DelayAndClear(1200);
-                    // Starta om – nulställ bara password
                     password = ""; step = 1;
                 }
             }
         }
 
-        // ----- REGISTRERING, direktvalidering per prompt, stegbaserad vy och backa (B/E) support -----
-        public bool RegisterMenu(List<User> users, out string registeredUser)
-        {
-            registeredUser = null;
-            string email = "", username = "", password = "";
-            int step = 0; // 0 = epost, 1 = användarnamn, 2 = lösenord
-
-            while (true)
-            {
-                Console.Clear();
-                Info("Registrera ny användare");
-                InputInstruction(true);
-
-                // Visa redan ifyllda/validerade fält
-                if (step >= 1)
-                    AnsiConsole.MarkupLine($"[grey]E-post:[/] [#FFA500]{email}[/]");
-                if (step >= 2)
-                    AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
-
-                // Fråga för aktuellt steg – byter vy i loopen, reset vid back
-                var value = step switch
-                {
-                    0 => AskInput("[#FFA500]E-post:[/]"),
-                    1 => AskInput("[#FFA500]Användarnamn:[/]"),
-                    2 => AskInput("[#FFA500]Lösenord:[/]", true),
-                    _ => null
-                };
-
-                // Avbrott – tillbaka till huvudmeny
-                if (value == null) return false;
-                // Backa till tidigare prompt
-                if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (step > 0)
-                    {
-                        if (step == 1) email = "";
-                        if (step == 2) username = "";
-                        step--;
-                    }
-                    continue;
-                }
-                // Direktvalidera per steg och lägg in/sätt fram
-                if (step == 0)
-                {
-                    if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        Result(false, "E-postadressen är redan registrerad."); DelayAndClear(1200); continue;
-                    }
-                    email = value; step++;
-                }
-                else if (step == 1)
-                {
-                    if (users.Exists(u => u.Username.Equals(value, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        Result(false, "Användarnamnet är redan taget."); DelayAndClear(1200); continue;
-                    }
-                    username = value; step++;
-                }
-                else if (step == 2)
-                {
-                    password = value; step++;
-                }
-
-                // Alla fält validerade – bekräfta!
-                if (step == 3)
-                {
-                    var confirm = Menu("Vill du registrera denna användare?", "Ja", "Nej", "Avsluta");
-                    if (confirm == "Avsluta") Environment.Exit(0);
-                    if (confirm == "Nej") { step = 0; continue; }
-                    if (confirm == "Ja")
-                    {
-                        users.Add(new User
-                        {
-                            Email = email,
-                            Username = username,
-                            Password = password,
-                            CreationDate = DateTime.Now,
-                            Projects = new List<Project>()
-                        });
-                        _userService.SaveUserService();
-                        _currentUser = _userService.Users.FirstOrDefault(u => u.Username == username);
-                        Result(true, "Registreras...!");
-                        DelayAndClear();
-                        registeredUser = username;
-                        return true;
-
-                    }
-                    step = 0;
-                }
-            }
-        }
-
         // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        public void ShowLoggedInMenu(string username, ref bool loggedIn, ref string currentUser, ref bool running)
+        public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser, ref bool running)
         {
             while (running)
             {
+                if (_currentUser == null)
+                {
+                    Result(false, "Ingen användare är inloggad!");
+                    DelayAndClear();
+                    loggedIn = false;
+                    currentUser = null;
+                    return;
+                }
+
                 Console.Clear();
-                Info($"Huvudmeny (inloggad som {username})");
-                var choice = Menu("Vad vill du göra?", "Lägg till projekt", "Visa projekt", "Senaste projekt", "Redigera konto", "Logga ut", "Avsluta");
-                Info(choice);
+                Info($"Huvudmeny (inloggad som {_currentUser.Username})");
+                var choice = Menu("Vad vill du göra?",
+                                  "Lägg till projekt",
+                                  "Visa projekt",
+                                  "Senaste projekt",
+                                  "Redigera konto",
+                                  "Logga ut",
+                                  "Avsluta");
 
                 switch (choice)
                 {
                     case "Avsluta":
-                        running = false; return;
+                        running = false;
+                        return;
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
+                        _currentUser = null;
                         return;
                     case "Lägg till projekt":
-                        // Get the user who is logged in
-                        User loggedInUser = _userService.Users.FirstOrDefault(u => u.Username == username);
-
-                        if (loggedInUser != null)
-                        {
-                            // Create instance for Add
-                            Project NewProject = new Project();
-
-                            // Get user input and add project
-                            //NewProject.Add(loggedInUser, _userService);
-                            NewProject = NewProject.Add(loggedInUser, _userService);
-
-                            // Goes back to Project Menu after adding
-                            DelayAndClear();
-                            ProjectEditMenu(NewProject);
-                        }
-                        else
-                        {
-                            Result(false, "Error: Could not find user data.");
-                            DelayAndClear();
-                        }
+                        Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                        var newProject = new Project();
+                        var addedProject = newProject.Add(_currentUser, _userService);
+                        DelayAndClear();
+                        ProjectEditMenu(addedProject);
                         break;
                     case "Visa projekt":
-                        ShowProjectMenu(); break;
+                        ShowProjectMenu();
+                        break;
                     case "Senaste projekt":
-                        ShowLastProjectMenu(); break;
+                        ShowLastProjectMenu();
+                        break;
                     case "Redigera konto":
-                        UserMenu(); break;
+                        // Lägg till redigeringslogik här om behövs.
+                        break;
                 }
             }
         }
+
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
         public void ShowProjectMenu()
@@ -342,7 +252,7 @@ namespace _404_not_founders.Menus
                     var selected = SelectFromList(list, "Välj projekt");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
-                        ProjectEditMenu(selected);
+                    ProjectEditMenu(selected);
                 }
                 else if (choice == "Sök Projekt")
                 {
@@ -415,14 +325,14 @@ namespace _404_not_founders.Menus
                     }
                     break;
                 case "Edit/Add Storylines":
-                    Console.WriteLine("Coming soon");
+                    StorylineMenu(project);
                     break;
                 case "Show Everything":
                    
                     Console.WriteLine("Coming soon");
                     DelayAndClear();
                     break;
-                case "Back to main manu":
+                case "Back to main menu":
                     Console.Clear();
                     return;
                 default:
@@ -444,12 +354,156 @@ namespace _404_not_founders.Menus
             Console.WriteLine("Coming Soon");
             DelayAndClear();
         }
-        public static void StorylineMenu()
+        public void StorylineMenu(Project project)
         {
-            Info("Storyline-meny");
-            Console.WriteLine("Coming Soon");
+            while (true)
+            {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[bold]Storylines[/]")
+                        .AddChoices("Add Storyline", "Edit Storyline", "Back")
+                        .HighlightStyle(Color.Orange1));
+
+                switch (choice)
+                {
+                    case "Add Storyline":
+                        AddStorylineToProject(project);
+                        break;
+
+                    case "Edit Storyline":
+                        EditStoryline(project);
+                        break;
+
+                    case "Back":
+                        return;
+                }
+            }
+        }
+        private void AddStorylineToProject(Project project)
+        {
+            Console.Clear();
+            Info("Add new storyline");
+
+            var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
+            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (Short description):[/]");
+            var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
+            var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Story:[/]");
+            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Ideanotes:[/]");
+            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other info:[/]");
+
+            project.Storylines ??= new List<Storyline>();
+
+            var s = new Storyline
+            {
+                Title = title,
+                Synopsis = synopsis,
+                Theme = theme,
+                Genre = genre,             
+                Story = story,
+                IdeaNotes = ideaNotes,
+                OtherInfo = otherInfo,
+                orderInProject = project.Storylines.Count + 1,
+                dateOfLastEdit = DateTime.Now
+            };
+
+            project.Storylines.Add(s);
+            _userService.SaveUserService();
+
+            Info("Storyline created!");
             DelayAndClear();
         }
+        private void EditStoryline(Project project)
+        {
+            var s = SelectStoryline(project, "Choose storyline to edit");
+            if (s == null) return;
+
+            while (true)
+            {
+                Console.Clear();
+                Info($"Edit storyline: [#FFA500]{s.Title}[/]");
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("What do you want to edit?")
+                        .AddChoices(
+                            "Title",
+                            "Synopsis",
+                            "Theme",
+                            "Genre",
+                            "Story",
+                            "Ideanotes",
+                            "Other info",
+                            "Done")
+                        .HighlightStyle(Color.Orange1));
+
+                if (choice == "Done")
+                {
+                    s.dateOfLastEdit = DateTime.Now;
+                    _userService.SaveUserService();
+                    Info("Storyline uppdated!");
+                    DelayAndClear();
+                    return;
+                }
+
+                string PromptNonEmpty(string prompt)
+                {
+                    while (true)
+                    {
+                        var value = AnsiConsole.Ask<string>(prompt);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            return value;
+
+                        AnsiConsole.MarkupLine("[red]Value must not be empty.[/]");
+                    }
+                }
+
+                switch (choice)
+                {
+                    case "Title":
+                        s.Title = PromptNonEmpty("[#FFA500]New title:[/]");
+                        break;
+                    case "Synopsis":
+                        s.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
+                        break;
+                    case "Theme":
+                        s.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
+                        break;
+                    case "Genre":
+                        s.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
+                        break;
+                    case "Story":
+                        s.Story = PromptNonEmpty("[#FFA500]New story:[/]");
+                        break;
+                    case "Ideanotes":
+                        s.IdeaNotes = PromptNonEmpty("[#FFA500]New ideanotes:[/]");
+                        break;
+                    case "Other info":
+                        s.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
+                        break;
+                }
+            }
+        }
+        private Storyline? SelectStoryline(Project project, string title)
+        {
+            if (project.Storylines == null || project.Storylines.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            var sorted = project.Storylines
+                .OrderBy(s => s.orderInProject)
+                .ToList();
+
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<Storyline>()
+                    .Title($"[bold]{title}[/]")
+                    .AddChoices(sorted)
+                    .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
+        }
+
         public static void ShowLastProjectMenu()
         {
             Info("Senaste projekt");
