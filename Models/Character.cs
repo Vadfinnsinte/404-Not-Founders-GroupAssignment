@@ -30,20 +30,6 @@ namespace _404_not_founders.Models
                     .UseConverter(choice => $"[white]{choice}[/]")
             );
 
-        public void menh(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
-        {
-            MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
-            if (MenuHelper.ReadBackOrExit() == "E")
-            {
-                Environment.Exit(0);
-            }
-            return;
-            if (MenuHelper.ReadBackOrExit() == "B")
-            {
-                ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                return;
-            }
-        }
 
        
         public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
