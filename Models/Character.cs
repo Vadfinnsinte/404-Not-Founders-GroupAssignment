@@ -49,7 +49,7 @@ namespace _404_not_founders.Models
         public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
             // Use the actual logged-in user from MenuHelper when available
-            User currentUser = menuHelper?.GetCurrentUser() ?? userService.Users.FirstOrDefault();
+            User currentUser = userService.Users.FirstOrDefault();
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
@@ -76,7 +76,7 @@ namespace _404_not_founders.Models
                     bool loggedIn = true;
                     bool running = true;
                     string username = currentUser?.Username;
-                    menuHelper.ShowLoggedInMenu(username, ref loggedIn, ref username, ref running);
+                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);
                     if (currentUser != null) currentUser.Username = username;
                     break;
             }
