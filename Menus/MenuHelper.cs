@@ -10,7 +10,7 @@ namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
-        Character character = new Character();
+  
         public const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
         private User? _currentUser;
@@ -405,7 +405,8 @@ namespace _404_not_founders.Menus
 
             AnsiConsole.Clear();
             return selected;
-
+            Info("Projektmeny");
+            DelayAndClear();
         }
 
 

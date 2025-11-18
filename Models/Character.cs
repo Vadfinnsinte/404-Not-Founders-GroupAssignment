@@ -53,13 +53,12 @@ namespace _404_not_founders.Models
             UserService userService = new UserService();
             ProjectService projectService = new ProjectService(userService);
             MenuHelper menuHelper = new MenuHelper(userService, projectService);
+            User currentUser = userService.Users.FirstOrDefault(); 
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
-               
                 case "Add Character":
-
-                    Add();
+                    Add(currentUser, projectService, userService);
                     ChracterMenu2();
                     break;
                 case "Show Character":
@@ -76,16 +75,17 @@ namespace _404_not_founders.Models
                     break;
                 case "Back to Main Menu":
                     bool loggedIn = true;
-                    string currentUser = Names; 
                     bool running = true;
-                    menuHelper.ShowLoggedInMenu(currentUser, ref loggedIn, ref currentUser, ref running);
+                    string username = currentUser.Username;
+                    menuHelper.ShowLoggedInMenu(username, ref loggedIn, ref username, ref running);
+                    currentUser.Username = username;
                     break;
             }
         }
 
 
 
-        public void Add()
+        public void Add(User currentUser, ProjectService projectService, UserService userService  )
         {
             string name = "", race = "", description = "", gender = "", @class = "", otherInfo = "";
             int age = 0, level = 0;
