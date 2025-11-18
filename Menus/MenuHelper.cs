@@ -546,8 +546,40 @@ namespace _404_not_founders.Menus
                         Console.WriteLine("Coming soon");
                         break;
                     case "Remove World":
-                        Console.WriteLine("Coming soon");
+                        // Check if there are any worlds to remove
+                        if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
+                        {
+                            AnsiConsole.MarkupLine("[grey]No worlds to remove.[/]");
+                            DelayAndClear();
+                            break;
+                        }
+
+                        // Create a list of world names for selection
+                        var worldChoices = currentProject.Worlds.Select(w => w.Name).ToList();
+
+                        // Add a "Back to Menu" option
+                        worldChoices.Add("Back to Menu");
+
+                        // Show the selection prompt
+                        var selectedWorld = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("[#FFA500]Choose World to Remove[/]")
+                                .HighlightStyle(new Style(Color.Orange1))
+                                .AddChoices(worldChoices));
+
+                        // If the user selected "Back to Menu", go back to the previous menu
+                        if (selectedWorld == "Back to Menu")
+                        {
+                            break;
+                        }
+
+                        // Find the world object based on the selected name
+                        var worldToDelete = currentProject.Worlds.First(w => w.Name == selectedWorld);
+
+                        // Delete the selected world
+                        worldToDelete.DeleteWorld(currentProject, _userService);
                         break;
+
                     case "Back":
                         ProjectEditMenu(currentProject);
                         break;
