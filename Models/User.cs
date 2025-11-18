@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
 
 namespace _404_not_founders.Models
 {
@@ -8,7 +9,7 @@ namespace _404_not_founders.Models
         public string Username { get; set; }
         public string Password { get; set; }
         public DateTime CreationDate { get; set; }
-        public List<Project> Projects { get; set; }
+        public List<Project> Projects { get; set; } = new List<Project>();
         public Guid? LastSelectedProjectId { get; set; }
 
         public void Add()

@@ -3,7 +3,8 @@ using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using Spectre.Console;
 using _404_not_founders.UI;
-
+using System.Collections.Generic;
+using System.Linq;
 
 namespace _404_not_founders.Models
 {
@@ -29,65 +30,96 @@ namespace _404_not_founders.Models
                     .UseConverter(choice => $"[white]{choice}[/]")
             );
 
-        public void menh()
+        public void menh(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
-
             MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
             if (MenuHelper.ReadBackOrExit() == "E")
             {
                 Environment.Exit(0);
-
             }
-                return;
+            return;
             if (MenuHelper.ReadBackOrExit() == "B")
             {
-                ChracterMenu2();
+                ChracterMenu2(userService, projectService, menuHelper, currentProject);
                 return;
             }
         }
 
-
-
-        public void ChracterMenu2()
+        // NOTE: added a Project parameter so the menu can operate on the selected project's characters.
+        public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
-            UserService userService = new UserService();
-            ProjectService projectService = new ProjectService(userService);
-            MenuHelper menuHelper = new MenuHelper(userService, projectService);
-            User currentUser = userService.Users.FirstOrDefault(); 
+            // Use the actual logged-in user from MenuHelper when available
+            User currentUser = menuHelper?.GetCurrentUser() ?? userService.Users.FirstOrDefault();
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
                 case "Add Character":
-                    Add(currentUser, projectService, userService);
-                    ChracterMenu2();
+                    // existing Add still works (it finds project via LastSelectedProjectId or first project),
+                    // but when entering from ProjectEditMenu we already have currentProject.
+                    Add(currentUser, projectService, userService, menuHelper);
+                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
                 case "Show Character":
-                    Show();
-                    ChracterMenu2();
+                    // Show characters from the actual project
+                    ShowCharacters(currentProject);
+                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
                 case "Change Character":
                     Change();
-                    ChracterMenu2();
+                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
                 case "Delete Character":
                     Delete();
-                    ChracterMenu2();
+                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
                 case "Back to Main Menu":
                     bool loggedIn = true;
                     bool running = true;
-                    string username = currentUser.Username;
+                    string username = currentUser?.Username;
                     menuHelper.ShowLoggedInMenu(username, ref loggedIn, ref username, ref running);
-                    currentUser.Username = username;
+                    if (currentUser != null) currentUser.Username = username;
                     break;
             }
         }
 
-
-
-        public void Add(User currentUser, ProjectService projectService, UserService userService  )
+        // New helper: show and select characters from a specific project
+        public void ShowCharacters(Project project)
         {
-            string name = "", race = "", description = "", gender = "", @class = "", otherInfo = "";
+            if (project == null)
+            {
+                AnsiConsole.MarkupLine("[red]No project provided.[/]");
+                MenuHelper.DelayAndClear();
+                return;
+            }
+
+            if (project.Characters == null || project.Characters.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
+                MenuHelper.DelayAndClear();
+                return;
+            }
+
+            var selected = AnsiConsole.Prompt(
+                new SelectionPrompt<Character>()
+                    .Title($"[#{MainTitleColor}]Select character to show[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .PageSize(10)
+                    .AddChoices(project.Characters)
+                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Names) ? "(unnamed)" : c.Names)
+            );
+
+            Console.Clear();
+            ShowInfoCard.ShowObject(selected);
+            Console.WriteLine();
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey(true);
+            MenuHelper.DelayAndClear();
+        }
+
+        public void Add(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper  )
+        {
+            // existing Add implementation unchanged
+            string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
             int age = 0, level = 0;
             int step = 0; // 0 = name, 1 = race, 2 = description, 3 = gender, 4 = age, 5 = level, 6 = class, 7 = otherInfo, 8 = confirm
 
@@ -104,7 +136,7 @@ namespace _404_not_founders.Models
                 if (step >= 4) AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{gender}[/]");
                 if (step >= 5) AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{age}[/]");
                 if (step >= 6) AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{level}[/]");
-                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{@class}[/]");
+                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{characterClass}[/]");
                 if (step >= 8) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{otherInfo}[/]");
 
                 string input;
@@ -168,27 +200,67 @@ namespace _404_not_founders.Models
                         break;
                     case 8:
                         // Confirm
+                        Project project = null;
                         var confirm = ChracterMenu1("Confirm character creation", "Ja", "Nej", "Avsluta");
                         if (confirm == "Avsluta") Environment.Exit(0);
                         if (confirm == "Nej") { step = 0; continue; }
                         if (confirm == "Ja")
                         {
+                            // Find the target project (last selected or the first project)
+                            if (currentUser != null)
+                            {
+                                // Try to use last selected project id if available and Projects exists
+                                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
+                                {
+                                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
+                                }
+
+                                // Fallback to first project if none found
+                                if (project == null && currentUser.Projects != null)
+                                {
+                                    project = currentUser.Projects.FirstOrDefault();
+                                }
+                            }
+
+                            if (project == null)
+                            {
+                                Console.WriteLine("No project found. Create or select a project before adding characters.");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey(true);
+                                return;
+                            }
+
                             // assign to properties and finish
-                            Names = name;
-                            Race = race;
-                            Description = description;
-                            Gender = gender;
-                            Age = age;
-                            Level = level;
-                            Class = @class;
-                            OtherInfo = otherInfo;
+                            var newCharacter = new Character
+                            {
+                                Names = name,
+                                Race = race,
+                                Description = description,
+                                Gender = gender,
+                                Age = age,
+                                Level = level,
+                                Class = characterClass,
+                                OtherInfo = otherInfo,
+                            };
+
+                            try
+                            {
+                                // Use Project.AddCharacter to centrally handle duplicates and saving
+                                project.AddCharacter(newCharacter, userService);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                Console.WriteLine("Press any key to try again...");
+                                Console.ReadKey(true);
+                                step = 0;
+                                continue;
+                            }
 
                             Console.WriteLine();
-                            Console.WriteLine($"Character '{Names}' created.");
+                            Console.WriteLine($"Character '{name}' created.");
                             Console.WriteLine("Press any key to continue...");
                             MenuHelper.DelayAndClear();
-
-
 
                             return;
                         }
@@ -203,7 +275,7 @@ namespace _404_not_founders.Models
                 if (input == "E")
                 {
                     Console.Clear();
-                    ChracterMenu2();
+                    ChracterMenu2(userService, projectService, menuHelper, null);
                 }
                 
                 if (input == "B")
@@ -219,7 +291,7 @@ namespace _404_not_founders.Models
                     case 1: race = input?.Trim() ?? ""; break;
                     case 2: description = input?.Trim() ?? ""; break;
                     case 3: gender = input?.Trim() ?? ""; break;
-                    case 6: @class = input?.Trim() ?? ""; break;
+                    case 6: characterClass = input?.Trim() ?? ""; break;
                     case 7: otherInfo = input?.Trim() ?? ""; break;
                 }
 
@@ -239,5 +311,7 @@ namespace _404_not_founders.Models
         {
             Console.WriteLine("Coming soon");
         }
+
+     
     }
 };

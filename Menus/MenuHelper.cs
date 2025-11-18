@@ -16,27 +16,21 @@ namespace _404_not_founders.Menus
         private User? _currentUser;
         private readonly ProjectService _projectService;
        
-
-
-
-
         public MenuHelper(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
-
-
         }
+
         public void SetCurrentUser(User user) => _currentUser = user;
+        public User? GetCurrentUser() => _currentUser;
+
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
         {
             bool running = true, loggedIn = false;
             string currentUser = null;
             var users = _userService.Users;
-
-
-
 
             // Kör appens huvudflöde tills användaren avslutar
             while (running)
@@ -74,9 +68,6 @@ namespace _404_not_founders.Menus
                 return "B";
             return input;
         }
-
-
-
 
         /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
         public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
@@ -410,15 +401,16 @@ namespace _404_not_founders.Menus
         }
 
 
-        public static void ProjectEditMenu(Project project)
+        public void ProjectEditMenu(Project project)
         {
+            Character character = new Character();
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
 
             switch (choises)
             {
                 case "Edit/Add Charachters":
-                    Console.WriteLine("Coming soon");
+                    character.ChracterMenu2(_userService, _projectService, this, project);
                     break;
                 case "Edit/Add worlds":
                     Console.WriteLine("Coming soon");
