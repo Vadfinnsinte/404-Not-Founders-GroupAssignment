@@ -373,9 +373,15 @@ namespace _404_not_founders.Menus
                     case "Add Storyline":
                         AddStorylineToProject(project);
                         break;
+                    case "Show Storylines":
+                        Console.WriteLine("Coming soon");
+                        break;
 
                     case "Edit Storyline":
                         EditStoryline(project);
+                        break;
+                    case "Remove Storyline":
+                        Console.WriteLine("Coming soon");
                         break;
 
                     case "Back":
@@ -387,15 +393,49 @@ namespace _404_not_founders.Menus
         private void AddStorylineToProject(Project project)
         {
             Console.Clear();
-            Info("Add new storyline");
+            Info("Create new storyline");
+
 
             var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
-            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (Short description):[/]");
+            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (short description):[/]");
             var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
             var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
-            var story = AnsiConsole.Ask<string>("[#FFA500]Story:[/]");
-            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Ideanotes:[/]");
-            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other info:[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Story content:[/]");
+            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idea notes:[/]");
+            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
+
+
+            Console.WriteLine();
+            Info("Storyline summary:");
+            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
+            AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {synopsis}");
+            AnsiConsole.MarkupLine($"[grey]Theme:[/] {theme}");
+            AnsiConsole.MarkupLine($"[grey]Genre:[/] {genre}");
+            AnsiConsole.MarkupLine($"[grey]Story:[/] {story}");
+            AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {ideaNotes}");
+            AnsiConsole.MarkupLine($"[grey]Other info:[/] {otherInfo}");
+
+            Console.WriteLine();
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[#FFA500]Are you happy with this storyline?[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Yes", "No (Start over)", "Exit"));
+
+            if (confirm == "Exit")
+            {
+
+                DelayAndClear();
+                return;
+            }
+
+            if (confirm == "No (Start over)")
+            {
+
+                AddStorylineToProject(project);
+                return;
+            }
+
 
             project.Storylines ??= new List<Storyline>();
 
@@ -404,7 +444,7 @@ namespace _404_not_founders.Menus
                 Title = title,
                 Synopsis = synopsis,
                 Theme = theme,
-                Genre = genre,             
+                Genre = genre,
                 Story = story,
                 IdeaNotes = ideaNotes,
                 OtherInfo = otherInfo,
@@ -420,36 +460,43 @@ namespace _404_not_founders.Menus
         }
         private void EditStoryline(Project project)
         {
-            var s = SelectStoryline(project, "Choose storyline to edit");
-            if (s == null) return;
+            var original = SelectStoryline(project, "Choose storyline to edit");
+            if (original == null) return;
+
+
+            var temp = new Storyline
+            {
+                Title = original.Title,
+                Synopsis = original.Synopsis,
+                Theme = original.Theme,
+                Genre = original.Genre,
+                Story = original.Story,
+                IdeaNotes = original.IdeaNotes,
+                OtherInfo = original.OtherInfo,
+                orderInProject = original.orderInProject,
+                dateOfLastEdit = original.dateOfLastEdit
+            };
 
             while (true)
             {
                 Console.Clear();
-                Info($"Edit storyline: [#FFA500]{s.Title}[/]");
+                Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("What do you want to edit?")
+                        .Title("What do you want to change?")
+                        .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices(
                             "Title",
                             "Synopsis",
                             "Theme",
                             "Genre",
                             "Story",
-                            "Ideanotes",
+                            "Idea notes",
                             "Other info",
                             "Done")
                         .HighlightStyle(Color.Orange1));
 
-                if (choice == "Done")
-                {
-                    s.dateOfLastEdit = DateTime.Now;
-                    _userService.SaveUserService();
-                    Info("Storyline uppdated!");
-                    DelayAndClear();
-                    return;
-                }
 
                 string PromptNonEmpty(string prompt)
                 {
@@ -459,32 +506,92 @@ namespace _404_not_founders.Menus
                         if (!string.IsNullOrWhiteSpace(value))
                             return value;
 
-                        AnsiConsole.MarkupLine("[red]Value must not be empty.[/]");
+                        AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
                     }
                 }
+
+                if (choice == "Done")
+                {
+
+                    Console.Clear();
+                    Info("Storyline summary:");
+                    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
+                    AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
+                    AnsiConsole.MarkupLine($"[grey]Genre:[/] {temp.Genre}");
+                    AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
+                    AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
+                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+
+                    Console.WriteLine();
+                    var confirm = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[#FFA500]Are you happy with this storyline?[/]")
+                            .HighlightStyle(new Style(Color.Orange1))
+                            .AddChoices("Yes", "No (Start over)", "Exit"));
+
+                    if (confirm == "Exit")
+                    {
+
+                        DelayAndClear();
+                        return;
+                    }
+
+                    if (confirm == "No (Start over)")
+                    {
+
+                        temp.Title = original.Title;
+                        temp.Synopsis = original.Synopsis;
+                        temp.Theme = original.Theme;
+                        temp.Genre = original.Genre;
+                        temp.Story = original.Story;
+                        temp.IdeaNotes = original.IdeaNotes;
+                        temp.OtherInfo = original.OtherInfo;
+                        continue;
+                    }
+
+                    if (confirm == "Yes")
+                    {
+
+                        original.Title = temp.Title;
+                        original.Synopsis = temp.Synopsis;
+                        original.Theme = temp.Theme;
+                        original.Genre = temp.Genre;
+                        original.Story = temp.Story;
+                        original.IdeaNotes = temp.IdeaNotes;
+                        original.OtherInfo = temp.OtherInfo;
+                        original.dateOfLastEdit = DateTime.Now;
+
+                        _userService.SaveUserService();
+                        Info("Storyline updated!");
+                        DelayAndClear();
+                        return;
+                    }
+                }
+
 
                 switch (choice)
                 {
                     case "Title":
-                        s.Title = PromptNonEmpty("[#FFA500]New title:[/]");
+                        temp.Title = PromptNonEmpty("[#FFA500]New title:[/]");
                         break;
                     case "Synopsis":
-                        s.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
+                        temp.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
                         break;
                     case "Theme":
-                        s.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
+                        temp.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
                         break;
                     case "Genre":
-                        s.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
+                        temp.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
                         break;
                     case "Story":
-                        s.Story = PromptNonEmpty("[#FFA500]New story:[/]");
+                        temp.Story = PromptNonEmpty("[#FFA500]New story content:[/]");
                         break;
-                    case "Ideanotes":
-                        s.IdeaNotes = PromptNonEmpty("[#FFA500]New ideanotes:[/]");
+                    case "Idea notes":
+                        temp.IdeaNotes = PromptNonEmpty("[#FFA500]New idea notes:[/]");
                         break;
                     case "Other info":
-                        s.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
+                        temp.OtherInfo = PromptNonEmpty("[#FFA500]New other information:[/]");
                         break;
                 }
             }
@@ -504,10 +611,14 @@ namespace _404_not_founders.Menus
 
             return AnsiConsole.Prompt(
                 new SelectionPrompt<Storyline>()
-                    .Title($"[bold]{title}[/]")
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(sorted)
                     .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
         }
+
+
+
 
         public static void ShowLastProjectMenu()
         {
