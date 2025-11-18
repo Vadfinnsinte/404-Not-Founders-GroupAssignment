@@ -173,7 +173,7 @@ namespace _404_not_founders.Menus
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-                    return;
+                    
                 }
 
                 Console.Clear();
@@ -190,14 +190,15 @@ namespace _404_not_founders.Menus
                 {
                     case "Avsluta":
                         running = false;
-                        return;
+                        break;
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        return;
+                        RunApp();
+                        break;
                     case "Lägg till projekt":
                         Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                         var newProject = new Project();
@@ -305,9 +306,11 @@ namespace _404_not_founders.Menus
 
         public void ProjectEditMenu(Project project)
         {
+            bool running = true, loggedIn = true;
             Info("Projekt");
             string choises = ProjectEditVisuals.ShowEditMenu(project);
-
+            string user;
+            user = _currentUser.Username; 
             switch (choises)
             {
                 case "Edit/Add Charachters":
@@ -334,7 +337,8 @@ namespace _404_not_founders.Menus
                     break;
                 case "Back to main menu":
                     Console.Clear();
-                    return;
+                    ShowLoggedInMenu( ref loggedIn, ref user, ref running);
+                    break;
                 default:
                     Console.WriteLine("Somthing went wrong..going back to menu");
                     return;
