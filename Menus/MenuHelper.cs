@@ -202,6 +202,8 @@ namespace _404_not_founders.Menus
                         Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
+                        DelayAndClear();
+                        ProjectEditMenu(addedProject);
                         break;
                     case "Visa projekt":
                         ShowProjectMenu();
@@ -322,7 +324,7 @@ namespace _404_not_founders.Menus
                     Console.WriteLine("Coming soon");
                     DelayAndClear();
                     break;
-                case "Back to main manu":
+                case "Back to main menu":
                     Console.Clear();
                     return;
                 default:
