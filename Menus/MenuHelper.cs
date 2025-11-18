@@ -373,9 +373,15 @@ namespace _404_not_founders.Menus
                     case "Add Storyline":
                         AddStorylineToProject(project);
                         break;
+                    case "Show Storylines":
+                        Console.WriteLine("Coming soon");
+                        break;
 
                     case "Edit Storyline":
                         EditStoryline(project);
+                        break;
+                    case "Remove Storyline":
+                        Console.WriteLine("Coming soon");
                         break;
 
                     case "Back":
