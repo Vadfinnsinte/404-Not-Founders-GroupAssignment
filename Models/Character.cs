@@ -160,7 +160,7 @@ namespace _404_not_founders.Models
                     case 8:
                         // Bekräftelsesteg: ja/nej/avsluta
                         Project project = null;
-                        var confirm = ChracterMenu1("Confirm character creation", "Ja", "Nej");
+                        var confirm = ChracterMenu1("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }  // Börjar om från början
                         if (confirm == "Yes")
                         {
