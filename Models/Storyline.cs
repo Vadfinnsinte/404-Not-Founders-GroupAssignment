@@ -1,6 +1,8 @@
 ﻿
 
+using _404_not_founders.Services;
 using _404_not_founders.UI;
+using Spectre.Console;
 
 namespace _404_not_founders.Models
 {
@@ -32,9 +34,41 @@ namespace _404_not_founders.Models
         {
             Console.WriteLine("Coming soon");
         }
-        public void Delete()
+        public void DeleteStoryline(Project project, UserService userService)
         {
-            Console.WriteLine("Coming soon");
+            Console.Clear();
+
+            // Ask for confirmation
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"Are you sure you want to delete '[orange1]{this.Title}[/]'?")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Yes", "No"));
+
+            if (confirm == "Yes")
+            {
+                // Remove the world from the project's worlds list
+                if (project.Storylines.Contains(this))
+                {
+                    project.Storylines.Remove(this);
+
+                    // Save changes
+                    userService.SaveUserService();
+
+                    AnsiConsole.MarkupLine($"The storyline '[orange1]{this.Title}[/]' has been deleted!");
+                    Thread.Sleep(1200);
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[grey]Error: Storyline not found.[/]");
+                    Thread.Sleep(1200);
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
+                Thread.Sleep(1200);
+            }
         }
     }
 }
