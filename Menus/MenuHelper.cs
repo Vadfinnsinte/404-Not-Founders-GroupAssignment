@@ -388,7 +388,31 @@ namespace _404_not_founders.Menus
                         EditStoryline(project);
                         break;
                     case "Remove Storyline":
-                        Console.WriteLine("Coming soon");
+                        if (project.Storylines == null || project.Storylines.Count == 0)
+                        {
+                            AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
+                            DelayAndClear();
+                            break;
+                        }
+
+                        var storylineChoices = project.Storylines.Select(w => w.Title).ToList();
+
+                        storylineChoices.Add("Back to Menu");
+
+                        var selectedStoryline = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("[#FFA500]Choose storyline to Remove[/]")
+                                .HighlightStyle(new Style(Color.Orange1))
+                                .AddChoices(storylineChoices));
+
+                        if (selectedStoryline == "Back to Menu")
+                        {
+                            break;
+                        }
+
+                        var storylineToDelete = project.Storylines.First(w => w.Title == selectedStoryline);
+
+                        storylineToDelete.DeleteStoryline(project, _userService);
                         break;
 
                     case "Back":
