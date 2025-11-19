@@ -15,13 +15,13 @@ namespace _404_not_founders.Menus
         private readonly UserService _userService;
         private User? _currentUser;
         private readonly ProjectService _projectService;
-       
+
         public MenuHelper(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
         }
-        
+
         public void SetCurrentUser(User user) => _currentUser = user;
 
         // Add this getter so other classes can read the currently logged-in user
@@ -187,7 +187,7 @@ namespace _404_not_founders.Menus
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-                    
+
                 }
 
                 Console.Clear();
@@ -323,11 +323,8 @@ namespace _404_not_founders.Menus
         {
             Character character = new Character();
             bool running = true, loggedIn = true;
-            Info("Projekt");
-            string choises = ProjectEditVisuals.ShowEditMenu(project);
-            string user;
-            user = _currentUser.Username; 
-            switch (choises)
+            bool runEdit = true;
+            while (runEdit)
             {
                 case "Edit/Add Charachters":
                     character.ChracterMenu2(_userService, _projectService, this, project);
@@ -360,7 +357,7 @@ namespace _404_not_founders.Menus
                     return;
             }
 
-            DelayAndClear();
+            //DelayAndClear();
         }
         public static void UserMenu()
         {
@@ -381,7 +378,7 @@ namespace _404_not_founders.Menus
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
-                        .AddChoices("Add Storyline", "Edit Storyline", "Back")
+                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
                 switch (choice)
@@ -389,9 +386,17 @@ namespace _404_not_founders.Menus
                     case "Add Storyline":
                         AddStorylineToProject(project);
                         break;
+                    case "Show Storylines":
+                        project.ShowAllStorylines();
+                        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+                        AnsiClearHelper.WaitForKeyAndClear();
+                        break;
 
                     case "Edit Storyline":
                         EditStoryline(project);
+                        break;
+                    case "Remove Storyline":
+                        Console.WriteLine("Coming soon");
                         break;
 
                     case "Back":
@@ -403,15 +408,49 @@ namespace _404_not_founders.Menus
         private void AddStorylineToProject(Project project)
         {
             Console.Clear();
-            Info("Add new storyline");
+            Info("Create new storyline");
+
 
             var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
-            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (Short description):[/]");
+            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (short description):[/]");
             var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
             var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
-            var story = AnsiConsole.Ask<string>("[#FFA500]Story:[/]");
-            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Ideanotes:[/]");
-            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other info:[/]");
+            var story = AnsiConsole.Ask<string>("[#FFA500]Story content:[/]");
+            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idea notes:[/]");
+            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
+
+
+            Console.WriteLine();
+            Info("Storyline summary:");
+            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
+            AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {synopsis}");
+            AnsiConsole.MarkupLine($"[grey]Theme:[/] {theme}");
+            AnsiConsole.MarkupLine($"[grey]Genre:[/] {genre}");
+            AnsiConsole.MarkupLine($"[grey]Story:[/] {story}");
+            AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {ideaNotes}");
+            AnsiConsole.MarkupLine($"[grey]Other info:[/] {otherInfo}");
+
+            Console.WriteLine();
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[#FFA500]Are you happy with this storyline?[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Yes", "No (Start over)", "Exit"));
+
+            if (confirm == "Exit")
+            {
+
+                DelayAndClear();
+                return;
+            }
+
+            if (confirm == "No (Start over)")
+            {
+
+                AddStorylineToProject(project);
+                return;
+            }
+
 
             project.Storylines ??= new List<Storyline>();
 
@@ -420,7 +459,7 @@ namespace _404_not_founders.Menus
                 Title = title,
                 Synopsis = synopsis,
                 Theme = theme,
-                Genre = genre,             
+                Genre = genre,
                 Story = story,
                 IdeaNotes = ideaNotes,
                 OtherInfo = otherInfo,
@@ -436,36 +475,43 @@ namespace _404_not_founders.Menus
         }
         private void EditStoryline(Project project)
         {
-            var s = SelectStoryline(project, "Choose storyline to edit");
-            if (s == null) return;
+            var original = SelectStoryline(project, "Choose storyline to edit");
+            if (original == null) return;
+
+
+            var temp = new Storyline
+            {
+                Title = original.Title,
+                Synopsis = original.Synopsis,
+                Theme = original.Theme,
+                Genre = original.Genre,
+                Story = original.Story,
+                IdeaNotes = original.IdeaNotes,
+                OtherInfo = original.OtherInfo,
+                orderInProject = original.orderInProject,
+                dateOfLastEdit = original.dateOfLastEdit
+            };
 
             while (true)
             {
                 Console.Clear();
-                Info($"Edit storyline: [#FFA500]{s.Title}[/]");
+                Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("What do you want to edit?")
+                        .Title("What do you want to change?")
+                        .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices(
                             "Title",
                             "Synopsis",
                             "Theme",
                             "Genre",
                             "Story",
-                            "Ideanotes",
+                            "Idea notes",
                             "Other info",
                             "Done")
                         .HighlightStyle(Color.Orange1));
 
-                if (choice == "Done")
-                {
-                    s.dateOfLastEdit = DateTime.Now;
-                    _userService.SaveUserService();
-                    Info("Storyline uppdated!");
-                    DelayAndClear();
-                    return;
-                }
 
                 string PromptNonEmpty(string prompt)
                 {
@@ -475,32 +521,92 @@ namespace _404_not_founders.Menus
                         if (!string.IsNullOrWhiteSpace(value))
                             return value;
 
-                        AnsiConsole.MarkupLine("[red]Value must not be empty.[/]");
+                        AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
                     }
                 }
+
+                if (choice == "Done")
+                {
+
+                    Console.Clear();
+                    Info("Storyline summary:");
+                    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
+                    AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
+                    AnsiConsole.MarkupLine($"[grey]Genre:[/] {temp.Genre}");
+                    AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
+                    AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
+                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+
+                    Console.WriteLine();
+                    var confirm = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[#FFA500]Are you happy with this storyline?[/]")
+                            .HighlightStyle(new Style(Color.Orange1))
+                            .AddChoices("Yes", "No (Start over)", "Exit"));
+
+                    if (confirm == "Exit")
+                    {
+
+                        DelayAndClear();
+                        return;
+                    }
+
+                    if (confirm == "No (Start over)")
+                    {
+
+                        temp.Title = original.Title;
+                        temp.Synopsis = original.Synopsis;
+                        temp.Theme = original.Theme;
+                        temp.Genre = original.Genre;
+                        temp.Story = original.Story;
+                        temp.IdeaNotes = original.IdeaNotes;
+                        temp.OtherInfo = original.OtherInfo;
+                        continue;
+                    }
+
+                    if (confirm == "Yes")
+                    {
+
+                        original.Title = temp.Title;
+                        original.Synopsis = temp.Synopsis;
+                        original.Theme = temp.Theme;
+                        original.Genre = temp.Genre;
+                        original.Story = temp.Story;
+                        original.IdeaNotes = temp.IdeaNotes;
+                        original.OtherInfo = temp.OtherInfo;
+                        original.dateOfLastEdit = DateTime.Now;
+
+                        _userService.SaveUserService();
+                        Info("Storyline updated!");
+                        DelayAndClear();
+                        return;
+                    }
+                }
+
 
                 switch (choice)
                 {
                     case "Title":
-                        s.Title = PromptNonEmpty("[#FFA500]New title:[/]");
+                        temp.Title = PromptNonEmpty("[#FFA500]New title:[/]");
                         break;
                     case "Synopsis":
-                        s.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
+                        temp.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
                         break;
                     case "Theme":
-                        s.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
+                        temp.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
                         break;
                     case "Genre":
-                        s.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
+                        temp.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
                         break;
                     case "Story":
-                        s.Story = PromptNonEmpty("[#FFA500]New story:[/]");
+                        temp.Story = PromptNonEmpty("[#FFA500]New story content:[/]");
                         break;
-                    case "Ideanotes":
-                        s.IdeaNotes = PromptNonEmpty("[#FFA500]New ideanotes:[/]");
+                    case "Idea notes":
+                        temp.IdeaNotes = PromptNonEmpty("[#FFA500]New idea notes:[/]");
                         break;
                     case "Other info":
-                        s.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
+                        temp.OtherInfo = PromptNonEmpty("[#FFA500]New other information:[/]");
                         break;
                 }
             }
@@ -520,10 +626,32 @@ namespace _404_not_founders.Menus
 
             return AnsiConsole.Prompt(
                 new SelectionPrompt<Storyline>()
-                    .Title($"[bold]{title}[/]")
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(sorted)
                     .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
         }
+        private World? SelectWorld(Project project, string title)
+        {
+            if (project.Worlds == null || project.Worlds.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No worlds yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            var sorted = project.Worlds.ToList();
+
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<World>()
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(sorted)
+                    .UseConverter(w => w.Name));
+        }
+
+
+
 
         public static void ShowLastProjectMenu()
         {
@@ -541,11 +669,11 @@ namespace _404_not_founders.Menus
             {
                 Console.Clear();
                 Info("World Menu");
-                var choice = Menu("", 
-                    "Add World", 
-                    "Show Worlds", 
-                    "Edit World", 
-                    "Remove World", 
+                var choice = Menu("",
+                    "Add World",
+                    "Show Worlds",
+                    "Edit World",
+                    "Remove World",
                     "Back");
 
                 switch (choice)
@@ -556,14 +684,56 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Show Worlds":
-                        Console.WriteLine("Coming soon");
+                        currentProject.ShowAllWorlds();
+                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
                     case "Edit World":
-                        Console.WriteLine("Coming soon");
+                        if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
+                        {
+                            AnsiConsole.MarkupLine("[grey]No worlds in this project yet.[/]");
+                            Console.ReadKey(true);
+                            break;
+                        }
+
+                        var worldToEdit = SelectWorld(currentProject, "Choose world to edit");
+                        if (worldToEdit != null)
+                            worldToEdit.EditWorld(_userService);
                         break;
                     case "Remove World":
-                        Console.WriteLine("Coming soon");
+                        // Check if there are any worlds to remove
+                        if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
+                        {
+                            AnsiConsole.MarkupLine("[grey]No worlds to remove.[/]");
+                            DelayAndClear();
+                            break;
+                        }
+
+                        // Create a list of world names for selection
+                        var worldChoices = currentProject.Worlds.Select(w => w.Name).ToList();
+
+                        // Add a "Back to Menu" option
+                        worldChoices.Add("Back to Menu");
+
+                        // Show the selection prompt
+                        var selectedWorld = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("[#FFA500]Choose World to Remove[/]")
+                                .HighlightStyle(new Style(Color.Orange1))
+                                .AddChoices(worldChoices));
+
+                        // If the user selected "Back to Menu", go back to the previous menu
+                        if (selectedWorld == "Back to Menu")
+                        {
+                            break;
+                        }
+
+                        // Find the world object based on the selected name
+                        var worldToDelete = currentProject.Worlds.First(w => w.Name == selectedWorld);
+
+                        // Delete the selected world
+                        worldToDelete.DeleteWorld(currentProject, _userService);
                         break;
+
                     case "Back":
                         ProjectEditMenu(currentProject);
                         break;
