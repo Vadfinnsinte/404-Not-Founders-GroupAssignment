@@ -118,9 +118,41 @@ namespace _404_not_founders.Models
         {
             Console.WriteLine("Coming soon");
         }
-        public void Delete()
+        public void DeleteWorld(Project project, UserService userService)
         {
-            Console.WriteLine("Coming soon");
+            Console.Clear();
+
+            // Ask for confirmation
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"Are you sure you want to delete '[orange1]{this.Name}[/]'?")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Yes", "No"));
+
+            if (confirm == "Yes")
+            {
+                // Remove the world from the project's worlds list
+                if (project.Worlds.Contains(this))
+                {
+                    project.Worlds.Remove(this);
+
+                    // Save changes
+                    userService.SaveUserService();
+
+                    AnsiConsole.MarkupLine($"World '[orange1]{this.Name}[/]' has been deleted!");
+                    Thread.Sleep(1200);
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[grey]Error: World not found.[/]");
+                    Thread.Sleep(1200);
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
+                Thread.Sleep(1200);
+            }
         }
     }
 }
