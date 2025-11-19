@@ -14,7 +14,7 @@ namespace _404_not_founders.Menus
         private readonly UserService _userService;
         private User? _currentUser;
         private readonly ProjectService _projectService;
-       
+
         public MenuHelper(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -22,7 +22,7 @@ namespace _404_not_founders.Menus
 
 
         }
-        
+
         public void SetCurrentUser(User user) => _currentUser = user;
 
         // ----- APPENS START/HUVUDLOOP -----
@@ -173,7 +173,7 @@ namespace _404_not_founders.Menus
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-                    
+
                 }
 
                 Console.Clear();
@@ -307,44 +307,49 @@ namespace _404_not_founders.Menus
         public void ProjectEditMenu(Project project)
         {
             bool running = true, loggedIn = true;
-            Info("Projekt");
-            string choises = ProjectEditVisuals.ShowEditMenu(project);
-            string user;
-            user = _currentUser.Username; 
-            switch (choises)
+            bool runEdit = true;
+            while (runEdit)
             {
-                case "Edit/Add Charachters":
-                    Console.WriteLine("Coming soon");
-                    break;
-                case "Edit/Add worlds":
-                    if (_currentUser != null)
-                    {
-                        WorldMenu(_currentUser, project);
-                    }
-                    else
-                    {
-                        AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
-                        DelayAndClear();
-                    }
-                    break;
-                case "Edit/Add Storylines":
-                    StorylineMenu(project);
-                    break;
-                case "Show Everything":
-                   
-                    Console.WriteLine("Coming soon");
-                    DelayAndClear();
-                    break;
-                case "Back to main menu":
-                    Console.Clear();
-                    ShowLoggedInMenu( ref loggedIn, ref user, ref running);
-                    break;
-                default:
-                    Console.WriteLine("Somthing went wrong..going back to menu");
-                    return;
+
+                Info("Projekt");
+                string choises = ProjectEditVisuals.ShowEditMenu(project);
+                string user;
+                user = _currentUser.Username;
+                switch (choises)
+                {
+                    case "Edit/Add Charachters":
+                        Console.WriteLine("Coming soon");
+                        break;
+                    case "Edit/Add worlds":
+                        if (_currentUser != null)
+                        {
+                            WorldMenu(_currentUser, project);
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
+                            DelayAndClear();
+                        }
+                        break;
+                    case "Edit/Add Storylines":
+                        StorylineMenu(project);
+                        break;
+                    case "Show Everything":
+                        Console.Clear();
+                        project.ShowAll();
+                        break;
+                    case "Back to main menu":
+                        Console.Clear();
+                        ShowLoggedInMenu(ref loggedIn, ref user, ref running);
+                        break;
+                    default:
+                        Console.WriteLine("Somthing went wrong..going back to menu");
+                        runEdit = false;
+                        break;
+                }
             }
 
-            DelayAndClear();
+            //DelayAndClear();
         }
         public static void UserMenu()
         {
@@ -365,7 +370,7 @@ namespace _404_not_founders.Menus
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
-                        .AddChoices("Add Storyline", "Edit Storyline", "Remove Storyline", "Back")
+                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
                 switch (choice)
@@ -374,7 +379,9 @@ namespace _404_not_founders.Menus
                         AddStorylineToProject(project);
                         break;
                     case "Show Storylines":
-                        Console.WriteLine("Coming soon");
+                        project.ShowAllStorylines();
+                        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
 
                     case "Edit Storyline":
@@ -678,11 +685,11 @@ namespace _404_not_founders.Menus
             {
                 Console.Clear();
                 Info("World Menu");
-                var choice = Menu("", 
-                    "Add World", 
-                    "Show Worlds", 
-                    "Edit World", 
-                    "Remove World", 
+                var choice = Menu("",
+                    "Add World",
+                    "Show Worlds",
+                    "Edit World",
+                    "Remove World",
                     "Back");
 
                 switch (choice)
@@ -693,7 +700,8 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Show Worlds":
-                        Console.WriteLine("Coming soon");
+                        currentProject.ShowAllWorlds();
+                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
                     case "Edit World":
                         if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
