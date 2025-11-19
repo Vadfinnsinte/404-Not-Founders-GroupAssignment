@@ -345,7 +345,7 @@ namespace _404_not_founders.Menus
                     default:
                         Console.WriteLine("Somthing went wrong..going back to menu");
                         runEdit = false;
-                        return;
+                        break;
                 }
             }
 
