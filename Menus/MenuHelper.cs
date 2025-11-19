@@ -324,39 +324,56 @@ namespace _404_not_founders.Menus
             Character character = new Character();
             bool running = true, loggedIn = true;
             bool runEdit = true;
+            string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
+
             while (runEdit)
             {
-                case "Edit/Add Charachters":
-                    character.ChracterMenu2(_userService, _projectService, this, project);
-                    break;
-                case "Edit/Add worlds":
-                    if (_currentUser != null)
-                    {
-                        WorldMenu(_currentUser, project);
-                    }
-                    else
-                    {
-                        AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
-                        DelayAndClear();
-                    }
-                    break;
-                case "Edit/Add Storylines":
-                    StorylineMenu(project);
-                    break;
-                case "Show Everything":
-                   
-                    Console.WriteLine("Coming soon");
-                    DelayAndClear();
-                    break;
-                case "Back to main menu":
-                    Console.Clear();
-                    ShowLoggedInMenu( ref loggedIn, ref user, ref running);
-                    break;
-                default:
-                    Console.WriteLine("Somthing went wrong..going back to menu");
-                    return;
-            }
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[#FFA500]Project Edit Menu[/]")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices(
+                            "Edit/Add Charachters",
+                            "Edit/Add worlds",
+                            "Edit/Add Storylines",
+                            "Show Everything",
+                            "Back to main menu"
+                        )
+                );
 
+                switch (choice)
+                {
+                    case "Edit/Add Charachters":
+                        character.ChracterMenu2(_userService, _projectService, this, project);
+                        break;
+                    case "Edit/Add worlds":
+                        if (_currentUser != null)
+                        {
+                            WorldMenu(_currentUser, project);
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
+                            DelayAndClear();
+                        }
+                        break;
+                    case "Edit/Add Storylines":
+                        StorylineMenu(project);
+                        break;
+                    case "Show Everything":
+                        Console.WriteLine("Coming soon");
+                        DelayAndClear();
+                        break;
+                    case "Back to main menu":
+                        Console.Clear();
+                        ShowLoggedInMenu(ref loggedIn, ref user, ref running);
+                        runEdit = false;
+                        break;
+                    default:
+                        Console.WriteLine("Somthing went wrong..going back to menu");
+                        return;
+                }
+            }
             //DelayAndClear();
         }
         public static void UserMenu()
