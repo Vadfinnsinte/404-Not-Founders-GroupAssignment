@@ -103,16 +103,64 @@ namespace _404_not_founders.Models
             }
         }
 
-
-
-        public void Show()
+        public bool EditUser(UserService userService, ref string username)
         {
-            Console.WriteLine("Coming soon");
+            while (true)
+            {
+                Console.Clear();
+                MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                MenuHelper.Info($"Redigera konto ({Username})");
+
+                var choice = MenuHelper.Menu("Vad vill du ändra?", "E-post", "Användarnamn", "Lösenord", "Tillbaka");
+                switch (choice)
+                {
+                    case "E-post":
+                        string newEmail = MenuHelper.AskInput("[#FFA500]Ny E-post:[/]");
+                        if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+                        if (!userService.Users.Exists(u => u.Email == newEmail))
+                        {
+                            Email = newEmail;
+                            userService.SaveUserService();
+                            MenuHelper.Result(true, "E-post uppdaterad.");
+                        }
+                        else
+                            MenuHelper.Result(false, "Ogiltig eller redan upptagen e-post.");
+                        MenuHelper.DelayAndClear(1200);
+                        break;
+
+                    case "Användarnamn":
+                        string newName = MenuHelper.AskInput("[#FFA500]Nytt användarnamn:[/]");
+                        if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+                        if (!userService.Users.Exists(u => u.Username == newName))
+                        {
+                            Username = newName;
+                            username = newName;
+                            userService.SaveUserService();
+                            MenuHelper.Result(true, $"Användarnamn uppdaterat till {newName}.");
+                        }
+                        else
+                            MenuHelper.Result(false, "Ogiltigt eller redan upptaget användarnamn.");
+                        MenuHelper.DelayAndClear(1200);
+                        break;
+
+                    case "Lösenord":
+                        string newPassword = MenuHelper.AskInput("[#FFA500]Nytt lösenord:[/]", true);
+                        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+                        Password = newPassword;
+                        userService.SaveUserService();
+                        MenuHelper.Result(true, "Lösenord uppdaterat.");
+                        MenuHelper.DelayAndClear(1200);
+                        break;
+
+                    case "Tillbaka":
+                        return true; // Avsluta redigering och ge feedback till anroparen om det nya användarnamnet bara om det faktiskt är ändrat
+                }
+            }
         }
-        public void Change()
-        {
-            Console.WriteLine("Coming soon");
-        }
+
         public void Delete()
         {
             Console.WriteLine("Coming soon");

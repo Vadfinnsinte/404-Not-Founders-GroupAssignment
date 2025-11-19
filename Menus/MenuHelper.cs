@@ -99,9 +99,6 @@ namespace _404_not_founders.Menus
                 if (choice == "Logga in" && LoginMenu(users, out currentUser))
                 {
                     loggedIn = true;
-                    string tempUser = currentUser; // Kopiera ref-värdet!
-                    var foundUser = users.FirstOrDefault(u => u.Username == tempUser);
-                    _currentUser = foundUser;
                     Console.Clear();
                     break;
                 }
@@ -110,13 +107,13 @@ namespace _404_not_founders.Menus
                 {
                     loggedIn = true;
                     currentUser = newUser;
-                    // Sätt rätt user-objekt!
                     _currentUser = users.FirstOrDefault(u => u.Username == newUser);
                     Console.Clear();
                     break;
                 }
             }
         }
+
 
         // ----- INLOGGNING (med stegbaserad backa och återanvändbar vy) -----
         public bool LoginMenu(List<User> users, out string loggedInUser)
@@ -169,11 +166,12 @@ namespace _404_not_founders.Menus
             {
                 if (_currentUser == null)
                 {
+                    // Ingen inloggad användare
                     Result(false, "Ingen användare är inloggad!");
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-
+                    return; 
                 }
 
                 Console.Clear();
@@ -190,15 +188,14 @@ namespace _404_not_founders.Menus
                 {
                     case "Avsluta":
                         running = false;
-                        break;
+                        return;
                     case "Logga ut":
                         Result(true, "Du loggas ut...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        RunApp();
-                        break;
+                        return;
                     case "Lägg till projekt":
                         Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
                         var newProject = new Project();
@@ -213,11 +210,31 @@ namespace _404_not_founders.Menus
                         ShowLastProjectMenu();
                         break;
                     case "Redigera konto":
-                        // Lägg till redigeringslogik här om behövs.
+                        EditUserMenu(ref currentUser);
                         break;
                 }
             }
         }
+        // ----- REDIGERA ANVÄNDARE -----
+        public void EditUserMenu(ref string currentUser)
+        {
+            if (_currentUser == null)
+            {
+                Result(false, "Ingen användare är inloggad!");
+                DelayAndClear();
+                return;
+            }
+
+            bool finished = _currentUser.EditUser(_userService, ref currentUser);
+            if (finished)
+            {
+                // Visa feedback endast om du gick via "Tillbaka"
+                Info($"Du är nu inloggad som {_currentUser.Username}.");
+                DelayAndClear();
+            }
+            // Annars – ingen feedback!
+        }
+
 
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
