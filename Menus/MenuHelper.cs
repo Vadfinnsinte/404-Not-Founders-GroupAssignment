@@ -331,9 +331,8 @@ namespace _404_not_founders.Menus
                     StorylineMenu(project);
                     break;
                 case "Show Everything":
-                    DelayAndClear();
-                    Project storyline = new Project();
-                    storyline.ShowAll(project);
+                    Console.Clear();
+                    project.ShowAll();
                     break;
                 case "Back to main menu":
                     Console.Clear();

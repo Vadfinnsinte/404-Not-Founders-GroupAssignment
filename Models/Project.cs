@@ -37,23 +37,23 @@ namespace _404_not_founders.Models
             return (newProject);
 
         }
-        public void Show(Project project)
+        public void Show()
         {
-            var worldNames = project.Worlds != null && project.Worlds.Any()
-                ? string.Join(", ", project.Worlds.Select(w => w.Name))
+            var worldNames = Worlds != null && Worlds.Any()
+                ? string.Join(", ", Worlds.Select(w => w.Name))
                 : "None";
 
-            var allTitles = project.Storylines != null && project.Storylines.Any()
-                ? string.Join(", ", project.Storylines.Select(s => s.Title))
+            var allTitles = Storylines != null && Storylines.Any()
+                ? string.Join(", ", Storylines.Select(s => s.Title))
                 : "None";
 
             var table = new Table()
                 .Border(TableBorder.Simple)
                 .BorderColor(Color.Orange1)
                 .AddColumn(new TableColumn("").RightAligned())
-                .AddColumn(new TableColumn($"[bold orange1]{Markup.Escape(project.title)}[/]").LeftAligned());
+                .AddColumn(new TableColumn($"[bold orange1]{Markup.Escape(title)}[/]").LeftAligned());
 
-            table.AddRow("Description:", Markup.Escape(project.description));
+            table.AddRow("Description:", Markup.Escape(description));
             table.AddEmptyRow();
             table.AddRow("Storylines:", Markup.Escape(allTitles));
             table.AddEmptyRow();
@@ -66,14 +66,14 @@ namespace _404_not_founders.Models
 
             AnsiConsole.Write(panel);
         }
-        public void ShowAll(Project project)
+        public void ShowAll()
         {
             AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
-            ShowSection("Project", () => Show(project));
+            ShowSection("Project", () => Show());
             ShowSection("Storylines", () =>
             {
-                if (project.Storylines != null && project.Storylines.Any())
-                    foreach (var story in project.Storylines)
+                if (Storylines != null && Storylines.Any())
+                    foreach (var story in Storylines)
                         story.Show();
                 else
                     AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
@@ -81,8 +81,8 @@ namespace _404_not_founders.Models
 
             ShowSection("Worlds", () =>
             {
-                if (project.Worlds != null && project.Worlds.Any())
-                    foreach (var world in project.Worlds)
+                if (Worlds != null && Worlds.Any())
+                    foreach (var world in Worlds)
                         world.Show();
                 else
                     AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
@@ -99,6 +99,7 @@ namespace _404_not_founders.Models
 
             AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
             Console.ReadKey(true);
+            Console.Clear();
             return;
         }
 
