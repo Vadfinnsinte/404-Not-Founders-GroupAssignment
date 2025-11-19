@@ -616,6 +616,24 @@ namespace _404_not_founders.Menus
                     .AddChoices(sorted)
                     .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
         }
+        private World? SelectWorld(Project project, string title)
+        {
+            if (project.Worlds == null || project.Worlds.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No worlds yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            var sorted = project.Worlds.ToList();
+
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<World>()
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(sorted)
+                    .UseConverter(w => w.Name));
+        }
 
 
 
@@ -654,7 +672,16 @@ namespace _404_not_founders.Menus
                         Console.WriteLine("Coming soon");
                         break;
                     case "Edit World":
-                        Console.WriteLine("Coming soon");
+                        if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
+                        {
+                            AnsiConsole.MarkupLine("[grey]No worlds in this project yet.[/]");
+                            Console.ReadKey(true);
+                            break;
+                        }
+
+                        var worldToEdit = SelectWorld(currentProject, "Choose world to edit");
+                        if (worldToEdit != null)
+                            worldToEdit.EditWorld(_userService);
                         break;
                     case "Remove World":
                         // Check if there are any worlds to remove
