@@ -30,7 +30,6 @@ namespace _404_not_founders.Models
                     .UseConverter(choice => $"[white]{choice}[/]")
             );
 
-
        
         public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
@@ -161,10 +160,9 @@ namespace _404_not_founders.Models
                     case 8:
                         // Bekräftelsesteg: ja/nej/avsluta
                         Project project = null;
-                        var confirm = ChracterMenu1("Confirm character creation", "Ja", "Nej", "Avsluta");
-                        if (confirm == "Avsluta") Environment.Exit(0); // HÄR: Exit avslutar hela programmet
-                        if (confirm == "Nej") { step = 0; continue; }  // Börjar om från början
-                        if (confirm == "Ja")
+                        var confirm = ChracterMenu1("Confirm character creation", "Ja", "Nej");
+                        if (confirm == "No") { step = 0; continue; }  // Börjar om från början
+                        if (confirm == "Yes")
                         {
                             // Hitta målet för karaktären: använder currentUser.LastSelectedProjectId eller första projektet
                             if (currentUser != null)
