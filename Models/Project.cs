@@ -99,7 +99,11 @@ namespace _404_not_founders.Models
 
             AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
             Console.ReadKey(true);
+            Console.Write("\u001b[3J");
+
+
             Console.Clear();
+            //Console.Clear();
             return;
         }
 
