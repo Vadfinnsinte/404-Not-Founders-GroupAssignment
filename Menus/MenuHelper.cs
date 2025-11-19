@@ -370,7 +370,7 @@ namespace _404_not_founders.Menus
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
-                        .AddChoices("Add Storyline", "Edit Storyline", "Back")
+                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
                 switch (choice)
@@ -379,7 +379,9 @@ namespace _404_not_founders.Menus
                         AddStorylineToProject(project);
                         break;
                     case "Show Storylines":
-                        Console.WriteLine("Coming soon");
+                        project.ShowAllStorylines();
+                        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
 
                     case "Edit Storyline":
@@ -674,7 +676,8 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Show Worlds":
-                        Console.WriteLine("Coming soon");
+                        currentProject.ShowAllWorlds();
+                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
                     case "Edit World":
                         if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)

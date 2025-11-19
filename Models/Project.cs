@@ -70,24 +70,10 @@ namespace _404_not_founders.Models
         {
             AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
             ShowSection("Project", () => Show());
-            ShowSection("Storylines", () =>
-            {
-                if (Storylines != null && Storylines.Any())
-                    foreach (var story in Storylines)
-                        story.Show();
-                else
-                    AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
-            });
 
-            ShowSection("Worlds", () =>
-            {
-                if (Worlds != null && Worlds.Any())
-                    foreach (var world in Worlds)
-                        world.Show();
-                else
-                    AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
-            });
+            ShowAllStorylines();
 
+            ShowAllWorlds();
             //ShowSection("Characters", () =>
             //{
             //    if (project.Characters != null && project.Characters.Any())
@@ -96,14 +82,10 @@ namespace _404_not_founders.Models
             //    else
             //        AnsiConsole.MarkupLine("[grey]No characters found.[/]");
             //});
-
-            AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
-            Console.ReadKey(true);
-            Console.Write("\u001b[3J");
+            AnsiClearHelper.WaitForKeyAndClear();
 
 
-            Console.Clear();
-            //Console.Clear();
+   
             return;
         }
 
@@ -111,6 +93,28 @@ namespace _404_not_founders.Models
         {
             BigHeader.Show(header);
             action();
+        }
+        public void ShowAllStorylines()
+        {
+            ShowSection("Storylines", () =>
+            {
+                if (Storylines != null && Storylines.Any())
+                    foreach (var story in Storylines)
+                        story.Show();
+                else
+                    AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
+            });
+        }
+        public void ShowAllWorlds()
+        {
+            ShowSection("Worlds", () =>
+            {
+                if (Worlds != null && Worlds.Any())
+                    foreach (var world in Worlds)
+                        world.Show();
+                else
+                    AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
+            });
         }
 
         public void Change()
