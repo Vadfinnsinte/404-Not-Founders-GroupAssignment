@@ -98,14 +98,9 @@ namespace _404_not_founders.Models
             ShowAllStorylines();
 
             ShowAllWorlds();
-            //ShowSection("Characters", () =>
-            //{
-            //    if (project.Characters != null && project.Characters.Any())
-            //        foreach (var character in project.Characters)
-            //            character.Show();
-            //    else
-            //        AnsiConsole.MarkupLine("[grey]No characters found.[/]");
-            //});
+
+            ShowAllCharacters();
+
             AnsiClearHelper.WaitForKeyAndClear();
 
 
@@ -140,7 +135,17 @@ namespace _404_not_founders.Models
                     AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
             });
         }
-
+        public void ShowAllCharacters()
+        {
+            ShowSection("Characters", () =>
+            {
+                if (Characters != null && Characters.Any())
+                    foreach (var character in Characters)
+                        character.Show();
+                else
+                    AnsiConsole.MarkupLine("[grey]No characters found.[/]");
+            });
+        }
         public void Change()
         {
             Console.WriteLine("Coming soon");

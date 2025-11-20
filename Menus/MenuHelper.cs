@@ -364,8 +364,8 @@ namespace _404_not_founders.Menus
                         StorylineMenu(project);
                         break;
                     case "Show Everything":
-                        Console.WriteLine("Coming soon");
-                        DelayAndClear();
+                        Console.Clear();
+                        project.ShowAll();
                         break;
                     case "Back to main menu":
                         Console.Clear();

@@ -55,11 +55,11 @@ namespace _404_not_founders.Models
                     Delete();
                     ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
-                case "Back to Main Menu":
+                case "Back to Main Menu": 
                     bool loggedIn = true;
                     bool running = true;
                     string username = currentUser?.Username;
-                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);
+                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);  // should go to project menu
                     if (currentUser != null) currentUser.Username = username;
                     break;
             }
@@ -294,7 +294,10 @@ namespace _404_not_founders.Models
             Console.ReadKey(true);
             MenuHelper.DelayAndClear();
         }
-
+        public void Show()
+        {
+            ShowInfoCard.ShowObject(this);
+        }
         public void Change()
         {
             Console.WriteLine("Coming soon");
