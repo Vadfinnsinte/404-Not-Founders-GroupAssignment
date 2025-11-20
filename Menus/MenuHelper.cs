@@ -5,6 +5,7 @@ using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace _404_not_founders.Menus
 {
@@ -23,6 +24,8 @@ namespace _404_not_founders.Menus
         }
 
         public void SetCurrentUser(User user) => _currentUser = user;
+
+       
 
         // Add this getter so other classes can read the currently logged-in user
         public User? CurrentUser => _currentUser;
@@ -224,7 +227,17 @@ namespace _404_not_founders.Menus
                         ShowProjectMenu();
                         break;
                     case "Senaste projekt":
-                        ShowLastProjectMenu();
+                        var username = currentUser;
+                        var user = _userService.Users
+                        .FirstOrDefault(u => u.Username == username);
+
+                        if (user != null)
+                            ShowLastProjectMenu(user);
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[red]Could not find current user.[/]");
+                            Console.ReadKey(true);
+                        }
                         break;
                     case "Redigera konto":
                         // Lägg till redigeringslogik här om behövs.
@@ -244,7 +257,7 @@ namespace _404_not_founders.Menus
                 AnsiConsole.MarkupLine("[red]Du måste vara inloggad för att se projekt.[/]");
                 Console.WriteLine(_currentUser);
             }// 
-
+          
             while (true)
             {
                 var choice = AnsiConsole.Prompt(
@@ -261,7 +274,9 @@ namespace _404_not_founders.Menus
                     if (list == null || list.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[yellow]Inga projekt ännu.[/]");
-                        continue;
+                        AnsiClearHelper.WaitForKeyAndClear();
+                        break;
+                      
                     }
 
                     var selected = SelectFromList(list, "Välj projekt");
@@ -277,7 +292,8 @@ namespace _404_not_founders.Menus
                     if (hits == null || hits.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
-                        continue;
+                        AnsiClearHelper.WaitForKeyAndClear();
+                        break;
                     }
 
                     var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
@@ -361,8 +377,8 @@ namespace _404_not_founders.Menus
                         StorylineMenu(project);
                         break;
                     case "Show Everything":
-                        Console.WriteLine("Coming soon");
-                        DelayAndClear();
+                        Console.Clear();
+                        project.ShowAll();
                         break;
                     case "Back to main menu":
                         Console.Clear();
@@ -694,11 +710,45 @@ namespace _404_not_founders.Menus
 
 
 
-        public static void ShowLastProjectMenu()
+        public void ShowLastProjectMenu(User currentUser)
         {
-            Info("Senaste projekt");
-            Console.WriteLine("Coming Soon");
-            DelayAndClear();
+            Console.Clear();
+            Info("Last selected project");
+
+            // hämta senaste valda projektet för den här användaren
+            var last = _projectService.GetLastSelected(currentUser);
+
+            if (last == null)
+            {
+                AnsiConsole.MarkupLine("[grey]You have no last selected project yet.[/]");
+                AnsiConsole.MarkupLine("[grey]Open a project from \"Show projects\" first.[/]");
+                Console.ReadKey(true);
+                return;
+            }
+
+            // Visa lite info om projektet
+            AnsiConsole.MarkupLine("");
+            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
+            AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
+            AnsiConsole.MarkupLine($"[grey]Created:[/] {last.dateOfCreation:yyyy-MM-dd}");
+            AnsiConsole.MarkupLine("");
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[#FFA500]What do you want to do with this project?[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Open project", "Back"));
+
+            if (choice == "Open project")
+            {
+                // gå direkt till samma meny som när man valt projekt via listan
+                ProjectEditMenu(last);
+            }
+            else
+            {
+                // Back – bara gå tillbaka till huvudmenyn
+                return;
+            }
         }
 
         // ----- WORLD MENU -----
