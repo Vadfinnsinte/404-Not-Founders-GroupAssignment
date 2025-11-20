@@ -108,8 +108,9 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
+                MenuHelper.Info($"Redigera konto");
                 MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
-                AnsiConsole.MarkupLine($"Redigera konto ({Username})");
+                AnsiConsole.MarkupLine($"Inloggad som ({Username})");
 
                 var choice = MenuHelper.Menu("Vad vill du ändra?", "E-post", "Användarnamn", "Lösenord", "Tillbaka");
                 switch (choice)
