@@ -340,9 +340,10 @@ namespace _404_not_founders.Menus
         public void ProjectEditMenu(Project project)
         {
             Character character = new Character();
+
             bool running = true, loggedIn = true;
             bool runEdit = true;
-            string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
+            string user = _currentUser?.Username ?? ""; 
 
             while (runEdit)
             {
@@ -361,8 +362,8 @@ namespace _404_not_founders.Menus
 
                 switch (choice)
                 {
-                    case "Edit/Add Charachters":
-                        character.ChracterMenu2();
+                    case "Edit/Add Characters":
+                        character.ChracterMenu2(_userService, _projectService, this, project);
                         break;
                     case "Edit/Add worlds":
                         if (_currentUser != null)

@@ -49,9 +49,9 @@ namespace _404_not_founders.Models
 
             Characters ??= new List<Character>();
 
-            if (Characters.Any(c => string.Equals(c.Name, character.Name, StringComparison.OrdinalIgnoreCase)))
+            if (Characters.Any(c => string.Equals(c.Names, character.Names, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new InvalidOperationException($"A character with the name '{character.Name}' already exists in project '{title}'.");
+                throw new InvalidOperationException($"A character with the name '{character.Names}' already exists in project '{title}'.");
             }
 
             Characters.Add(character);
@@ -141,7 +141,7 @@ namespace _404_not_founders.Models
             {
                 if (Characters != null && Characters.Any())
                     foreach (var character in Characters)
-                        character.Show();
+                        character.ShowCharacters(this);
                 else
                     AnsiConsole.MarkupLine("[grey]No characters found.[/]");
             });
