@@ -166,23 +166,28 @@ namespace _404_not_founders.Menus
             {
                 if (_currentUser == null)
                 {
-                    // Ingen inloggad användare
                     Result(false, "Ingen användare är inloggad!");
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
-                    return; 
+                    return;
                 }
 
                 Console.Clear();
-                Info($"Huvudmeny (inloggad som {_currentUser.Username})");
-                var choice = Menu("Vad vill du göra?",
-                                  "Lägg till projekt",
-                                  "Visa projekt",
-                                  "Senaste projekt",
-                                  "Redigera konto",
-                                  "Logga ut",
-                                  "Avsluta");
+                // Visa huvudmenyn
+                Info("Huvudmeny");
+                // Visa användarnamnet under menyn i vit text (default)
+                AnsiConsole.MarkupLine($"Inloggad som: {_currentUser.Username}");
+
+                var choice = Menu(
+                    "Vad vill du göra?",
+                    "Lägg till projekt",
+                    "Visa projekt",
+                    "Senaste projekt",
+                    "Redigera konto",
+                    "Logga ut",
+                    "Avsluta");
+
 
                 switch (choice)
                 {
