@@ -24,7 +24,7 @@ namespace _404_not_founders.UI
                 new SelectionPrompt<string>()
                     .Title("[bold]What do you want to do?[/]")
                     .PageSize(10)
-                    .AddChoices("Edit/Add Charachters", "Edit/Add worlds", "Edit/Add Storylines", "Show Everything", "Back to main menu")
+                    .AddChoices("Edit/Add Characters", "Edit/Add worlds", "Edit/Add Storylines", "Show Everything", "Back to main menu")
                     .HighlightStyle(Color.Orange1));
 
             return choises;
