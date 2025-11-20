@@ -13,7 +13,7 @@ namespace _404_not_founders.Models
         public string Username { get; set; }
         public string Password { get; set; }
         public DateTime CreationDate { get; set; }
-        public List<Project> Projects { get; set; }
+        public List<Project> Projects { get; set; } = new List<Project>();
         public Guid? LastSelectedProjectId { get; set; }
 
         public static bool RegisterUser(List<User> users, out string registeredUser, UserService userService)

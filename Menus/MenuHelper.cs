@@ -10,7 +10,8 @@ namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
-        private const string MainTitleColor = "#FFA500";
+  
+        public const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
         private User? _currentUser;
         private readonly ProjectService _projectService;
@@ -19,12 +20,13 @@ namespace _404_not_founders.Menus
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
-
-
         }
 
         public void SetCurrentUser(User user) => _currentUser = user;
 
+        // Add this getter so other classes can read the currently logged-in user
+        public User? CurrentUser => _currentUser;
+        
         // ----- APPENS START/HUVUDLOOP -----
         public void RunApp()
         {
@@ -57,6 +59,18 @@ namespace _404_not_founders.Menus
                     .AddChoices(choices)
                     .UseConverter(choice => $"[white]{choice}[/]")
             );
+
+       
+        // Add this method to the MenuHelper class
+        public static string ReadBackOrExit()
+        {
+            var input = Console.ReadLine();
+            if (string.Equals(input, "E", StringComparison.OrdinalIgnoreCase))
+                return "E";
+            if (string.Equals(input, "B", StringComparison.OrdinalIgnoreCase))
+                return "B";
+            return input;
+        }
 
         /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
         public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
@@ -300,25 +314,37 @@ namespace _404_not_founders.Menus
 
             AnsiConsole.Clear();
             return selected;
-
+            Info("Projektmeny");
+            DelayAndClear();
         }
 
 
         public void ProjectEditMenu(Project project)
         {
+            Character character = new Character();
             bool running = true, loggedIn = true;
             bool runEdit = true;
+            string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
+
             while (runEdit)
             {
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[#FFA500]Project Edit Menu[/]")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices(
+                            "Edit/Add Charachters",
+                            "Edit/Add worlds",
+                            "Edit/Add Storylines",
+                            "Show Everything",
+                            "Back to main menu"
+                        )
+                );
 
-                Info("Projekt");
-                string choises = ProjectEditVisuals.ShowEditMenu(project);
-                string user;
-                user = _currentUser.Username;
-                switch (choises)
+                switch (choice)
                 {
                     case "Edit/Add Charachters":
-                        Console.WriteLine("Coming soon");
+                        character.ChracterMenu2(_userService, _projectService, this, project);
                         break;
                     case "Edit/Add worlds":
                         if (_currentUser != null)
@@ -335,20 +361,19 @@ namespace _404_not_founders.Menus
                         StorylineMenu(project);
                         break;
                     case "Show Everything":
-                        Console.Clear();
-                        project.ShowAll();
+                        Console.WriteLine("Coming soon");
+                        DelayAndClear();
                         break;
                     case "Back to main menu":
                         Console.Clear();
                         ShowLoggedInMenu(ref loggedIn, ref user, ref running);
+                        runEdit = false;
                         break;
                     default:
                         Console.WriteLine("Somthing went wrong..going back to menu");
-                        runEdit = false;
-                        break;
+                        return;
                 }
             }
-
             //DelayAndClear();
         }
         public static void UserMenu()
