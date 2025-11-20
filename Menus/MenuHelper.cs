@@ -361,8 +361,8 @@ namespace _404_not_founders.Menus
 
                 switch (choice)
                 {
-                    case "Edit/Add Characters":
-                        character.ChracterMenu2(_userService, _projectService, this, project);
+                    case "Edit/Add Charachters":
+                        character.ChracterMenu2();
                         break;
                     case "Edit/Add worlds":
                         if (_currentUser != null)

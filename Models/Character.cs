@@ -53,7 +53,8 @@ namespace _404_not_founders.Models
         public void ChracterMenu2()
         {
             UserService userService = new UserService();
-            MenuHelper menuHelper = new MenuHelper(new UserService());
+            ProjectService projectService = new ProjectService(userService); // Pass userService as required
+            MenuHelper menuHelper = new MenuHelper(userService, projectService); // Pass both required arguments
             var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
             switch (choice)
             {
@@ -79,7 +80,7 @@ namespace _404_not_founders.Models
                     bool loggedIn = true;
                     string currentUser = Names; 
                     bool running = true;
-                    menuHelper.ShowLoggedInMenu(currentUser, ref loggedIn, ref currentUser, ref running);
+                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
                     break;
             }
         }
