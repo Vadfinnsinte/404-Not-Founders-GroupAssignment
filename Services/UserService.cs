@@ -16,24 +16,6 @@ namespace _404_not_founders.Services
 
         public List<User> Users { get; set; } = new List<User>();
 
-        // Lägg till dessa eftersom:
-        //public List<Character> Characters { get; set; } = new List<Character>();
-        //public List<Storyline> Storylines { get; set; } = new List<Storyline>();
-        //public List<World> Worlds { get; set; } = new List<World>();
-
-        // !!Håll koll på strukturen(tydligare i README filen): 
-        //      "Users": [
-        //{
-        //  "Email": "Testing",
-        //  "Username": "testing",
-        //  "Password": "testing",
-        //  "CreationDate": "2025-11-10T14:16:43.0761063+01:00",
-        //  "Projects": [],
-        //  "Characters": [],
-        //  "Storyline": [],
-        //  "Worlds": []
-        ////},
-        //]
 
         public UserService()
         {

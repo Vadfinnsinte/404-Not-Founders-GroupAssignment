@@ -1,4 +1,7 @@
-﻿using _404_not_founders.Menus;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using _404_not_founders.UI;
 using Spectre.Console;
@@ -15,6 +18,7 @@ namespace _404_not_founders.Models
         public List<World> Worlds { get; set; } = new List<World>();
         public List<Storyline> Storylines { get; set; } = new();
 
+        public List<Character> Characters { get; set; } = new List<Character>();
 
         public Project Add(User currentUser, UserService userService)
         {
@@ -28,8 +32,9 @@ namespace _404_not_founders.Models
                 title = addProjectName,
                 description = addProjectDescription,
                 dateOfCreation = DateTime.Now,
-                Storylines = new List<Storyline>()
-            };
+                Storylines = new List<Storyline>(),
+                Characters = new List<Character>()
+             };
 
             // Add project to user's project list and save
             currentUser.Projects.Add(newProject);
@@ -37,6 +42,25 @@ namespace _404_not_founders.Models
             return (newProject);
 
         }
+
+        public void AddCharacter(Character character, UserService userService)
+        {
+            if (character == null) throw new ArgumentNullException(nameof(character));
+
+            Characters ??= new List<Character>();
+
+            if (Characters.Any(c => string.Equals(c.Name, character.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException($"A character with the name '{character.Name}' already exists in project '{title}'.");
+            }
+
+            Characters.Add(character);
+
+            // Persist entire userstore (caller is expected to supply the same UserService instance used by the app)
+            userService?.SaveUserService();
+        }
+
+
         public void Show()
         {
             var worldNames = Worlds != null && Worlds.Any()
@@ -70,40 +94,17 @@ namespace _404_not_founders.Models
         {
             AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
             ShowSection("Project", () => Show());
-            ShowSection("Storylines", () =>
-            {
-                if (Storylines != null && Storylines.Any())
-                    foreach (var story in Storylines)
-                        story.Show();
-                else
-                    AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
-            });
 
-            ShowSection("Worlds", () =>
-            {
-                if (Worlds != null && Worlds.Any())
-                    foreach (var world in Worlds)
-                        world.Show();
-                else
-                    AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
-            });
+            ShowAllStorylines();
 
-            //ShowSection("Characters", () =>
-            //{
-            //    if (project.Characters != null && project.Characters.Any())
-            //        foreach (var character in project.Characters)
-            //            character.Show();
-            //    else
-            //        AnsiConsole.MarkupLine("[grey]No characters found.[/]");
-            //});
+            ShowAllWorlds();
 
-            AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
-            Console.ReadKey(true);
-            Console.Write("\u001b[3J");
+            ShowAllCharacters();
+
+            AnsiClearHelper.WaitForKeyAndClear();
 
 
-            Console.Clear();
-            //Console.Clear();
+   
             return;
         }
 
@@ -112,7 +113,39 @@ namespace _404_not_founders.Models
             BigHeader.Show(header);
             action();
         }
-
+        public void ShowAllStorylines()
+        {
+            ShowSection("Storylines", () =>
+            {
+                if (Storylines != null && Storylines.Any())
+                    foreach (var story in Storylines)
+                        story.Show();
+                else
+                    AnsiConsole.MarkupLine("[grey]No storylines found.[/]");
+            });
+        }
+        public void ShowAllWorlds()
+        {
+            ShowSection("Worlds", () =>
+            {
+                if (Worlds != null && Worlds.Any())
+                    foreach (var world in Worlds)
+                        world.Show();
+                else
+                    AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
+            });
+        }
+        public void ShowAllCharacters()
+        {
+            ShowSection("Characters", () =>
+            {
+                if (Characters != null && Characters.Any())
+                    foreach (var character in Characters)
+                        character.Show();
+                else
+                    AnsiConsole.MarkupLine("[grey]No characters found.[/]");
+            });
+        }
         public void Change()
         {
             Console.WriteLine("Coming soon");

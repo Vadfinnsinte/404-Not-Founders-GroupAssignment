@@ -15,30 +15,36 @@ Filstructuren är :
       "Username": "testing",
       "Password": "testing",
       "CreationDate": "2025-11-10T14:16:43.0761063+01:00",
-      "Projects": [],
-      "Characters": [],
-      "Storyline": [],
-      "Worlds": []
+      "Projects": [
+              "Characters": [],
+              "Storyline": [],
+              "Worlds": []
+      ],
+
     },
     {
       "Email": "test",
       "Username": "test",
       "Password": "test",
       "CreationDate": "2025-11-10T14:43:05.1866501+01:00",
-      "Projects": [],
-      "Characters": [],
-      "Storyline": [],
-      "Worlds": []
+      "Projects": [
+            "Characters": [],
+            "Storyline": [],
+            "Worlds": []
+      ],
+
     },
     {
       "Email": "yes",
       "Username": "yes",
       "Password": "yes",
       "CreationDate": "2025-11-10T14:43:22.0977721+01:00",
-      "Projects": [],
-      "Characters": [],
-      "Storyline": [],
-      "Worlds": [],
+      "Projects": [
+            "Characters": [],
+            "Storyline": [],
+            "Worlds": [],
+      ],
+
     }
   ],
 
