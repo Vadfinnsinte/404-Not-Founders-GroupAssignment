@@ -257,7 +257,7 @@ namespace _404_not_founders.Menus
                 AnsiConsole.MarkupLine("[red]Du måste vara inloggad för att se projekt.[/]");
                 Console.WriteLine(_currentUser);
             }// 
-
+          
             while (true)
             {
                 var choice = AnsiConsole.Prompt(
@@ -274,7 +274,9 @@ namespace _404_not_founders.Menus
                     if (list == null || list.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[yellow]Inga projekt ännu.[/]");
-                        continue;
+                        AnsiClearHelper.WaitForKeyAndClear();
+                        break;
+                      
                     }
 
                     var selected = SelectFromList(list, "Välj projekt");
@@ -290,7 +292,8 @@ namespace _404_not_founders.Menus
                     if (hits == null || hits.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
-                        continue;
+                        AnsiClearHelper.WaitForKeyAndClear();
+                        break;
                     }
 
                     var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
@@ -374,8 +377,8 @@ namespace _404_not_founders.Menus
                         StorylineMenu(project);
                         break;
                     case "Show Everything":
-                        Console.WriteLine("Coming soon");
-                        DelayAndClear();
+                        Console.Clear();
+                        project.ShowAll();
                         break;
                     case "Back to main menu":
                         Console.Clear();
