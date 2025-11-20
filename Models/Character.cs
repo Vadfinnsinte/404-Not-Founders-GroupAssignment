@@ -65,7 +65,7 @@ namespace _404_not_founders.Models
 
                     var selectedCharacter = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
-                            .Title("[#FFA500]Choose character to Remove[/]")
+                            .Title("[#FFA500]Choose character to remove[/]")
                             .HighlightStyle(new Style(Color.Orange1))
                             .AddChoices(characterChoices));
 

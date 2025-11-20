@@ -45,8 +45,8 @@ namespace _404_not_founders.Menus
                     ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
             }
 
-            Info("Tack för att du använde appen!");
-            Info("Stänger ner...");
+            Info("Thank you for using the app, see you next time");
+            Info("Closing down...");
             DelayAndClear();
         }
 
@@ -81,8 +81,8 @@ namespace _404_not_founders.Menus
         /// Skriv ut instruktion till användaren om E och B
         public static void InputInstruction(bool back = false) =>
             AnsiConsole.MarkupLine(back
-                ? "[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]"
-                : "[grey italic]Skriv E för att gå tillbaka[/]");
+                ? "[grey italic]Press E to go back or B to return to the previous step[/]"
+                : "[grey italic]Press E to go back[/]");
 
         /// Delay och skärmrens – anropas efter bekräftelse eller fel
         public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
@@ -111,9 +111,9 @@ namespace _404_not_founders.Menus
             while (running)
             {
                 Console.Clear();
-                var choice = Menu("Välj ett alternativ", "Logga in", "Registrera dig", "Avsluta");
-                if (choice == "Avsluta") { running = false; return; }
-                if (choice == "Logga in" && LoginMenu(users, out currentUser))
+                var choice = Menu("Choose an option", "Log in", "Sign up", "Exit");
+                if (choice == "Exit") { running = false; return; }
+                if (choice == "Log in" && LoginMenu(users, out currentUser))
                 {
                     loggedIn = true;
                     string tempUser = currentUser; // Kopiera ref-värdet!
@@ -123,7 +123,7 @@ namespace _404_not_founders.Menus
                     break;
                 }
                 string newUser = null;
-                if (choice == "Registrera dig" && User.RegisterUser(users, out newUser, _userService))
+                if (choice == "Sign up" && User.RegisterUser(users, out newUser, _userService))
                 {
                     loggedIn = true;
                     currentUser = newUser;
@@ -143,14 +143,14 @@ namespace _404_not_founders.Menus
             while (true)
             {
                 Console.Clear();
-                Info("Logga in");
+                Info("Log in");
                 InputInstruction(true);
                 if (step >= 1)
-                    AnsiConsole.MarkupLine($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
 
                 string value = step == 0
-                    ? AskInput("[#FFA500]Användarnamn:[/]")
-                    : AskInput("[#FFA500]Lösenord:[/]", true);
+                    ? AskInput("[#FFA500]Username:[/]")
+                    : AskInput("[#FFA500]Password:[/]", true);
 
                 if (value == null) return false;
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
@@ -166,13 +166,13 @@ namespace _404_not_founders.Menus
                     var user = users.Find(u => u.Username == username);
                     if (user != null && user.Password == password)
                     {
-                        Result(true, "Loggar in...");
+                        Result(true, "Logging in…");
                         DelayAndClear();
                         loggedInUser = username;
                         _currentUser = user;
                         return true;
                     }
-                    Result(false, "Fel användarnamn eller lösenord!");
+                    Result(false, "Wrong username or password!");
                     DelayAndClear(1200);
                     password = ""; step = 1;
                 }
@@ -186,7 +186,7 @@ namespace _404_not_founders.Menus
             {
                 if (_currentUser == null)
                 {
-                    Result(false, "Ingen användare är inloggad!");
+                    Result(false, "No user logged in!");
                     DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
@@ -194,39 +194,38 @@ namespace _404_not_founders.Menus
                 }
 
                 Console.Clear();
-                Info($"Huvudmeny (inloggad som {_currentUser.Username})");
-                var choice = Menu("Vad vill du göra?",
-                                  "Lägg till projekt",
-                                  "Visa projekt",
-                                  "Senaste projekt",
-                                  "Redigera konto",
-                                  "Logga ut",
-                                  "Avsluta");
-
+                Info($"Main menu (logged in as {_currentUser.Username})");
+                var choice = Menu("What would you like to do?",
+                                  "Add project",
+                                  "Handle project",
+                                  "Latest project",
+                                  "Edit account",
+                                  "Log out",
+                                  "Quit");
                 switch (choice)
                 {
-                    case "Avsluta":
+                    case "Quit":
                         running = false;
                         break;
-                    case "Logga ut":
-                        Result(true, "Du loggas ut...");
+                    case "Log out":
+                        Result(true, "Logging out...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
                         RunApp();
                         break;
-                    case "Lägg till projekt":
-                        Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                    case "Add project":
+                        Info("[grey italic]Press E to go back or B to return to the previous step[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
                         DelayAndClear();
                         ProjectEditMenu(addedProject);
                         break;
-                    case "Visa projekt":
+                    case "Handle project":
                         ShowProjectMenu();
                         break;
-                    case "Senaste projekt":
+                    case "Latest project":
                         var username = currentUser;
                         var user = _userService.Users
                         .FirstOrDefault(u => u.Username == username);
@@ -239,7 +238,7 @@ namespace _404_not_founders.Menus
                             Console.ReadKey(true);
                         }
                         break;
-                    case "Redigera konto":
+                    case "Edit account":
                         // Lägg till redigeringslogik här om behövs.
                         break;
                 }
@@ -254,7 +253,7 @@ namespace _404_not_founders.Menus
             //             DelayAndClear();
             if (_currentUser == null)
             {
-                AnsiConsole.MarkupLine("[red]Du måste vara inloggad för att se projekt.[/]");
+                AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
                 Console.WriteLine(_currentUser);
             }// 
           
@@ -262,41 +261,41 @@ namespace _404_not_founders.Menus
             {
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("[#FFA500]Projekt Meny[/]")
+                        .Title("[#FFA500]Project Menu[/]")
                         .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices("Visa alla projekt", "Sök Projekt", "Tillbaka"));
+                        .AddChoices("Show all projects", "Search projects", "Back"));
 
-                if (choice == "Tillbaka") break;
+                if (choice == "Back") break;
 
-                if (choice == "Visa alla projekt")
+                if (choice == "Show all projects")
                 {
                     var list = _projectService.GetAll(_currentUser);
                     if (list == null || list.Count == 0)
                     {
-                        AnsiConsole.MarkupLine("[yellow]Inga projekt ännu.[/]");
+                        AnsiConsole.MarkupLine("[yellow]No projects yet.[/]");
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
                       
                     }
 
-                    var selected = SelectFromList(list, "Välj projekt");
+                    var selected = SelectFromList(list, "Select a project");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
                     ProjectEditMenu(selected);
                 }
-                else if (choice == "Sök Projekt")
+                else if (choice == "Search projects")
                 {
-                    var term = AnsiConsole.Ask<string>("Sökterm (titel/description):").Trim();
+                    var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
                     var hits = _projectService.Search(_currentUser, term);
 
                     if (hits == null || hits.Count == 0)
                     {
-                        AnsiConsole.MarkupLine("[red]Inga träffar.[/]");
+                        AnsiConsole.MarkupLine("[red]No results[/]");
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
                     }
 
-                    var selected = SelectFromList(hits, $"Välj från sökresultat för \"{term}\"");
+                    var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
                     if (selected != null)
                         _projectService.SetLastSelected(_currentUser, selected.Id);
 
@@ -330,7 +329,7 @@ namespace _404_not_founders.Menus
 
             AnsiConsole.Clear();
             return selected;
-            Info("Projektmeny");
+            Info("Project menu");
             DelayAndClear();
         }
 
@@ -349,7 +348,7 @@ namespace _404_not_founders.Menus
                         .Title("[#FFA500]Project Edit Menu[/]")
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices(
-                            "Edit/Add Charachters",
+                            "Edit/Add Characters",
                             "Edit/Add worlds",
                             "Edit/Add Storylines",
                             "Show Everything",
@@ -359,7 +358,7 @@ namespace _404_not_founders.Menus
 
                 switch (choice)
                 {
-                    case "Edit/Add Charachters":
+                    case "Edit/Add Characters":
                         character.ChracterMenu2(_userService, _projectService, this, project);
                         break;
                     case "Edit/Add worlds":
@@ -369,7 +368,7 @@ namespace _404_not_founders.Menus
                         }
                         else
                         {
-                            AnsiConsole.MarkupLine("[red]Ingen användare inloggad?![/]");
+                            AnsiConsole.MarkupLine("[red]No user logged in![/]");
                             DelayAndClear();
                         }
                         break;
@@ -386,7 +385,7 @@ namespace _404_not_founders.Menus
                         runEdit = false;
                         break;
                     default:
-                        Console.WriteLine("Somthing went wrong..going back to menu");
+                        Console.WriteLine("Something went wrong... going back to menu");
                         return;
                 }
             }

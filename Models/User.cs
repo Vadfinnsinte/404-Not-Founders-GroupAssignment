@@ -24,17 +24,17 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info("[underline #FFA500]Registrera ny användare[/]");
-                MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                MenuHelper.Info("[underline #FFA500]Register new user[/]");
+                MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
-                if (step >= 1) MenuHelper.Info($"[grey]E-post:[/] [#FFA500]{email}[/]");
-                if (step >= 2) MenuHelper.Info($"[grey]Användarnamn:[/] [#FFA500]{username}[/]");
+                if (step >= 1) MenuHelper.Info($"[grey]E-mail:[/] [#FFA500]{email}[/]");
+                if (step >= 2) MenuHelper.Info($"[grey]Username:[/] [#FFA500]{username}[/]");
 
                 var value = step switch
                 {
-                    0 => MenuHelper.AskInput("[#FFA500]E-post:[/]"),
-                    1 => MenuHelper.AskInput("[#FFA500]Användarnamn:[/]"),
-                    2 => MenuHelper.AskInput("[#FFA500]Lösenord:[/]", true),
+                    0 => MenuHelper.AskInput("[#FFA500]E-mail:[/]"),
+                    1 => MenuHelper.AskInput("[#FFA500]Username:[/]"),
+                    2 => MenuHelper.AskInput("[#FFA500]Password:[/]", true),
                     _ => null
                 };
 
@@ -59,7 +59,7 @@ namespace _404_not_founders.Models
                 {
                     if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MenuHelper.Result(false, "E-postadressen är redan registrerad."); MenuHelper.DelayAndClear(1200); continue;
+                        MenuHelper.Result(false, "Email address is already registered."); MenuHelper.DelayAndClear(1200); continue;
                     }
                     email = value; step++;
                 }
@@ -67,7 +67,7 @@ namespace _404_not_founders.Models
                 {
                     if (users.Exists(u => u.Username.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MenuHelper.Result(false, "Användarnamnet är redan taget."); MenuHelper.DelayAndClear(1200); continue;
+                        MenuHelper.Result(false, "The username is already taken."); MenuHelper.DelayAndClear(1200); continue;
                     }
                     username = value; step++;
                 }
@@ -79,10 +79,10 @@ namespace _404_not_founders.Models
                 // Bekräfta och skapa användaren
                 if (step == 3)
                 {
-                    var confirm = MenuHelper.Menu("Vill du registrera denna användare?", "Ja", "Nej", "Avsluta");
-                    if (confirm == "Avsluta") Environment.Exit(0);
-                    if (confirm == "Nej") { step = 0; continue; }
-                    if (confirm == "Ja")
+                    var confirm = MenuHelper.Menu("Do you want to register this user?", "Yes", "No", "Exit");
+                    if (confirm == "Exit") Environment.Exit(0);
+                    if (confirm == "No") { step = 0; continue; }
+                    if (confirm == "Yes")
                     {
                         users.Add(new User
                         {
@@ -93,7 +93,7 @@ namespace _404_not_founders.Models
                             Projects = new List<Project>()
                         });
                         userService.SaveUserService();
-                        MenuHelper.Result(true, "Registreras...!");
+                        MenuHelper.Result(true, "Registering user...!");
                         MenuHelper.DelayAndClear(800);
                         registeredUser = username;
                         return true;
