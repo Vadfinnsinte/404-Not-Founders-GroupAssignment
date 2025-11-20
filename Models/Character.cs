@@ -298,16 +298,26 @@ namespace _404_not_founders.Models
 
         public void Change(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper, Project currentProject)
         {
-            // Determine target project
+           
             Project project = currentProject;
+
+            // Om inget projekt skickades in men det finns en inloggad användare,
+            // försök hitta ett lämpligt projekt från användarens lista
             if (project == null && currentUser != null)
             {
-                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
-                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
-                if (project == null && currentUser?.Projects != null)
-                    project = currentUser.Projects.FirstOrDefault();
+                // Om användaren har en projektlista så försök använda senast valda projektet
+                if (currentUser.Projects != null)
+                {
+                    if (currentUser.LastSelectedProjectId.HasValue)
+                        project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
+
+                    // Om det inte fanns något matchande Id, plocka första projektet i listan (om någon finns)
+                    if (project == null)
+                        project = currentUser.Projects.FirstOrDefault();
+                }
             }
 
+            // Om vi fortfarande inte har något projekt så visa fel och avsluta metoden
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project selected. Select or create a project before editing characters.[/]");
@@ -315,6 +325,7 @@ namespace _404_not_founders.Models
                 return;
             }
 
+            // Om projektet saknar karaktärer, meddela användaren och återvänd
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project to change.[/]");
@@ -322,6 +333,7 @@ namespace _404_not_founders.Models
                 return;
             }
 
+            // Fråga användaren vilken karaktär som ska redigeras
             var toEdit = AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
                     .Title($"[#{MainTitleColor}]Select character to change[/]")
@@ -337,12 +349,14 @@ namespace _404_not_founders.Models
                 return;
             }
 
+            // Loop för redigering tills användaren sparar eller avbryter
             while (true)
             {
                 Console.Clear();
                 MenuHelper.Info($"Editing: {(string.IsNullOrWhiteSpace(toEdit.Names) ? "(unnamed)" : toEdit.Names)}");
                 MenuHelper.InputInstruction(true);
 
+                // Visa aktuella fältvärden
                 AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{toEdit.Names}[/]");
                 AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{toEdit.Race}[/]");
                 AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{toEdit.Description}[/]");
@@ -356,15 +370,16 @@ namespace _404_not_founders.Models
                 var field = ChracterMenu1("Choose field to edit",
                     "Name", "Race", "Description", "Gender", "Age", "Level", "Class", "Other info", "Save and Exit", "Cancel");
 
+                // Avbryt helt om användaren väljer Cancel
                 if (field == "Cancel")
                 {
                     MenuHelper.DelayAndClear();
                     return;
                 }
 
+                // Spara och avsluta
                 if (field == "Save and Exit")
                 {
-                    // Persist changes - assume UserService handles saving users/projects
                     try
                     {
                         userService.SaveUserService();
@@ -372,7 +387,7 @@ namespace _404_not_founders.Models
                     }
                     catch
                     {
-                        AnsiConsole.MarkupLine("[red]Failed to save changes to disk.[/]");
+                        AnsiConsole.MarkupLine("[red]Failed to save changes.[/]");
                     }
                     Console.WriteLine("Press any key to continue...");
                     Console.ReadKey(true);
@@ -380,25 +395,26 @@ namespace _404_not_founders.Models
                     return;
                 }
 
+                // Läs in nytt värde för valt fält
                 Console.Write($"{field}: ");
                 var input = MenuHelper.ReadBackOrExit();
 
+                // Specialkommandon från ReadBackOrExit: "E" = exit, "B" = back
                 if (input == "E")
                 {
-                    // exit to menu
                     MenuHelper.DelayAndClear();
                     return;
                 }
                 if (input == "B")
                 {
-                    // go back to field selection
                     continue;
                 }
 
-                // Apply change with validation for ints
+                // Använd switch för att uppdatera rätt fält. Trim används för att ta bort whitespace.
                 switch (field)
                 {
                     case "Name":
+                        // Trim tar bort inledande/avslutande blanksteg; ?? "" säkerställer att fältet aldrig blir null
                         toEdit.Names = input?.Trim() ?? "";
                         break;
                     case "Race":
@@ -411,6 +427,7 @@ namespace _404_not_founders.Models
                         toEdit.Gender = input?.Trim() ?? "";
                         break;
                     case "Age":
+                        // Numeriskt fält: tomt -> 0, annars försök parse; vid fel visa meddelande
                         if (string.IsNullOrWhiteSpace(input)) toEdit.Age = 0;
                         else if (int.TryParse(input.Trim(), out int a)) toEdit.Age = a;
                         else
