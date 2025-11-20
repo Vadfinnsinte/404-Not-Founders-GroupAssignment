@@ -10,7 +10,7 @@ namespace _404_not_founders.Models
 {
     public class Character
     {
-        public string Names { get; set; }
+        public string Name { get; set; }
         public string Race { get; set; }
         public string Description { get; set; }
         public string Gender { get; set; }
@@ -59,7 +59,7 @@ namespace _404_not_founders.Models
                         break;
                     }
 
-                    var characterChoices = currentProject.Characters.Select(w => w.Names).ToList();
+                    var characterChoices = currentProject.Characters.Select(w => w.Name).ToList();
 
                     characterChoices.Add("Back to Menu");
 
@@ -74,7 +74,7 @@ namespace _404_not_founders.Models
                         break;
                     }
 
-                    var characterToDelete = currentProject.Characters.First(w => w.Names == selectedCharacter);
+                    var characterToDelete = currentProject.Characters.First(w => w.Name == selectedCharacter);
 
                     characterToDelete.DeleteCharacter(currentProject, userService);
 
@@ -214,7 +214,7 @@ namespace _404_not_founders.Models
                             // Bygg ny Character-instans
                             var newCharacter = new Character
                             {
-                                Names = name,
+                                Name = name,
                                 Race = race,
                                 Description = description,
                                 Gender = gender,
@@ -309,7 +309,7 @@ namespace _404_not_founders.Models
                     .HighlightStyle(new Style(Color.Orange1))
                     .PageSize(10)
                     .AddChoices(project.Characters)
-                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Names) ? "(unnamed)" : c.Names)
+                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)
             );
 
             Console.Clear();
@@ -334,7 +334,7 @@ namespace _404_not_founders.Models
             // Ask for confirmation
             var confirm = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"Are you sure you want to delete '[orange1]{this.Names}[/]'?")
+                    .Title($"Are you sure you want to delete '[orange1]{this.Name}[/]'?")
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices("Yes", "No"));
 
@@ -348,7 +348,7 @@ namespace _404_not_founders.Models
                     // Save changes
                     userService.SaveUserService();
 
-                    AnsiConsole.MarkupLine($"The character '[orange1]{this.Names}[/]' has been deleted!");
+                    AnsiConsole.MarkupLine($"The character '[orange1]{this.Name}[/]' has been deleted!");
                     Thread.Sleep(1200);
                 }
                 else
