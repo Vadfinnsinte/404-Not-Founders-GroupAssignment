@@ -363,7 +363,7 @@ namespace _404_not_founders.Menus
                 switch (choice)
                 {
                     case "Edit/Add Characters":
-                        character.ChracterMenu2(_userService, _projectService, this, project);
+                        character.ChracterMenu(_userService, _projectService, this, project);
                         break;
                     case "Edit/Add worlds":
                         if (_currentUser != null)
@@ -381,7 +381,7 @@ namespace _404_not_founders.Menus
                         break;
                     case "Show Everything":
                         Console.Clear();
-                        project.ShowAll();
+                        project.ShowAll(_userService, _projectService, this);
                         break;
                     case "Back to main menu":
                         Console.Clear();

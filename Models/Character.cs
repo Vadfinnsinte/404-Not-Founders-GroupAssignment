@@ -21,7 +21,7 @@ namespace _404_not_founders.Models
 
         private const string MainTitleColor = "#FFA500";
 
-        public string ChracterMenu1(string title, params string[] choices) =>
+        public string CharacterColorController(string title, params string[] choices) =>
             AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[#{MainTitleColor}]{title}[/]")
@@ -31,37 +31,39 @@ namespace _404_not_founders.Models
             );
 
 
-        public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
+        public void ChracterMenu(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
         {
 
             User? currentUser = menuHelper.CurrentUser;
-            var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
-            switch (choice)
+            var choice = CharacterColorController("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
+
+            while (true)
             {
-                case "Add Character":
-                    Add(currentUser, projectService, userService, menuHelper);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Show Character":
-                    // Show characters from the actual project
-                    ShowCharacters(currentProject);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Change Character":
-                    Change(currentUser, projectService, userService, menuHelper, currentProject);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Delete Character":
-                    Delete();
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Back to Main Menu":
-                    bool loggedIn = true;
-                    bool running = true;
-                    string username = currentUser?.Username;
-                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);
-                    if (currentUser != null) currentUser.Username = username;
-                    break;
+                switch (choice)
+                {
+                    case "Add Character":
+                        Add(currentUser, projectService, userService, menuHelper);
+                        break;
+                    case "Show Character":
+                        // Show characters from the actual project
+                        ShowCharacters(userService, projectService,menuHelper,currentProject);
+                        break;
+                    case "Change Character":
+                        Change(currentUser, projectService, userService, menuHelper, currentProject);
+                        break;
+                    case "Delete Character":
+                        Delete();
+                        break;
+                    case "Back to Main Menu":
+                        bool loggedIn = true;
+                        bool running = true;
+                        string username = currentUser?.Username;
+                        menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);
+                        if (currentUser != null) currentUser.Username = username;
+                        break;
+                        return;
+                }
+                
             }
         }
 
@@ -160,7 +162,7 @@ namespace _404_not_founders.Models
                     case 8:
                         // Bekräftelsesteg: ja/nej/avsluta
                         Project project = null;
-                        var confirm = ChracterMenu1("Confirm character creation", "Yes", "No");
+                        var confirm = CharacterColorController("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }  // Börjar om från början
                         if (confirm == "Yes")
                         {
@@ -232,7 +234,7 @@ namespace _404_not_founders.Models
                 {
                     // HÄR: Anropar menymetod och skickar null som currentProject — se till att metoden accepterar null
                     Console.Clear();
-                    ChracterMenu2(userService, projectService, menuHelper, null);
+                    ChracterMenu(userService, projectService, menuHelper, null);
                 }
 
                 if (input == "B")
@@ -260,13 +262,15 @@ namespace _404_not_founders.Models
 
 
 
-        public void ShowCharacters(Project project)
+        public void ShowCharacters(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project project)
         {
             // Kontrollera att ett projekt faktiskt skickats in
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
                 MenuHelper.DelayAndClear();
+                // Return to character menu so user can select or create a project
+                ChracterMenu(userService, projectService, menuHelper, null);
                 return;
             }
 
@@ -275,6 +279,8 @@ namespace _404_not_founders.Models
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
                 MenuHelper.DelayAndClear();
+                // Go back to character menu
+                ChracterMenu(userService, projectService, menuHelper, project);
                 return;
             }
 
@@ -293,6 +299,9 @@ namespace _404_not_founders.Models
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
             MenuHelper.DelayAndClear();
+
+            // After viewing a character, return to the character menu
+            ChracterMenu(userService, projectService, menuHelper, project);
         }
 
 
@@ -367,13 +376,14 @@ namespace _404_not_founders.Models
                 AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{toEdit.OtherInfo}[/]");
                 Console.WriteLine();
 
-                var field = ChracterMenu1("Choose field to edit",
+                var field = CharacterColorController("Choose field to edit",
                     "Name", "Race", "Description", "Gender", "Age", "Level", "Class", "Other info", "Save and Exit", "Cancel");
 
                 // Avbryt helt om användaren väljer Cancel
                 if (field == "Cancel")
                 {
                     MenuHelper.DelayAndClear();
+                    ChracterMenu(userService, projectService, menuHelper, project);
                     return;
                 }
 

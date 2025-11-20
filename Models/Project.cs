@@ -90,8 +90,9 @@ namespace _404_not_founders.Models
 
             AnsiConsole.Write(panel);
         }
-        public void ShowAll()
+        public void ShowAll(UserService userService, ProjectService projectService, MenuHelper menuHelper)
         {
+
             AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
             ShowSection("Project", () => Show());
 
@@ -99,7 +100,8 @@ namespace _404_not_founders.Models
 
             ShowAllWorlds();
 
-            ShowAllCharacters();
+            ShowAllCharacters(userService, projectService, menuHelper);
+
 
             AnsiClearHelper.WaitForKeyAndClear();
 
@@ -135,13 +137,13 @@ namespace _404_not_founders.Models
                     AnsiConsole.MarkupLine("[grey]No worlds found.[/]");
             });
         }
-        public void ShowAllCharacters()
+        public void ShowAllCharacters(UserService userService, ProjectService projectService, MenuHelper menuHelper)
         {
             ShowSection("Characters", () =>
             {
                 if (Characters != null && Characters.Any())
                     foreach (var character in Characters)
-                        character.ShowCharacters(this);
+                        character.ShowCharacters(userService, projectService, menuHelper, this);
                 else
                     AnsiConsole.MarkupLine("[grey]No characters found.[/]");
             });
