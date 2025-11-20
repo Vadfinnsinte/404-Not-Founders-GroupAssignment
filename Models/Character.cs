@@ -52,7 +52,32 @@ namespace _404_not_founders.Models
                     ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
                 case "Delete Character":
-                    Delete();
+                    if (currentProject.Characters == null || currentProject.Characters.Count == 0)
+                    {
+                        AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
+                        MenuHelper.DelayAndClear();
+                        break;
+                    }
+
+                    var characterChoices = currentProject.Characters.Select(w => w.Names).ToList();
+
+                    characterChoices.Add("Back to Menu");
+
+                    var selectedCharacter = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[#FFA500]Choose character to Remove[/]")
+                            .HighlightStyle(new Style(Color.Orange1))
+                            .AddChoices(characterChoices));
+
+                    if (selectedCharacter == "Back to Menu")
+                    {
+                        break;
+                    }
+
+                    var characterToDelete = currentProject.Characters.First(w => w.Names == selectedCharacter);
+
+                    characterToDelete.DeleteCharacter(currentProject, userService);
+
                     ChracterMenu2(userService, projectService, menuHelper, currentProject);
                     break;
                 case "Back to Main Menu":
@@ -299,9 +324,41 @@ namespace _404_not_founders.Models
         {
             Console.WriteLine("Coming soon");
         }
-        public void Delete()
+        public void DeleteCharacter(Project project, UserService userService)
         {
-            Console.WriteLine("Coming soon");
+            Console.Clear();
+
+            // Ask for confirmation
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"Are you sure you want to delete '[orange1]{this.Names}[/]'?")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Yes", "No"));
+
+            if (confirm == "Yes")
+            {
+                // Remove the character from the project's character list
+                if (project.Characters.Contains(this))
+                {
+                    project.Characters.Remove(this);
+
+                    // Save changes
+                    userService.SaveUserService();
+
+                    AnsiConsole.MarkupLine($"The character '[orange1]{this.Names}[/]' has been deleted!");
+                    Thread.Sleep(1200);
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[grey]Error: Character not found.[/]");
+                    Thread.Sleep(1200);
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
+                Thread.Sleep(1200);
+            }
         }
 
      
