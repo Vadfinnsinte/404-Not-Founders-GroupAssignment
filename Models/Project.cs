@@ -101,12 +101,7 @@ namespace _404_not_founders.Models
             if (character == null) throw new ArgumentNullException(nameof(character));
 
             Characters ??= new List<Character>();
-
-            if (Characters.Any(c => string.Equals(c.Name, character.Name, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"A character with the name '{character.Name}' already exists in project '{title}'.");
-            }
-
+     
             Characters.Add(character);
 
             // Persist entire userstore (caller is expected to supply the same UserService instance used by the app)

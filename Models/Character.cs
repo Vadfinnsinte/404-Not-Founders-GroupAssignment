@@ -78,8 +78,7 @@ namespace _404_not_founders.Models
                             if (!int.TryParse(input.Trim(), out age))
                             {
                                 Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
+                     
                                 continue;
                             }
                         }
@@ -94,8 +93,7 @@ namespace _404_not_founders.Models
                             if (!int.TryParse(input.Trim(), out level))
                             {
                                 Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
+                         ;
                                 continue;
                             }
                         }
@@ -169,7 +167,7 @@ namespace _404_not_founders.Models
 
                             Console.WriteLine();
                             Console.WriteLine($"Character '{name}' created.");
-                            Console.WriteLine("Press any key to continue...");
+                           
                             ConsoleHelpers.DelayAndClear();
 
                             return; // Klart
