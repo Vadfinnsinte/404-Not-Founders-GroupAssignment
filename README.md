@@ -1,12 +1,38 @@
-# 404-Not-Founders-GroupAssignment
+# Adventurer’s Journal
+### 404-Not-Founders-GroupAssignment
+
+An app that helps you to store all that valuable information you want for your adventures in roleplays, writing projects or any ways you see fit.
+# Design overview (class diagram / pseudo diagram)
+
+<img src="https://imgur.com/3JhtW88" width="200" alt="class-diagrams" />
+
+At first we decided on these five classes that you see in the Class Diagram. But later on we decided to add a few more classes to ease the build of the program. At first we chose to create a MenuHelper class to put all our menus in but after some time it got too big and difficult to handle, so we had to divide MenuHelper into smaller classes. We also added a few UI classes for our programs UI and two services classes.
+
+### We also made a flowchart that looks like this:
+https://imgur.com/zNck1Af
+<img src="https://imgur.com/zNck1Af" width="200" alt="A flowchart" />
+
+This was very useful as it helped us plan the tasks needed to create the app. It let us see what menus and functions we needed to help the User get a smooth user experience.
+
+## Early on we decided how we wanted our UI and the colors of our app to look like. 
+
+### Here we decided to use these colors:
+
+Menyval(aktiv): Orange1
+Title: Använd hex färgen #FFA500.
+Error (error från server eller om du skrivit fel): Red
+Success (Något har registrerats korrekt): Green 
+
+<img src="https://imgur.com/ZOHkNbg" width="200" alt="menu in white and orange" />
+
 
 # HOW TO USE UserService: 
 
-Den är initsierad via program.cs (kolla på menuhelper för att se hur den iniatsieras/används från andra filer, leta efter _userService). På detta sättet använder vi ALLTID samma fil och data så man ej skriver över. Detta sättet fungerar inte med metoder som är static. 
+It is initialized via Program.cs (check MenuHelper to see how it is initialized/used from other files, look for _userService). In this way, we ALWAYS use the same file and data so that nothing gets overwritten. This method does not work with methods that are static.
 
-Om det är saker ni inte förstår så fråga den som skrivit koden(Linda och Benji) eller be AI bryta ner rad för rad och ställ frågor tills ni förstår.
+If there are things you don’t understand, ask the person who wrote the code (Linda and Benji) or have AI break it down line by line and ask questions until you understand.
 
-Filstructuren är : 
+The file structure is:
 
 ```
   "Users": [
