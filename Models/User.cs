@@ -79,8 +79,8 @@ namespace _404_not_founders.Models
                 // Bekräfta och skapa användaren
                 if (step == 3)
                 {
-                    var confirm = MenuChoises.Menu("Do you want to register this user?", "Yes", "No", "Exit");
-                    if (confirm == "Exit") Environment.Exit(0);
+                    var confirm = MenuChoises.Menu("Do you want to register this user?", "Yes", "No");
+             
                     if (confirm == "No") { step = 0; continue; }
                     if (confirm == "Yes")
                     {
