@@ -45,7 +45,7 @@ namespace _404_not_founders.Menus
                     case "Edit Storyline":
                         EditStoryline(project);
                         break;
-                    case "Remove Storyline":
+                    case "Delete Storyline":
                         if (project.Storylines == null || project.Storylines.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");

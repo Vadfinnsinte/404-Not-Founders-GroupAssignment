@@ -77,7 +77,7 @@ namespace _404_not_founders.Menus
                         if (worldToEdit != null)
                             worldToEdit.EditWorld(_userService);
                         break;
-                    case "Remove World":
+                    case "Delete World":
                         // Check if there are any worlds to remove
                         if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
                         {

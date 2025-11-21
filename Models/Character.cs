@@ -438,6 +438,7 @@ namespace _404_not_founders.Models
 
                     AnsiConsole.MarkupLine($"The character '[orange1]{this.Name}[/]' has been deleted!");
                     Thread.Sleep(1200);
+                    Console.Clear();
                 }
                 else
                 {
