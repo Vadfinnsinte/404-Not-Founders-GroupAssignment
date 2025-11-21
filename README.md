@@ -2,6 +2,32 @@
 ### 404-Not-Founders-GroupAssignment
 
 An app that helps you to store all that valuable information you want for your adventures in roleplays, writing projects or any ways you see fit.
+
+# Installation Instructions
+
+## 1. Clone the repository
+
+Open a terminal and run:
+
+```
+git clone https://github.com/Vadfinnsinte/404-Not-Founders-GroupAssignment.git
+cd your-repo
+
+```
+
+## 2. Restore dependencies
+
+```
+dotnet restore
+
+```
+## 3. Build and Run
+```
+dotnet build
+dotnet run
+
+```
+
 # Design overview (class diagram / pseudo diagram)
 
 <img src="https://i.imgur.com/3JhtW88.jpeg" width="400" alt="class-diagrams" />
@@ -19,11 +45,26 @@ This was very useful as it helped us plan the tasks needed to create the app. It
 ### Here we decided to use these colors:
 
 Menyval(aktiv): Orange1
+
 Title: Använd hex färgen #FFA500.
+
 Error (error från server eller om du skrivit fel): Red
+
 Success (Något har registrerats korrekt): Green 
 
+In the menues we choosed to use Specter.Consoles SelectionPromt for a nice look.
 <img src="https://i.imgur.com/ZOHkNbg.jpeg" width="600" alt="menu in white and orange" />
+
+
+To display characters, storylines, and worlds, we use Table, with AddColumn and AddRow.
+
+<img src="https://i.imgur.com/rH39yoK.jpeg" width="500" alt="menu in white and orange" />
+
+
+# Project Description
+
+In the beginning we decided to have a mandatory group meeting each day at 11.30 where we went through how things were going along. We also had ongoing conversations and updates in our Discord channel.
+We wrote up tasks in GitHub Projects that our group members could assign themselves to, to see what we had left to do and what others worked on.
 
 
 # HOW TO USE UserService: 
