@@ -45,13 +45,10 @@ This was very useful as it helped us plan the tasks needed to create the app. It
 
 ### Here we decided to use these colors:
 
-Menyval(aktiv): Orange1
-
-Title: Använd hex färgen #FFA500.
-
-Error (error från server eller om du skrivit fel): Red
-
-Success (Något har registrerats korrekt): Green 
+Menu option (active): Orange1
+Title: Use the hex color #FFA500.
+Error (error from server or if you entered something wrong): Red
+Success (something was successfully registered): Green
 
 In the menues we choosed to use Specter.Consoles SelectionPromt for a nice look.
 <img src="https://i.imgur.com/ZOHkNbg.jpeg" width="800" alt="menu in white and orange" />
