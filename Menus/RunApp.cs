@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
+    // ----- APPENS START/HUVUDLOOP -----
     public class RunApp
     {
         private readonly UserService _userService;

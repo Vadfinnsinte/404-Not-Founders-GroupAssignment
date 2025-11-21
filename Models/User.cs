@@ -32,9 +32,9 @@ namespace _404_not_founders.Models
 
                 var value = step switch
                 {
-                    0 => MenuHelper.AskInput("[#FFA500]E-mail:[/]"),
-                    1 => MenuHelper.AskInput("[#FFA500]Username:[/]"),
-                    2 => MenuHelper.AskInput("[#FFA500]Password:[/]", true),
+                    0 => ConsoleHelpers.AskInput("[#FFA500]E-mail:[/]"),
+                    1 => ConsoleHelpers.AskInput("[#FFA500]Username:[/]"),
+                    2 => ConsoleHelpers.AskInput("[#FFA500]Password:[/]", true),
                     _ => null
                 };
 
@@ -59,7 +59,7 @@ namespace _404_not_founders.Models
                 {
                     if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MenuHelper.Result(false, "Email address is already registered."); ConsoleHelpers.DelayAndClear(1200); continue;
+                        ConsoleHelpers.Result(false, "Email address is already registered."); ConsoleHelpers.DelayAndClear(1200); continue;
                     }
                     email = value; step++;
                 }
@@ -67,7 +67,7 @@ namespace _404_not_founders.Models
                 {
                     if (users.Exists(u => u.Username.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MenuHelper.Result(false, "The username is already taken."); ConsoleHelpers.DelayAndClear(1200); continue;
+                        ConsoleHelpers.Result(false, "The username is already taken."); ConsoleHelpers.DelayAndClear(1200); continue;
                     }
                     username = value; step++;
                 }
@@ -93,7 +93,7 @@ namespace _404_not_founders.Models
                             Projects = new List<Project>()
                         });
                         userService.SaveUserService();
-                        MenuHelper.Result(true, "Registering user...!");
+                        ConsoleHelpers.Result(true, "Registering user...!");
                         ConsoleHelpers.DelayAndClear(800);
                         registeredUser = username;
                         return true;
@@ -115,7 +115,7 @@ namespace _404_not_founders.Models
                 switch (choice)
                 {
                     case "E-mail":
-                        string newEmail = MenuHelper.AskInput("[#FFA500]New E-mail:[/]");
+                        string newEmail = ConsoleHelpers.AskInput("[#FFA500]New E-mail:[/]");
                         if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
@@ -126,16 +126,16 @@ namespace _404_not_founders.Models
                             {
                                 Email = newEmail;
                                 userService.SaveUserService();
-                                MenuHelper.Result(true, "E-mail updated.");
+                                ConsoleHelpers.Result(true, "E-mail updated.");
                             }
                             else
-                                MenuHelper.Result(false, "Invalid or already taken E-mail.");
+                                ConsoleHelpers.Result(false, "Invalid or already taken E-mail.");
                             ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
                     case "Username":
-                        string newName = MenuHelper.AskInput("[#FFA500]New username:[/]");
+                        string newName = ConsoleHelpers.AskInput("[#FFA500]New username:[/]");
                         if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
@@ -147,16 +147,16 @@ namespace _404_not_founders.Models
                                 Username = newName;
                                 username = newName;
                                 userService.SaveUserService();
-                                MenuHelper.Result(true, $"Username changed to {newName}.");
+                                ConsoleHelpers.Result(true, $"Username changed to {newName}.");
                             }
                             else
-                                MenuHelper.Result(false, "Invalid or already taken username.");
+                                ConsoleHelpers.Result(false, "Invalid or already taken username.");
                             ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
                     case "Password":
-                        string newPassword = MenuHelper.AskInput("[#FFA500]New password:[/]", true);
+                        string newPassword = ConsoleHelpers.AskInput("[#FFA500]New password:[/]", true);
                         if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
@@ -165,7 +165,7 @@ namespace _404_not_founders.Models
                         {
                             Password = newPassword;
                             userService.SaveUserService();
-                            MenuHelper.Result(true, "Password updated.");
+                            ConsoleHelpers.Result(true, "Password updated.");
                             ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;

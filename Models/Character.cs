@@ -112,7 +112,7 @@ namespace _404_not_founders.Models
             {
                 Console.Clear();
                 ConsoleHelpers.Info("Create New Character");
-                MenuHelper.InputInstruction(true);
+                ConsoleHelpers.InputInstruction(true);
 
                 // Visa redan ifyllda fält som kontext för användaren
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
@@ -131,27 +131,27 @@ namespace _404_not_founders.Models
                     case 0:
                         // Namn: enkel textinput
                         Console.Write("Name: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 1:
                         // Race: enkel textinput
                         Console.Write("Race: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 2:
                         // Description: längre text, inga särskilda valideringar här
                         Console.Write("Description: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 3:
                         // Gender: fri text; överväg enum eller valmeny om du vill begränsa alternativ
                         Console.Write("Gender: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 4:
                         // Age: tillåter tomt = 0, validerar heltal
                         Console.Write("Age (leave empty for 0): ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
                         {
                             if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
@@ -167,7 +167,7 @@ namespace _404_not_founders.Models
                     case 5:
                         // Level: samma logik som age
                         Console.Write("Level (leave empty for 0): ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
                         {
                             if (string.IsNullOrWhiteSpace(input)) { level = 0; step++; continue; }
@@ -183,12 +183,12 @@ namespace _404_not_founders.Models
                     case 6:
                         // Class: fri text, överväg att kalla detta "characterClass" för tydlighet
                         Console.Write("Class: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 7:
                         // Other info: valfri extra text
                         Console.Write("Other info: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 8:
                         // Bekräftelsesteg: ja/nej/avsluta
