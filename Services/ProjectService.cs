@@ -11,7 +11,7 @@ namespace _404_not_founders.Services
         public ProjectService(UserService userService) => _userService = userService;
 
         public List<Project> GetAll(User user)
-            => user.Projects.OrderByDescending(p => p.dateOfCreation).ToList();
+            => user.Projects.OrderByDescending(p => p.DateOfCreation).ToList();
 
         // söker projekt baserat på sökterm i titel eller beskrivning
         public List<Project> Search(User user, string term)
@@ -23,7 +23,7 @@ namespace _404_not_founders.Services
                 .Where(p =>
                     p.title.Contains(term, StringComparison.OrdinalIgnoreCase) ||
                     p.description.Contains(term, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(p => p.dateOfCreation)
+                .OrderByDescending(p => p.DateOfCreation)
                 .ToList();
         }
 
