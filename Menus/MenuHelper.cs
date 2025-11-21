@@ -118,603 +118,359 @@ namespace _404_not_founders.Menus
             }
         }
 
-        // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        //public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser, ref bool running)
+        //public void StorylineMenu(Project project)
         //{
-        //    while (running)
-        //    {
-        //        if (_currentUser == null)
-        //        {
-        //            ConsoleHelpers.Result(false, "No user logged in!");
-        //            ConsoleHelpers.DelayAndClear();
-        //            loggedIn = false;
-        //            currentUser = null;
-        //            return;
-        //        }
-
-        //        Console.Clear();
-        //        ConsoleHelpers.Info($"Main menu");
-        //          AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
-        //        var choice = Menu("What would you like to do?",
-        //                          "Add project",
-        //                          "Handle project",
-        //                          "Latest project",
-        //                          "Edit account",
-        //                          "Log out",
-        //                          "Quit");
-        //        switch (choice)
-        //        {
-        //            case "Quit":
-        //                running = false;
-        //                break;
-        //            case "Log out":
-        //                ConsoleHelpers.Result(true, "Logging out...");
-        //                ConsoleHelpers.DelayAndClear();
-        //                loggedIn = false;
-        //                currentUser = null;
-        //                _currentUser = null;
-        //                //RunApp();
-        //                break;
-        //            case "Add project":
-        //                ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
-        //                var newProject = new Project();
-        //                var addedProject = newProject.Add(_currentUser, _userService);
-        //                ConsoleHelpers.DelayAndClear();
-        //                ProjectEditMenu(addedProject);
-        //                break;
-        //            case "Handle project":
-        //                ShowProjectMenu();
-        //                break;
-        //            case "Latest project":
-        //                var username = currentUser;
-        //                var user = _userService.Users
-        //                .FirstOrDefault(u => u.Username == username);
-
-        //                if (user != null)
-        //                    ShowLastProjectMenu(user);
-        //                else
-        //                {
-        //                    AnsiConsole.MarkupLine("[red]Could not find current user.[/]");
-        //                    Console.ReadKey(true);
-        //                }
-        //                break;
-        //            case "Edit account":
-        //                EditUserMenu(ref currentUser);
-        //                break;
-        //        }
-        //    }
-        //}
-        // ----- REDIGERA ANVÄNDARE -----
-        //public void EditUserMenu(ref string currentUser)
-        //{
-        //    if (_currentUser == null)
-        //    {
-        //        ConsoleHelpers.Result(false, "Ingen användare är inloggad!");
-        //        ConsoleHelpers.DelayAndClear();
-        //        return;
-        //    }
-
-        //    bool finished = _currentUser.EditUser(_userService, ref currentUser);
-        //    if (finished)
-        //    {
-        //        // Visa feedback endast om du gick via "Tillbaka"
-        //        ConsoleHelpers.Info($"New {_currentUser.Username}.");
-        //        ConsoleHelpers.DelayAndClear();
-        //    }
-        //    // Annars – ingen feedback!
-        //}
-
-
-
-        // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
-        //public void ShowProjectMenu()
-        //{
-        //    //             Info("Projektmeny");
-        //    //             DelayAndClear();
-        //    if (_currentUser == null)
-        //    {
-        //        AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
-        //        Console.WriteLine(_currentUser);
-        //    }// 
-          
         //    while (true)
         //    {
         //        var choice = AnsiConsole.Prompt(
         //            new SelectionPrompt<string>()
-        //                .Title("[#FFA500]Project Menu[/]")
-        //                .HighlightStyle(new Style(Color.Orange1))
-        //                .AddChoices("Show all projects", "Search projects", "Back"));
-
-        //        if (choice == "Back") break;
-
-        //        if (choice == "Show all projects")
-        //        {
-        //            var list = _projectService.GetAll(_currentUser);
-        //            if (list == null || list.Count == 0)
-        //            {
-        //                AnsiConsole.MarkupLine("[yellow]No projects yet.[/]");
-        //                AnsiClearHelper.WaitForKeyAndClear();
-        //                break;
-                      
-        //            }
-
-        //            var selected = SelectFromList(list, "Select a project");
-        //            if (selected != null)
-        //                _projectService.SetLastSelected(_currentUser, selected.Id);
-        //            ProjectEditMenu(selected);
-        //        }
-        //        else if (choice == "Search projects")
-        //        {
-        //            var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
-        //            var hits = _projectService.Search(_currentUser, term);
-
-        //            if (hits == null || hits.Count == 0)
-        //            {
-        //                AnsiConsole.MarkupLine("[red]No results[/]");
-        //                AnsiClearHelper.WaitForKeyAndClear();
-        //                break;
-        //            }
-
-        //            var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
-        //            if (selected != null)
-        //                _projectService.SetLastSelected(_currentUser, selected.Id);
-
-        //            AnsiConsole.Clear();
-        //            ProjectEditMenu(selected);
-        //        }
-
-        //    }
-        //}
-
-        //private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
-        //{
-        //    if (projects == null || projects.Count == 0) return null;
-
-        //    var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
-
-        //    //var table = new Table().Border(TableBorder.Rounded);
-        //    //table.AddColumn("[#FFA500]Title[/]");
-        //    //table.AddColumn("[grey]Date[/]");
-        //    //foreach (var p in sorted)
-        //    //table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
-        //    //AnsiConsole.Write(table);
-
-        //    var selected = AnsiConsole.Prompt(
-        //        new SelectionPrompt<Project>()
-        //            .Title($"[bold]{title}[/]")
-        //            .PageSize(10)
-        //            .HighlightStyle(new Style(Color.Orange1))
-        //            .AddChoices(sorted)
-        //            .UseConverter(p => $"{p.title} ({p.DateOfCreation:yyyy-MM-dd})"));
-
-        //    AnsiConsole.Clear();
-        //    return selected;
-
-        //}
-
-
-        //public void ProjectEditMenu(Project project)
-        //{
-        //    Character character = new Character();
-        //    bool running = true, loggedIn = true;
-        //    bool runEdit = true;
-        //    string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
-
-        //    while (runEdit)
-        //    {
-        //        var choice = AnsiConsole.Prompt(
-        //            new SelectionPrompt<string>()
-        //                .Title("[#FFA500]Project Edit Menu[/]")
-        //                .HighlightStyle(new Style(Color.Orange1))
-        //                .AddChoices(
-        //                    "Edit/Add Characters",
-        //                    "Edit/Add worlds",
-        //                    "Edit/Add Storylines",
-        //                    "Show Everything",
-        //                    "Back to main menu"
-        //                )
-        //        );
+        //                .Title("[bold]Storylines[/]")
+        //                .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
+        //                .HighlightStyle(Color.Orange1));
 
         //        switch (choice)
         //        {
-        //            case "Edit/Add Characters":
-        //                character.ChracterMenu2(_userService, _projectService, this, project);
+        //            case "Add Storyline":
+        //                AddStorylineToProject(project);
         //                break;
-        //            case "Edit/Add worlds":
-        //                if (_currentUser != null)
+        //            case "Show Storylines":
+        //                project.ShowAllStorylines();
+        //                AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+        //                AnsiClearHelper.WaitForKeyAndClear();
+        //                break;
+
+        //            case "Edit Storyline":
+        //                EditStoryline(project);
+        //                break;
+        //            case "Remove Storyline":
+        //                if (project.Storylines == null || project.Storylines.Count == 0)
         //                {
-        //                    WorldMenu(_currentUser, project);
-        //                }
-        //                else
-        //                {
-        //                    AnsiConsole.MarkupLine("[red]No user logged in![/]");
+        //                    AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
         //                    ConsoleHelpers.DelayAndClear();
+        //                    break;
         //                }
+
+        //                var storylineChoices = project.Storylines.Select(w => w.Title).ToList();
+
+        //                storylineChoices.Add("Back to Menu");
+
+        //                var selectedStoryline = AnsiConsole.Prompt(
+        //                    new SelectionPrompt<string>()
+        //                        .Title("[#FFA500]Choose storyline to Remove[/]")
+        //                        .HighlightStyle(new Style(Color.Orange1))
+        //                        .AddChoices(storylineChoices));
+
+        //                if (selectedStoryline == "Back to Menu")
+        //                {
+        //                    break;
+        //                }
+
+        //                var storylineToDelete = project.Storylines.First(w => w.Title == selectedStoryline);
+
+        //                storylineToDelete.DeleteStoryline(project, _userService);
         //                break;
-        //            case "Edit/Add Storylines":
-        //                StorylineMenu(project);
+
+        //            case "Back":
+        //                //ProjectEditMenu(project);
         //                break;
-        //            case "Show Everything":
-        //                Console.Clear();
-        //                project.ShowAll();
-        //                break;
-        //            case "Back to main menu":
-        //                Console.Clear();
-        //                //ShowLoggedInMenu(ref loggedIn, ref user, ref running);
-        //                runEdit = false;
-        //                break;
-        //            default:
-        //                Console.WriteLine("Something went wrong... going back to menu");
-        //                return;
         //        }
         //    }
-        //    //DelayAndClear();
         //}
-        public static void UserMenu()
-        {
-            ConsoleHelpers.Info("Användarmenyn");
-            Console.WriteLine("Coming Soon");
-            ConsoleHelpers.DelayAndClear();
-        }
-        public static void CharacterMenu()
-        {
-            ConsoleHelpers.Info("Karaktärsmenyn");
-            Console.WriteLine("Coming Soon");
-            ConsoleHelpers.DelayAndClear();
-        }
-        public void StorylineMenu(Project project)
-        {
-            while (true)
-            {
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[bold]Storylines[/]")
-                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
-                        .HighlightStyle(Color.Orange1));
-
-                switch (choice)
-                {
-                    case "Add Storyline":
-                        AddStorylineToProject(project);
-                        break;
-                    case "Show Storylines":
-                        project.ShowAllStorylines();
-                        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
-                        AnsiClearHelper.WaitForKeyAndClear();
-                        break;
-
-                    case "Edit Storyline":
-                        EditStoryline(project);
-                        break;
-                    case "Remove Storyline":
-                        if (project.Storylines == null || project.Storylines.Count == 0)
-                        {
-                            AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
-                            ConsoleHelpers.DelayAndClear();
-                            break;
-                        }
-
-                        var storylineChoices = project.Storylines.Select(w => w.Title).ToList();
-
-                        storylineChoices.Add("Back to Menu");
-
-                        var selectedStoryline = AnsiConsole.Prompt(
-                            new SelectionPrompt<string>()
-                                .Title("[#FFA500]Choose storyline to Remove[/]")
-                                .HighlightStyle(new Style(Color.Orange1))
-                                .AddChoices(storylineChoices));
-
-                        if (selectedStoryline == "Back to Menu")
-                        {
-                            break;
-                        }
-
-                        var storylineToDelete = project.Storylines.First(w => w.Title == selectedStoryline);
-
-                        storylineToDelete.DeleteStoryline(project, _userService);
-                        break;
-
-                    case "Back":
-                        //ProjectEditMenu(project);
-                        break;
-                }
-            }
-        }
-        private void AddStorylineToProject(Project project)
-        {
-            Console.Clear();
-            ConsoleHelpers.Info("Create new storyline");
+        //private void AddStorylineToProject(Project project)
+        //{
+        //    Console.Clear();
+        //    ConsoleHelpers.Info("Create new storyline");
 
 
-            var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
-            var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (short description):[/]");
-            var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
-            var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
-            var story = AnsiConsole.Ask<string>("[#FFA500]Story content:[/]");
-            var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idea notes:[/]");
-            var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
+        //    var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
+        //    var synopsis = AnsiConsole.Ask<string>("[#FFA500]Synopsis (short description):[/]");
+        //    var theme = AnsiConsole.Ask<string>("[#FFA500]Theme:[/]");
+        //    var genre = AnsiConsole.Ask<string>("[#FFA500]Genre:[/]");
+        //    var story = AnsiConsole.Ask<string>("[#FFA500]Story content:[/]");
+        //    var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idea notes:[/]");
+        //    var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
 
-            project.Storylines ??= new List<Storyline>();
-            int maxOrder = project.Storylines.Count + 1;
-            int orderInProject;
+        //    project.Storylines ??= new List<Storyline>();
+        //    int maxOrder = project.Storylines.Count + 1;
+        //    int orderInProject;
 
-            if (maxOrder == 1)
-            {
-                
-                orderInProject = 1;
-            }
-            else
-            {
-                while (true)
-                {
-                    var input = AnsiConsole.Ask<string>(
-                        $"[#FFA500]Order in project (1 - {maxOrder}):[/]");
+        //    if (maxOrder == 1)
+        //    {
 
-                    if (int.TryParse(input, out orderInProject) &&
-                        orderInProject >= 1 && orderInProject <= maxOrder)
-                        break;
+        //        orderInProject = 1;
+        //    }
+        //    else
+        //    {
+        //        while (true)
+        //        {
+        //            var input = AnsiConsole.Ask<string>(
+        //                $"[#FFA500]Order in project (1 - {maxOrder}):[/]");
 
-                    AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
-                }
-            }
+        //            if (int.TryParse(input, out orderInProject) &&
+        //                orderInProject >= 1 && orderInProject <= maxOrder)
+        //                break;
 
-            Console.WriteLine();
-            ConsoleHelpers.Info("Storyline summary:");
-            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
-            AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {synopsis}");
-            AnsiConsole.MarkupLine($"[grey]Theme:[/] {theme}");
-            AnsiConsole.MarkupLine($"[grey]Genre:[/] {genre}");
-            AnsiConsole.MarkupLine($"[grey]Story:[/] {story}");
-            AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {ideaNotes}");
-            AnsiConsole.MarkupLine($"[grey]Other info:[/] {otherInfo}");
+        //            AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
+        //        }
+        //    }
 
-            Console.WriteLine();
-            var confirm = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[#FFA500]Are you happy with this storyline?[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices("Yes", "No (Start over)", "Exit"));
+        //    Console.WriteLine();
+        //    ConsoleHelpers.Info("Storyline summary:");
+        //    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
+        //    AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {synopsis}");
+        //    AnsiConsole.MarkupLine($"[grey]Theme:[/] {theme}");
+        //    AnsiConsole.MarkupLine($"[grey]Genre:[/] {genre}");
+        //    AnsiConsole.MarkupLine($"[grey]Story:[/] {story}");
+        //    AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {ideaNotes}");
+        //    AnsiConsole.MarkupLine($"[grey]Other info:[/] {otherInfo}");
 
-            if (confirm == "Exit")
-            {
+        //    Console.WriteLine();
+        //    var confirm = AnsiConsole.Prompt(
+        //        new SelectionPrompt<string>()
+        //            .Title("[#FFA500]Are you happy with this storyline?[/]")
+        //            .HighlightStyle(new Style(Color.Orange1))
+        //            .AddChoices("Yes", "No (Start over)", "Exit"));
 
-                ConsoleHelpers.DelayAndClear();
-                return;
-            }
+        //    if (confirm == "Exit")
+        //    {
 
-            if (confirm == "No (Start over)")
-            {
+        //        ConsoleHelpers.DelayAndClear();
+        //        return;
+        //    }
 
-                AddStorylineToProject(project);
-                return;
-            }
+        //    if (confirm == "No (Start over)")
+        //    {
 
-            foreach (var sl in project.Storylines
-                .Where(sl => sl.orderInProject >= orderInProject))
-            {
-                sl.orderInProject++;
-            }
-            var s = new Storyline
-            {
-                Title = title,
-                Synopsis = synopsis,
-                Theme = theme,
-                Genre = genre,
-                Story = story,
-                IdeaNotes = ideaNotes,
-                OtherInfo = otherInfo,
-                orderInProject = orderInProject,
-                dateOfLastEdit = DateTime.Now
-            };
+        //        AddStorylineToProject(project);
+        //        return;
+        //    }
 
-            project.Storylines.Add(s);
-            _userService.SaveUserService();
+        //    foreach (var sl in project.Storylines
+        //        .Where(sl => sl.orderInProject >= orderInProject))
+        //    {
+        //        sl.orderInProject++;
+        //    }
+        //    var s = new Storyline
+        //    {
+        //        Title = title,
+        //        Synopsis = synopsis,
+        //        Theme = theme,
+        //        Genre = genre,
+        //        Story = story,
+        //        IdeaNotes = ideaNotes,
+        //        OtherInfo = otherInfo,
+        //        orderInProject = orderInProject,
+        //        dateOfLastEdit = DateTime.Now
+        //    };
 
-            ConsoleHelpers.Info("Storyline created!");
-            ConsoleHelpers.DelayAndClear();
-        }
-        private void EditStoryline(Project project)
-        {
-            var original = SelectStoryline(project, "Choose storyline to edit");
-            if (original == null) return;
+        //    project.Storylines.Add(s);
+        //    _userService.SaveUserService();
 
-
-            var temp = new Storyline
-            {
-                Title = original.Title,
-                Synopsis = original.Synopsis,
-                Theme = original.Theme,
-                Genre = original.Genre,
-                Story = original.Story,
-                IdeaNotes = original.IdeaNotes,
-                OtherInfo = original.OtherInfo,
-                orderInProject = original.orderInProject,
-                dateOfLastEdit = original.dateOfLastEdit
-            };
-
-            while (true)
-            {
-                Console.Clear();
-                ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
-
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("What do you want to change?")
-                        .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices(
-                            "Title",
-                            "Synopsis",
-                            "Theme",
-                            "Genre",
-                            "Story",
-                            "Idea notes",
-                            "Other info",
-                            "Order in project",
-                            "Done")
-                        .HighlightStyle(Color.Orange1));
+        //    ConsoleHelpers.Info("Storyline created!");
+        //    ConsoleHelpers.DelayAndClear();
+        //}
+        //private void EditStoryline(Project project)
+        //{
+        //    var original = SelectStoryline(project, "Choose storyline to edit");
+        //    if (original == null) return;
 
 
-                string PromptNonEmpty(string prompt)
-                {
-                    while (true)
-                    {
-                        var value = AnsiConsole.Ask<string>(prompt);
-                        if (!string.IsNullOrWhiteSpace(value))
-                            return value;
+        //    var temp = new Storyline
+        //    {
+        //        Title = original.Title,
+        //        Synopsis = original.Synopsis,
+        //        Theme = original.Theme,
+        //        Genre = original.Genre,
+        //        Story = original.Story,
+        //        IdeaNotes = original.IdeaNotes,
+        //        OtherInfo = original.OtherInfo,
+        //        orderInProject = original.orderInProject,
+        //        dateOfLastEdit = original.dateOfLastEdit
+        //    };
 
-                        AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
-                    }
-                }
+        //    while (true)
+        //    {
+        //        Console.Clear();
+        //        ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
 
-                if (choice == "Done")
-                {
-                    Console.Clear();
-                    ConsoleHelpers.Info("Storyline summary:");
-                    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
-                    AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
-                    AnsiConsole.MarkupLine($"[grey]Genre:[/] {temp.Genre}");
-                    AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
-                    AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
-                    AnsiConsole.MarkupLine($"[grey]Order in project:[/] {temp.orderInProject}");
-
-                    Console.WriteLine();
-                    var confirm = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("[#FFA500]Are you happy with this storyline?[/]")
-                            .HighlightStyle(new Style(Color.Orange1))
-                            .AddChoices("Yes", "No (Start over)", "Exit"));
-
-                    if (confirm == "Exit")
-                    {
-                        ConsoleHelpers.DelayAndClear();
-                        return;
-                    }
-
-                    if (confirm == "No (Start over)")
-                    {
-                        temp.Title = original.Title;
-                        temp.Synopsis = original.Synopsis;
-                        temp.Theme = original.Theme;
-                        temp.Genre = original.Genre;
-                        temp.Story = original.Story;
-                        temp.IdeaNotes = original.IdeaNotes;
-                        temp.OtherInfo = original.OtherInfo;
-                        temp.orderInProject = original.orderInProject;
-                        continue;
-                    }
-
-                    if (confirm == "Yes")
-                    {
-                        original.Title = temp.Title;
-                        original.Synopsis = temp.Synopsis;
-                        original.Theme = temp.Theme;
-                        original.Genre = temp.Genre;
-                        original.Story = temp.Story;
-                        original.IdeaNotes = temp.IdeaNotes;
-                        original.OtherInfo = temp.OtherInfo;
-                        original.dateOfLastEdit = DateTime.Now;
-
-                        int oldOrder = original.orderInProject;
-                        int newOrder = temp.orderInProject;
-
-                        if (newOrder != oldOrder)
-                        {
-                            if (newOrder < oldOrder)
-                            {
-                                foreach (var sl in project.Storylines.Where(s =>
-                                             s != original &&
-                                             s.orderInProject >= newOrder &&
-                                             s.orderInProject < oldOrder))
-                                {
-                                    sl.orderInProject++;
-                                }
-                            }
-                            else
-                            {
-                                foreach (var sl in project.Storylines.Where(s =>
-                                             s != original &&
-                                             s.orderInProject <= newOrder &&
-                                             s.orderInProject > oldOrder))
-                                {
-                                    sl.orderInProject--;
-                                }
-                            }
-
-                            original.orderInProject = newOrder;
-                        }
-
-                        _userService.SaveUserService();
-                        ConsoleHelpers.Info("Storyline updated!");
-                        ConsoleHelpers.DelayAndClear();
-                        return;
-                    }
-                }
+        //        var choice = AnsiConsole.Prompt(
+        //            new SelectionPrompt<string>()
+        //                .Title("What do you want to change?")
+        //                .HighlightStyle(new Style(Color.Orange1))
+        //                .AddChoices(
+        //                    "Title",
+        //                    "Synopsis",
+        //                    "Theme",
+        //                    "Genre",
+        //                    "Story",
+        //                    "Idea notes",
+        //                    "Other info",
+        //                    "Order in project",
+        //                    "Done")
+        //                .HighlightStyle(Color.Orange1));
 
 
-                switch (choice)
-                {
-                    case "Title":
-                        temp.Title = PromptNonEmpty("[#FFA500]New title:[/]");
-                        break;
-                    case "Synopsis":
-                        temp.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
-                        break;
-                    case "Theme":
-                        temp.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
-                        break;
-                    case "Genre":
-                        temp.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
-                        break;
-                    case "Story":
-                        temp.Story = PromptNonEmpty("[#FFA500]New story content:[/]");
-                        break;
-                    case "Idea notes":
-                        temp.IdeaNotes = PromptNonEmpty("[#FFA500]New idea notes:[/]");
-                        break;
-                    case "Other info":
-                        temp.OtherInfo = PromptNonEmpty("[#FFA500]New other information:[/]");
-                        break;
-                    case "Order in project":
-                        int maxOrder = project.Storylines.Count;
-                        while (true)
-                        {
-                            var input = AnsiConsole.Ask<string>(
-                                $"[#FFA500]New order in project (1 - {maxOrder}):[/]");
-                            if (int.TryParse(input, out var newOrder) &&
-                                newOrder >= 1 && newOrder <= maxOrder)
-                            {
-                                temp.orderInProject = newOrder;
-                                break;
-                            }
+        //        string PromptNonEmpty(string prompt)
+        //        {
+        //            while (true)
+        //            {
+        //                var value = AnsiConsole.Ask<string>(prompt);
+        //                if (!string.IsNullOrWhiteSpace(value))
+        //                    return value;
 
-                            AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
-                        }
-                        break;
-                }
-            }
-        }
-        private Storyline? SelectStoryline(Project project, string title)
-        {
-            if (project.Storylines == null || project.Storylines.Count == 0)
-            {
-                AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
-                Console.ReadKey(true);
-                return null;
-            }
+        //                AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
+        //            }
+        //        }
 
-            var sorted = project.Storylines
-                .OrderBy(s => s.orderInProject)
-                .ToList();
+        //        if (choice == "Done")
+        //        {
+        //            Console.Clear();
+        //            ConsoleHelpers.Info("Storyline summary:");
+        //            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
+        //            AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
+        //            AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
+        //            AnsiConsole.MarkupLine($"[grey]Genre:[/] {temp.Genre}");
+        //            AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
+        //            AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
+        //            AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+        //            AnsiConsole.MarkupLine($"[grey]Order in project:[/] {temp.orderInProject}");
 
-            return AnsiConsole.Prompt(
-                new SelectionPrompt<Storyline>()
-                    .Title($"[#FFA500]{title}[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices(sorted)
-                    .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
-        }
+        //            Console.WriteLine();
+        //            var confirm = AnsiConsole.Prompt(
+        //                new SelectionPrompt<string>()
+        //                    .Title("[#FFA500]Are you happy with this storyline?[/]")
+        //                    .HighlightStyle(new Style(Color.Orange1))
+        //                    .AddChoices("Yes", "No (Start over)", "Exit"));
+
+        //            if (confirm == "Exit")
+        //            {
+        //                ConsoleHelpers.DelayAndClear();
+        //                return;
+        //            }
+
+        //            if (confirm == "No (Start over)")
+        //            {
+        //                temp.Title = original.Title;
+        //                temp.Synopsis = original.Synopsis;
+        //                temp.Theme = original.Theme;
+        //                temp.Genre = original.Genre;
+        //                temp.Story = original.Story;
+        //                temp.IdeaNotes = original.IdeaNotes;
+        //                temp.OtherInfo = original.OtherInfo;
+        //                temp.orderInProject = original.orderInProject;
+        //                continue;
+        //            }
+
+        //            if (confirm == "Yes")
+        //            {
+        //                original.Title = temp.Title;
+        //                original.Synopsis = temp.Synopsis;
+        //                original.Theme = temp.Theme;
+        //                original.Genre = temp.Genre;
+        //                original.Story = temp.Story;
+        //                original.IdeaNotes = temp.IdeaNotes;
+        //                original.OtherInfo = temp.OtherInfo;
+        //                original.dateOfLastEdit = DateTime.Now;
+
+        //                int oldOrder = original.orderInProject;
+        //                int newOrder = temp.orderInProject;
+
+        //                if (newOrder != oldOrder)
+        //                {
+        //                    if (newOrder < oldOrder)
+        //                    {
+        //                        foreach (var sl in project.Storylines.Where(s =>
+        //                                     s != original &&
+        //                                     s.orderInProject >= newOrder &&
+        //                                     s.orderInProject < oldOrder))
+        //                        {
+        //                            sl.orderInProject++;
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        foreach (var sl in project.Storylines.Where(s =>
+        //                                     s != original &&
+        //                                     s.orderInProject <= newOrder &&
+        //                                     s.orderInProject > oldOrder))
+        //                        {
+        //                            sl.orderInProject--;
+        //                        }
+        //                    }
+
+        //                    original.orderInProject = newOrder;
+        //                }
+
+        //                _userService.SaveUserService();
+        //                ConsoleHelpers.Info("Storyline updated!");
+        //                ConsoleHelpers.DelayAndClear();
+        //                return;
+        //            }
+        //        }
+
+
+        //        switch (choice)
+        //        {
+        //            case "Title":
+        //                temp.Title = PromptNonEmpty("[#FFA500]New title:[/]");
+        //                break;
+        //            case "Synopsis":
+        //                temp.Synopsis = PromptNonEmpty("[#FFA500]New synopsis:[/]");
+        //                break;
+        //            case "Theme":
+        //                temp.Theme = PromptNonEmpty("[#FFA500]New theme:[/]");
+        //                break;
+        //            case "Genre":
+        //                temp.Genre = PromptNonEmpty("[#FFA500]New genre:[/]");
+        //                break;
+        //            case "Story":
+        //                temp.Story = PromptNonEmpty("[#FFA500]New story content:[/]");
+        //                break;
+        //            case "Idea notes":
+        //                temp.IdeaNotes = PromptNonEmpty("[#FFA500]New idea notes:[/]");
+        //                break;
+        //            case "Other info":
+        //                temp.OtherInfo = PromptNonEmpty("[#FFA500]New other information:[/]");
+        //                break;
+        //            case "Order in project":
+        //                int maxOrder = project.Storylines.Count;
+        //                while (true)
+        //                {
+        //                    var input = AnsiConsole.Ask<string>(
+        //                        $"[#FFA500]New order in project (1 - {maxOrder}):[/]");
+        //                    if (int.TryParse(input, out var newOrder) &&
+        //                        newOrder >= 1 && newOrder <= maxOrder)
+        //                    {
+        //                        temp.orderInProject = newOrder;
+        //                        break;
+        //                    }
+
+        //                    AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
+        //                }
+        //                break;
+        //        }
+        //    }
+        //}
+        //private Storyline? SelectStoryline(Project project, string title)
+        //{
+        //    if (project.Storylines == null || project.Storylines.Count == 0)
+        //    {
+        //        AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
+        //        Console.ReadKey(true);
+        //        return null;
+        //    }
+
+        //    var sorted = project.Storylines
+        //        .OrderBy(s => s.orderInProject)
+        //        .ToList();
+
+        //    return AnsiConsole.Prompt(
+        //        new SelectionPrompt<Storyline>()
+        //            .Title($"[#FFA500]{title}[/]")
+        //            .HighlightStyle(new Style(Color.Orange1))
+        //            .AddChoices(sorted)
+        //            .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
+        //}
         private World? SelectWorld(Project project, string title)
         {
             if (project.Worlds == null || project.Worlds.Count == 0)
@@ -737,46 +493,6 @@ namespace _404_not_founders.Menus
 
 
 
-        //public void ShowLastProjectMenu(User currentUser)
-        //{
-        //    Console.Clear();
-        //    ConsoleHelpers.Info("Last selected project");
-
-        //    // hämta senaste valda projektet för den här användaren
-        //    var last = _projectService.GetLastSelected(currentUser);
-
-        //    if (last == null)
-        //    {
-        //        AnsiConsole.MarkupLine("[grey]You have no last selected project yet.[/]");
-        //        AnsiConsole.MarkupLine("[grey]Open a project from \"Show projects\" first.[/]");
-        //        Console.ReadKey(true);
-        //        return;
-        //    }
-
-        //    // Visa lite info om projektet
-        //    AnsiConsole.MarkupLine("");
-        //    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
-        //    AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
-        //    AnsiConsole.MarkupLine($"[grey]Created:[/] {last.DateOfCreation:yyyy-MM-dd}");
-        //    AnsiConsole.MarkupLine("");
-
-        //    var choice = AnsiConsole.Prompt(
-        //        new SelectionPrompt<string>()
-        //            .Title("[#FFA500]What do you want to do with this project?[/]")
-        //            .HighlightStyle(new Style(Color.Orange1))
-        //            .AddChoices("Open project", "Back"));
-
-        //    if (choice == "Open project")
-        //    {
-        //        // gå direkt till samma meny som när man valt projekt via listan
-        //        ProjectEditMenu(last);
-        //    }
-        //    else
-        //    {
-        //        // Back – bara gå tillbaka till huvudmenyn
-        //        return;
-        //    }
-        //}
 
         // ----- WORLD MENU -----
 

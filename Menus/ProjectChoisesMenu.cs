@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
-    internal class ProjectChoisesMenu
+    public class ProjectChoisesMenu
     {
         private readonly User _currentUser;
         private readonly ProjectService _projectService;
@@ -138,7 +138,8 @@ namespace _404_not_founders.Menus
                         }
                         break;
                     case "Edit/Add Storylines":
-                        //StorylineMenu(project);
+                        StorylineChoisesMenu storylineMenu = new StorylineChoisesMenu(_userService);
+                        storylineMenu.StorylineMenu(project);
                         break;
                     case "Show Everything":
                         Console.Clear();
