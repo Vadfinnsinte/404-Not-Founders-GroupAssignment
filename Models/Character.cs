@@ -63,7 +63,7 @@ namespace _404_not_founders.Models
                     if (currentProject.Characters == null || currentProject.Characters.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
-                        MenuHelper.DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         break;
                     }
 
@@ -111,7 +111,7 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info("Create New Character");
+                ConsoleHelpers.Info("Create New Character");
                 MenuHelper.InputInstruction(true);
 
                 // Visa redan ifyllda fält som kontext för användaren
@@ -250,7 +250,7 @@ namespace _404_not_founders.Models
                             Console.WriteLine();
                             Console.WriteLine($"Character '{name}' created.");
                             Console.WriteLine("Press any key to continue...");
-                            MenuHelper.DelayAndClear();
+                            ConsoleHelpers.DelayAndClear();
 
                             return; // Klart
                         }
@@ -299,7 +299,7 @@ namespace _404_not_founders.Models
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -307,7 +307,7 @@ namespace _404_not_founders.Models
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -325,7 +325,7 @@ namespace _404_not_founders.Models
             Console.WriteLine();
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
-            MenuHelper.DelayAndClear();
+            ConsoleHelpers.DelayAndClear();
         }
         public void Show()
         {
@@ -352,7 +352,7 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info($"Edit character: [#FFA500]{temp.Name}[/]");
+                ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -397,7 +397,7 @@ namespace _404_not_founders.Models
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    MenuHelper.Info("Character summary:");
+                    ConsoleHelpers.Info("Character summary:");
                     AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{temp.Name}[/]");
                     AnsiConsole.MarkupLine($"[grey]Race:[/] {temp.Race}");
                     AnsiConsole.MarkupLine($"[grey]Description:[/] {temp.Description}");
@@ -416,7 +416,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Exit")
                     {
-                        MenuHelper.DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         return;
                     }
 
@@ -445,8 +445,8 @@ namespace _404_not_founders.Models
                         original.OtherInfo = temp.OtherInfo;
 
                         userService.SaveUserService();
-                        MenuHelper.Info("Character updated!");
-                        MenuHelper.DelayAndClear();
+                        ConsoleHelpers.Info("Character updated!");
+                        ConsoleHelpers.DelayAndClear();
                         return;
                     }
                 }

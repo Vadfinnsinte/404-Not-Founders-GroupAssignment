@@ -15,11 +15,11 @@ namespace _404_not_founders
             userService.LoadUserService();
 
             // Skapa huvudmenyn och skicka med userService så att den kan hantera användare och sparning
-            var menuHelper = new MenuHelper(userService, projectService);
+            var runApp = new RunApp(userService, projectService);
                 
 
             // Starta applikationens huvudloop
-            menuHelper.RunApp();
+            runApp.Run();
         }
     }
 }

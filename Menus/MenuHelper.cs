@@ -31,24 +31,24 @@ namespace _404_not_founders.Menus
         public User? CurrentUser => _currentUser;
         
         // ----- APPENS START/HUVUDLOOP -----
-        public void RunApp()
-        {
-            bool running = true, loggedIn = false;
-            string currentUser = null;
-            var users = _userService.Users;
+        //public void RunApp()
+        //{
+        //    bool running = true, loggedIn = false;
+        //    string currentUser = null;
+        //    var users = _userService.Users;
 
-            while (running)
-            {
-                if (!loggedIn)
-                    ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
-                else
-                    ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
-            }
+        //    while (running)
+        //    {
+        //        if (!loggedIn)
+        //            ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
+        //        else
+        //            ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
+        //    }
 
-            Info("Thank you for using the app, see you next time");
-            Info("Closing down...");
-            DelayAndClear();
-        }
+        //    Info("Thank you for using the app, see you next time");
+        //    Info("Closing down...");
+        //    DelayAndClear();
+        //}
 
 
         // ----- UI-HELPERS OCH GEMENSAM LOGIK -----
@@ -76,7 +76,7 @@ namespace _404_not_founders.Menus
         }
 
         /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
-        public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
+ 
 
         /// Skriv ut instruktion till användaren om E och B
         public static void InputInstruction(bool back = false) =>
@@ -84,8 +84,6 @@ namespace _404_not_founders.Menus
                 ? "[grey italic]Press E to go back or B to return to the previous step[/]"
                 : "[grey italic]Press E to go back[/]");
 
-        /// Delay och skärmrens – anropas efter bekräftelse eller fel
-        public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
 
         /// Input helpers – AskInput hanterar både secret och vanlig, och alltid "E" för exit
         public static string AskInput(string prompt, bool secret = false)
@@ -140,7 +138,7 @@ namespace _404_not_founders.Menus
             while (true)
             {
                 Console.Clear();
-                Info("Log in");
+                ConsoleHelpers.Info("Log in");
                 InputInstruction(true);
                 if (step >= 1)
                     AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
@@ -164,13 +162,13 @@ namespace _404_not_founders.Menus
                     if (user != null && user.Password == password)
                     {
                         Result(true, "Logging in…");
-                        DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         loggedInUser = username;
                         _currentUser = user;
                         return true;
                     }
                     Result(false, "Wrong username or password!");
-                    DelayAndClear(1200);
+                    ConsoleHelpers.DelayAndClear(1200);
                     password = ""; step = 1;
                 }
             }
@@ -184,14 +182,14 @@ namespace _404_not_founders.Menus
                 if (_currentUser == null)
                 {
                     Result(false, "No user logged in!");
-                    DelayAndClear();
+                    ConsoleHelpers.DelayAndClear();
                     loggedIn = false;
                     currentUser = null;
                     return;
                 }
 
                 Console.Clear();
-                Info($"Main menu");
+                ConsoleHelpers.Info($"Main menu");
                   AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
                 var choice = Menu("What would you like to do?",
                                   "Add project",
@@ -207,17 +205,17 @@ namespace _404_not_founders.Menus
                         break;
                     case "Log out":
                         Result(true, "Logging out...");
-                        DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        RunApp();
+                        //RunApp();
                         break;
                     case "Add project":
-                        Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+                        ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
-                        DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         ProjectEditMenu(addedProject);
                         break;
                     case "Handle project":
@@ -248,7 +246,7 @@ namespace _404_not_founders.Menus
             if (_currentUser == null)
             {
                 Result(false, "Ingen användare är inloggad!");
-                DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -256,8 +254,8 @@ namespace _404_not_founders.Menus
             if (finished)
             {
                 // Visa feedback endast om du gick via "Tillbaka"
-                Info($"New {_currentUser.Username}.");
-                DelayAndClear();
+                ConsoleHelpers.Info($"New {_currentUser.Username}.");
+                ConsoleHelpers.DelayAndClear();
             }
             // Annars – ingen feedback!
         }
@@ -347,8 +345,7 @@ namespace _404_not_founders.Menus
 
             AnsiConsole.Clear();
             return selected;
-            Info("Project menu");
-            DelayAndClear();
+
         }
 
 
@@ -387,7 +384,7 @@ namespace _404_not_founders.Menus
                         else
                         {
                             AnsiConsole.MarkupLine("[red]No user logged in![/]");
-                            DelayAndClear();
+                            ConsoleHelpers.DelayAndClear();
                         }
                         break;
                     case "Edit/Add Storylines":
@@ -411,15 +408,15 @@ namespace _404_not_founders.Menus
         }
         public static void UserMenu()
         {
-            Info("Användarmenyn");
+            ConsoleHelpers.Info("Användarmenyn");
             Console.WriteLine("Coming Soon");
-            DelayAndClear();
+            ConsoleHelpers.DelayAndClear();
         }
         public static void CharacterMenu()
         {
-            Info("Karaktärsmenyn");
+            ConsoleHelpers.Info("Karaktärsmenyn");
             Console.WriteLine("Coming Soon");
-            DelayAndClear();
+            ConsoleHelpers.DelayAndClear();
         }
         public void StorylineMenu(Project project)
         {
@@ -449,7 +446,7 @@ namespace _404_not_founders.Menus
                         if (project.Storylines == null || project.Storylines.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
-                            DelayAndClear();
+                            ConsoleHelpers.DelayAndClear();
                             break;
                         }
 
@@ -482,7 +479,7 @@ namespace _404_not_founders.Menus
         private void AddStorylineToProject(Project project)
         {
             Console.Clear();
-            Info("Create new storyline");
+            ConsoleHelpers.Info("Create new storyline");
 
 
             var title = AnsiConsole.Ask<string>("[#FFA500]Title:[/]");
@@ -518,7 +515,7 @@ namespace _404_not_founders.Menus
             }
 
             Console.WriteLine();
-            Info("Storyline summary:");
+            ConsoleHelpers.Info("Storyline summary:");
             AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
             AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {synopsis}");
             AnsiConsole.MarkupLine($"[grey]Theme:[/] {theme}");
@@ -537,7 +534,7 @@ namespace _404_not_founders.Menus
             if (confirm == "Exit")
             {
 
-                DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -569,8 +566,8 @@ namespace _404_not_founders.Menus
             project.Storylines.Add(s);
             _userService.SaveUserService();
 
-            Info("Storyline created!");
-            DelayAndClear();
+            ConsoleHelpers.Info("Storyline created!");
+            ConsoleHelpers.DelayAndClear();
         }
         private void EditStoryline(Project project)
         {
@@ -594,7 +591,7 @@ namespace _404_not_founders.Menus
             while (true)
             {
                 Console.Clear();
-                Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
+                ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -628,7 +625,7 @@ namespace _404_not_founders.Menus
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    Info("Storyline summary:");
+                    ConsoleHelpers.Info("Storyline summary:");
                     AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
                     AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
                     AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
@@ -647,7 +644,7 @@ namespace _404_not_founders.Menus
 
                     if (confirm == "Exit")
                     {
-                        DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         return;
                     }
 
@@ -705,8 +702,8 @@ namespace _404_not_founders.Menus
                         }
 
                         _userService.SaveUserService();
-                        Info("Storyline updated!");
-                        DelayAndClear();
+                        ConsoleHelpers.Info("Storyline updated!");
+                        ConsoleHelpers.DelayAndClear();
                         return;
                     }
                 }
@@ -799,7 +796,7 @@ namespace _404_not_founders.Menus
         public void ShowLastProjectMenu(User currentUser)
         {
             Console.Clear();
-            Info("Last selected project");
+            ConsoleHelpers.Info("Last selected project");
 
             // hämta senaste valda projektet för den här användaren
             var last = _projectService.GetLastSelected(currentUser);
@@ -845,7 +842,7 @@ namespace _404_not_founders.Menus
             while (true)
             {
                 Console.Clear();
-                Info("World Menu");
+                ConsoleHelpers.Info("World Menu");
                 var choice = Menu("",
                     "Add World",
                     "Show Worlds",
@@ -881,7 +878,7 @@ namespace _404_not_founders.Menus
                         if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No worlds to remove.[/]");
-                            DelayAndClear();
+                            ConsoleHelpers.DelayAndClear();
                             break;
                         }
 

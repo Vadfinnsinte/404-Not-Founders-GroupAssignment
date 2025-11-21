@@ -24,8 +24,8 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info("[#FFA500]Register new user[/]");
-                MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+                ConsoleHelpers.Info("[#FFA500]Register new user[/]");
+                ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{email}[/]");
                 if (step >= 2) AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
@@ -59,7 +59,7 @@ namespace _404_not_founders.Models
                 {
                     if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MenuHelper.Result(false, "Email address is already registered."); MenuHelper.DelayAndClear(1200); continue;
+                        MenuHelper.Result(false, "Email address is already registered."); ConsoleHelpers.DelayAndClear(1200); continue;
                     }
                     email = value; step++;
                 }
@@ -67,7 +67,7 @@ namespace _404_not_founders.Models
                 {
                     if (users.Exists(u => u.Username.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MenuHelper.Result(false, "The username is already taken."); MenuHelper.DelayAndClear(1200); continue;
+                        MenuHelper.Result(false, "The username is already taken."); ConsoleHelpers.DelayAndClear(1200); continue;
                     }
                     username = value; step++;
                 }
@@ -94,7 +94,7 @@ namespace _404_not_founders.Models
                         });
                         userService.SaveUserService();
                         MenuHelper.Result(true, "Registering user...!");
-                        MenuHelper.DelayAndClear(800);
+                        ConsoleHelpers.DelayAndClear(800);
                         registeredUser = username;
                         return true;
                     }
@@ -108,8 +108,8 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info($"Redigera konto");
-                MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+                ConsoleHelpers.Info($"Redigera konto");
+                ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
                 var choice = MenuHelper.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
                 switch (choice)
@@ -130,7 +130,7 @@ namespace _404_not_founders.Models
                             }
                             else
                                 MenuHelper.Result(false, "Invalid or already taken E-mail.");
-                            MenuHelper.DelayAndClear(1200);
+                            ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
@@ -151,7 +151,7 @@ namespace _404_not_founders.Models
                             }
                             else
                                 MenuHelper.Result(false, "Invalid or already taken username.");
-                            MenuHelper.DelayAndClear(1200);
+                            ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
@@ -166,7 +166,7 @@ namespace _404_not_founders.Models
                             Password = newPassword;
                             userService.SaveUserService();
                             MenuHelper.Result(true, "Password updated.");
-                            MenuHelper.DelayAndClear(1200);
+                            ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 

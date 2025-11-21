@@ -127,7 +127,7 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info($"Edit world: [#FFA500]{temp.Name}[/]");
+                ConsoleHelpers.Info($"Edit world: [#FFA500]{temp.Name}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -159,7 +159,7 @@ namespace _404_not_founders.Models
                 {
                     
                     Console.Clear();
-                    MenuHelper.Info("World summary:");
+                    ConsoleHelpers.Info("World summary:");
                     AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{temp.Name}[/]");
                     AnsiConsole.MarkupLine($"[grey]Climate:[/]   {temp.Climate}");
                     AnsiConsole.MarkupLine($"[grey]Regions:[/]   {temp.Regions}");
