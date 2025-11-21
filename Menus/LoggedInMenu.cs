@@ -21,7 +21,7 @@ namespace _404_not_founders.Menus
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
             _menuHelper = new MenuHelper(_userService, _projectService);
-      
+
 
         }
         public void SetCurrentUser(User? user) => _currentUser = user;
@@ -46,13 +46,10 @@ namespace _404_not_founders.Menus
                                   "Handle project",
                                   "Latest project",
                                   "Edit account",
-                                  "Log out",
-                                  "Quit");
+                                  "Log out");
                 switch (choice)
                 {
-                    case "Quit":
-                        running = false;
-                        break;
+
                     case "Log out":
                         ConsoleHelpers.Result(true, "Logging out...");
                         ConsoleHelpers.DelayAndClear();
@@ -122,6 +119,6 @@ namespace _404_not_founders.Menus
             // Annars – ingen feedback!
         }
 
-       
+
     }
 }
