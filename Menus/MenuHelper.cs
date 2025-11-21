@@ -256,7 +256,7 @@ namespace _404_not_founders.Menus
             if (finished)
             {
                 // Visa feedback endast om du gick via "Tillbaka"
-                Info($"Du är nu inloggad som {_currentUser.Username}.");
+                Info($"New {_currentUser.Username}.");
                 DelayAndClear();
             }
             // Annars – ingen feedback!

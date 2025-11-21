@@ -140,7 +140,7 @@ namespace _404_not_founders.Models
                         if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
                         var confirmName = MenuHelper.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
-                        if (confirmName == "No")
+                        if (confirmName == "Yes")
                         {
                             if (!userService.Users.Exists(u => u.Username == newName))
                             {
