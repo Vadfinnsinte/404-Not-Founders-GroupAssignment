@@ -1,0 +1,122 @@
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI;
+using Spectre.Console;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace _404_not_founders.Menus
+{
+    public class LoggedInMenu
+    {
+        private readonly MenuHelper _menuHelper;
+        private readonly UserService _userService;
+        private User? _currentUser;
+        private readonly ProjectService _projectService;
+        public LoggedInMenu(UserService userService, ProjectService projectService)
+        {
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
+            _menuHelper = new MenuHelper(_userService, _projectService);
+      
+
+        }
+        public void SetCurrentUser(User? user) => _currentUser = user;
+        public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser)
+        {
+            bool running = true;
+            while (running)
+            {
+                if (_currentUser == null)
+                {
+                    ConsoleHelpers.Result(false, "No user logged in!");
+                    ConsoleHelpers.DelayAndClear();
+                    loggedIn = false;
+                    currentUser = null;
+                    return;
+                }
+
+                Console.Clear();
+                ConsoleHelpers.Info($"Main menu");
+                AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
+                var choice = MenuHelper.Menu("What would you like to do?",
+                                  "Add project",
+                                  "Handle project",
+                                  "Latest project",
+                                  "Edit account",
+                                  "Log out",
+                                  "Quit");
+                switch (choice)
+                {
+                    case "Quit":
+                        running = false;
+                        break;
+                    case "Log out":
+                        ConsoleHelpers.Result(true, "Logging out...");
+                        ConsoleHelpers.DelayAndClear();
+                        loggedIn = false;
+                        currentUser = null;
+                        _currentUser = null;
+                        //RunApp();
+                        break;
+                    case "Add project":
+                        ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+                        var newProject = new Project();
+                        var addedProject = newProject.Add(_currentUser, _userService);
+                        ConsoleHelpers.DelayAndClear();
+
+                        // Använd ProjectChoisesMenu istället för _menuHelper
+                        var projectMenu = new ProjectChoisesMenu(_currentUser, _projectService, _userService);
+                        projectMenu.ProjectEditMenu(addedProject);
+                        break;
+                        break;
+                    case "Handle project":
+                        var projectMenu2 = new ProjectChoisesMenu(_currentUser, _projectService, _userService);
+                        projectMenu2.ShowProjectMenu();
+                        break;
+                    case "Latest project":
+                        var projectMenu3 = new ProjectChoisesMenu(_currentUser, _projectService, _userService);
+                        var username = currentUser;
+                        var user = _userService.Users
+                        .FirstOrDefault(u => u.Username == username);
+
+                        if (user != null)
+                            projectMenu3.ShowLastProjectMenu(user);
+                        else
+                        {
+                            AnsiConsole.MarkupLine("[red]Could not find current user.[/]");
+                            Console.ReadKey(true);
+                        }
+                        break;
+                    case "Edit account":
+                        EditUserMenu(ref currentUser);
+                        break;
+                }
+            }
+
+        }
+        public void EditUserMenu(ref string currentUser)
+        {
+            if (_currentUser == null)
+            {
+                ConsoleHelpers.Result(false, "No user logged in!");
+                ConsoleHelpers.DelayAndClear();
+                return;
+            }
+
+            bool finished = _currentUser.EditUser(_userService, ref currentUser);
+            if (finished)
+            {
+                // Visa feedback endast om du gick via "Tillbaka"
+                ConsoleHelpers.Info($"New {_currentUser.Username}.");
+                ConsoleHelpers.DelayAndClear();
+            }
+            // Annars – ingen feedback!
+        }
+
+       
+    }
+}

@@ -23,16 +23,34 @@ namespace _404_not_founders.Menus
 
         public void Run()
         {
-            bool running = true, loggedIn = false;
+            bool running = true;
+            bool loggedIn = false;
             string currentUser = null;
+
             var users = _userService.Users;
             var menuHelper = new MenuHelper(_userService, _projectService);
+            var loggedInMenu = new LoggedInMenu(_userService, _projectService);
+
+
             while (running)
             {
                 if (!loggedIn)
+                {
+                    // Visa login/register
                     menuHelper.ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
+
+                    if (loggedIn && currentUser != null)
+                    {
+                        // Hämta User-objektet och sätt det i LoggedInMenu
+                        var user = users.FirstOrDefault(u => u.Username == currentUser);
+                        if (user != null)
+                            loggedInMenu.SetCurrentUser(user);
+                    }
+                }
                 else
-                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref currentUser, ref running);
+                {
+                    loggedInMenu.ShowLoggedInMenu(ref loggedIn, ref currentUser);
+                }
             }
 
             ConsoleHelpers.Info("Thank you for using the app, see you next time");

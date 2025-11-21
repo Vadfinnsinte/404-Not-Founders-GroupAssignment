@@ -25,7 +25,7 @@ namespace _404_not_founders.Menus
 
         public void SetCurrentUser(User user) => _currentUser = user;
 
-       
+
 
         // Add this getter so other classes can read the currently logged-in user
         public User? CurrentUser => _currentUser;
@@ -119,237 +119,237 @@ namespace _404_not_founders.Menus
         }
 
         // ----- MENY FÖR INLOGGADE ANVÄNDARE OCH LÄNKAR -----
-        public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser, ref bool running)
-        {
-            while (running)
-            {
-                if (_currentUser == null)
-                {
-                    ConsoleHelpers.Result(false, "No user logged in!");
-                    ConsoleHelpers.DelayAndClear();
-                    loggedIn = false;
-                    currentUser = null;
-                    return;
-                }
+        //public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser, ref bool running)
+        //{
+        //    while (running)
+        //    {
+        //        if (_currentUser == null)
+        //        {
+        //            ConsoleHelpers.Result(false, "No user logged in!");
+        //            ConsoleHelpers.DelayAndClear();
+        //            loggedIn = false;
+        //            currentUser = null;
+        //            return;
+        //        }
 
-                Console.Clear();
-                ConsoleHelpers.Info($"Main menu");
-                  AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
-                var choice = Menu("What would you like to do?",
-                                  "Add project",
-                                  "Handle project",
-                                  "Latest project",
-                                  "Edit account",
-                                  "Log out",
-                                  "Quit");
-                switch (choice)
-                {
-                    case "Quit":
-                        running = false;
-                        break;
-                    case "Log out":
-                        ConsoleHelpers.Result(true, "Logging out...");
-                        ConsoleHelpers.DelayAndClear();
-                        loggedIn = false;
-                        currentUser = null;
-                        _currentUser = null;
-                        //RunApp();
-                        break;
-                    case "Add project":
-                        ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
-                        var newProject = new Project();
-                        var addedProject = newProject.Add(_currentUser, _userService);
-                        ConsoleHelpers.DelayAndClear();
-                        ProjectEditMenu(addedProject);
-                        break;
-                    case "Handle project":
-                        ShowProjectMenu();
-                        break;
-                    case "Latest project":
-                        var username = currentUser;
-                        var user = _userService.Users
-                        .FirstOrDefault(u => u.Username == username);
+        //        Console.Clear();
+        //        ConsoleHelpers.Info($"Main menu");
+        //          AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
+        //        var choice = Menu("What would you like to do?",
+        //                          "Add project",
+        //                          "Handle project",
+        //                          "Latest project",
+        //                          "Edit account",
+        //                          "Log out",
+        //                          "Quit");
+        //        switch (choice)
+        //        {
+        //            case "Quit":
+        //                running = false;
+        //                break;
+        //            case "Log out":
+        //                ConsoleHelpers.Result(true, "Logging out...");
+        //                ConsoleHelpers.DelayAndClear();
+        //                loggedIn = false;
+        //                currentUser = null;
+        //                _currentUser = null;
+        //                //RunApp();
+        //                break;
+        //            case "Add project":
+        //                ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+        //                var newProject = new Project();
+        //                var addedProject = newProject.Add(_currentUser, _userService);
+        //                ConsoleHelpers.DelayAndClear();
+        //                ProjectEditMenu(addedProject);
+        //                break;
+        //            case "Handle project":
+        //                ShowProjectMenu();
+        //                break;
+        //            case "Latest project":
+        //                var username = currentUser;
+        //                var user = _userService.Users
+        //                .FirstOrDefault(u => u.Username == username);
 
-                        if (user != null)
-                            ShowLastProjectMenu(user);
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[red]Could not find current user.[/]");
-                            Console.ReadKey(true);
-                        }
-                        break;
-                    case "Edit account":
-                        EditUserMenu(ref currentUser);
-                        break;
-                }
-            }
-        }
+        //                if (user != null)
+        //                    ShowLastProjectMenu(user);
+        //                else
+        //                {
+        //                    AnsiConsole.MarkupLine("[red]Could not find current user.[/]");
+        //                    Console.ReadKey(true);
+        //                }
+        //                break;
+        //            case "Edit account":
+        //                EditUserMenu(ref currentUser);
+        //                break;
+        //        }
+        //    }
+        //}
         // ----- REDIGERA ANVÄNDARE -----
-        public void EditUserMenu(ref string currentUser)
-        {
-            if (_currentUser == null)
-            {
-                ConsoleHelpers.Result(false, "Ingen användare är inloggad!");
-                ConsoleHelpers.DelayAndClear();
-                return;
-            }
+        //public void EditUserMenu(ref string currentUser)
+        //{
+        //    if (_currentUser == null)
+        //    {
+        //        ConsoleHelpers.Result(false, "Ingen användare är inloggad!");
+        //        ConsoleHelpers.DelayAndClear();
+        //        return;
+        //    }
 
-            bool finished = _currentUser.EditUser(_userService, ref currentUser);
-            if (finished)
-            {
-                // Visa feedback endast om du gick via "Tillbaka"
-                ConsoleHelpers.Info($"New {_currentUser.Username}.");
-                ConsoleHelpers.DelayAndClear();
-            }
-            // Annars – ingen feedback!
-        }
+        //    bool finished = _currentUser.EditUser(_userService, ref currentUser);
+        //    if (finished)
+        //    {
+        //        // Visa feedback endast om du gick via "Tillbaka"
+        //        ConsoleHelpers.Info($"New {_currentUser.Username}.");
+        //        ConsoleHelpers.DelayAndClear();
+        //    }
+        //    // Annars – ingen feedback!
+        //}
 
 
 
         // ----- FRAMTIDA UNDERMENYER & PLATSHÅLLARE -----
-        public void ShowProjectMenu()
-        {
-            //             Info("Projektmeny");
-            //             DelayAndClear();
-            if (_currentUser == null)
-            {
-                AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
-                Console.WriteLine(_currentUser);
-            }// 
+        //public void ShowProjectMenu()
+        //{
+        //    //             Info("Projektmeny");
+        //    //             DelayAndClear();
+        //    if (_currentUser == null)
+        //    {
+        //        AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
+        //        Console.WriteLine(_currentUser);
+        //    }// 
           
-            while (true)
-            {
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[#FFA500]Project Menu[/]")
-                        .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices("Show all projects", "Search projects", "Back"));
+        //    while (true)
+        //    {
+        //        var choice = AnsiConsole.Prompt(
+        //            new SelectionPrompt<string>()
+        //                .Title("[#FFA500]Project Menu[/]")
+        //                .HighlightStyle(new Style(Color.Orange1))
+        //                .AddChoices("Show all projects", "Search projects", "Back"));
 
-                if (choice == "Back") break;
+        //        if (choice == "Back") break;
 
-                if (choice == "Show all projects")
-                {
-                    var list = _projectService.GetAll(_currentUser);
-                    if (list == null || list.Count == 0)
-                    {
-                        AnsiConsole.MarkupLine("[yellow]No projects yet.[/]");
-                        AnsiClearHelper.WaitForKeyAndClear();
-                        break;
+        //        if (choice == "Show all projects")
+        //        {
+        //            var list = _projectService.GetAll(_currentUser);
+        //            if (list == null || list.Count == 0)
+        //            {
+        //                AnsiConsole.MarkupLine("[yellow]No projects yet.[/]");
+        //                AnsiClearHelper.WaitForKeyAndClear();
+        //                break;
                       
-                    }
+        //            }
 
-                    var selected = SelectFromList(list, "Select a project");
-                    if (selected != null)
-                        _projectService.SetLastSelected(_currentUser, selected.Id);
-                    ProjectEditMenu(selected);
-                }
-                else if (choice == "Search projects")
-                {
-                    var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
-                    var hits = _projectService.Search(_currentUser, term);
+        //            var selected = SelectFromList(list, "Select a project");
+        //            if (selected != null)
+        //                _projectService.SetLastSelected(_currentUser, selected.Id);
+        //            ProjectEditMenu(selected);
+        //        }
+        //        else if (choice == "Search projects")
+        //        {
+        //            var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
+        //            var hits = _projectService.Search(_currentUser, term);
 
-                    if (hits == null || hits.Count == 0)
-                    {
-                        AnsiConsole.MarkupLine("[red]No results[/]");
-                        AnsiClearHelper.WaitForKeyAndClear();
-                        break;
-                    }
+        //            if (hits == null || hits.Count == 0)
+        //            {
+        //                AnsiConsole.MarkupLine("[red]No results[/]");
+        //                AnsiClearHelper.WaitForKeyAndClear();
+        //                break;
+        //            }
 
-                    var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
-                    if (selected != null)
-                        _projectService.SetLastSelected(_currentUser, selected.Id);
+        //            var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
+        //            if (selected != null)
+        //                _projectService.SetLastSelected(_currentUser, selected.Id);
 
-                    AnsiConsole.Clear();
-                    ProjectEditMenu(selected);
-                }
+        //            AnsiConsole.Clear();
+        //            ProjectEditMenu(selected);
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
-        private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
-        {
-            if (projects == null || projects.Count == 0) return null;
+        //private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
+        //{
+        //    if (projects == null || projects.Count == 0) return null;
 
-            var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
+        //    var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
 
-            //var table = new Table().Border(TableBorder.Rounded);
-            //table.AddColumn("[#FFA500]Title[/]");
-            //table.AddColumn("[grey]Date[/]");
-            //foreach (var p in sorted)
-            //table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
-            //AnsiConsole.Write(table);
+        //    //var table = new Table().Border(TableBorder.Rounded);
+        //    //table.AddColumn("[#FFA500]Title[/]");
+        //    //table.AddColumn("[grey]Date[/]");
+        //    //foreach (var p in sorted)
+        //    //table.AddRow(p.title, p.dateOfCreation.ToString("yyyy-MM-dd"));
+        //    //AnsiConsole.Write(table);
 
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<Project>()
-                    .Title($"[bold]{title}[/]")
-                    .PageSize(10)
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices(sorted)
-                    .UseConverter(p => $"{p.title} ({p.DateOfCreation:yyyy-MM-dd})"));
+        //    var selected = AnsiConsole.Prompt(
+        //        new SelectionPrompt<Project>()
+        //            .Title($"[bold]{title}[/]")
+        //            .PageSize(10)
+        //            .HighlightStyle(new Style(Color.Orange1))
+        //            .AddChoices(sorted)
+        //            .UseConverter(p => $"{p.title} ({p.DateOfCreation:yyyy-MM-dd})"));
 
-            AnsiConsole.Clear();
-            return selected;
+        //    AnsiConsole.Clear();
+        //    return selected;
 
-        }
+        //}
 
 
-        public void ProjectEditMenu(Project project)
-        {
-            Character character = new Character();
-            bool running = true, loggedIn = true;
-            bool runEdit = true;
-            string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
+        //public void ProjectEditMenu(Project project)
+        //{
+        //    Character character = new Character();
+        //    bool running = true, loggedIn = true;
+        //    bool runEdit = true;
+        //    string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
 
-            while (runEdit)
-            {
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[#FFA500]Project Edit Menu[/]")
-                        .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices(
-                            "Edit/Add Characters",
-                            "Edit/Add worlds",
-                            "Edit/Add Storylines",
-                            "Show Everything",
-                            "Back to main menu"
-                        )
-                );
+        //    while (runEdit)
+        //    {
+        //        var choice = AnsiConsole.Prompt(
+        //            new SelectionPrompt<string>()
+        //                .Title("[#FFA500]Project Edit Menu[/]")
+        //                .HighlightStyle(new Style(Color.Orange1))
+        //                .AddChoices(
+        //                    "Edit/Add Characters",
+        //                    "Edit/Add worlds",
+        //                    "Edit/Add Storylines",
+        //                    "Show Everything",
+        //                    "Back to main menu"
+        //                )
+        //        );
 
-                switch (choice)
-                {
-                    case "Edit/Add Characters":
-                        character.ChracterMenu2(_userService, _projectService, this, project);
-                        break;
-                    case "Edit/Add worlds":
-                        if (_currentUser != null)
-                        {
-                            WorldMenu(_currentUser, project);
-                        }
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[red]No user logged in![/]");
-                            ConsoleHelpers.DelayAndClear();
-                        }
-                        break;
-                    case "Edit/Add Storylines":
-                        StorylineMenu(project);
-                        break;
-                    case "Show Everything":
-                        Console.Clear();
-                        project.ShowAll();
-                        break;
-                    case "Back to main menu":
-                        Console.Clear();
-                        ShowLoggedInMenu(ref loggedIn, ref user, ref running);
-                        runEdit = false;
-                        break;
-                    default:
-                        Console.WriteLine("Something went wrong... going back to menu");
-                        return;
-                }
-            }
-            //DelayAndClear();
-        }
+        //        switch (choice)
+        //        {
+        //            case "Edit/Add Characters":
+        //                character.ChracterMenu2(_userService, _projectService, this, project);
+        //                break;
+        //            case "Edit/Add worlds":
+        //                if (_currentUser != null)
+        //                {
+        //                    WorldMenu(_currentUser, project);
+        //                }
+        //                else
+        //                {
+        //                    AnsiConsole.MarkupLine("[red]No user logged in![/]");
+        //                    ConsoleHelpers.DelayAndClear();
+        //                }
+        //                break;
+        //            case "Edit/Add Storylines":
+        //                StorylineMenu(project);
+        //                break;
+        //            case "Show Everything":
+        //                Console.Clear();
+        //                project.ShowAll();
+        //                break;
+        //            case "Back to main menu":
+        //                Console.Clear();
+        //                //ShowLoggedInMenu(ref loggedIn, ref user, ref running);
+        //                runEdit = false;
+        //                break;
+        //            default:
+        //                Console.WriteLine("Something went wrong... going back to menu");
+        //                return;
+        //        }
+        //    }
+        //    //DelayAndClear();
+        //}
         public static void UserMenu()
         {
             ConsoleHelpers.Info("Användarmenyn");
@@ -415,7 +415,7 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Back":
-                        ProjectEditMenu(project);
+                        //ProjectEditMenu(project);
                         break;
                 }
             }
@@ -737,46 +737,46 @@ namespace _404_not_founders.Menus
 
 
 
-        public void ShowLastProjectMenu(User currentUser)
-        {
-            Console.Clear();
-            ConsoleHelpers.Info("Last selected project");
+        //public void ShowLastProjectMenu(User currentUser)
+        //{
+        //    Console.Clear();
+        //    ConsoleHelpers.Info("Last selected project");
 
-            // hämta senaste valda projektet för den här användaren
-            var last = _projectService.GetLastSelected(currentUser);
+        //    // hämta senaste valda projektet för den här användaren
+        //    var last = _projectService.GetLastSelected(currentUser);
 
-            if (last == null)
-            {
-                AnsiConsole.MarkupLine("[grey]You have no last selected project yet.[/]");
-                AnsiConsole.MarkupLine("[grey]Open a project from \"Show projects\" first.[/]");
-                Console.ReadKey(true);
-                return;
-            }
+        //    if (last == null)
+        //    {
+        //        AnsiConsole.MarkupLine("[grey]You have no last selected project yet.[/]");
+        //        AnsiConsole.MarkupLine("[grey]Open a project from \"Show projects\" first.[/]");
+        //        Console.ReadKey(true);
+        //        return;
+        //    }
 
-            // Visa lite info om projektet
-            AnsiConsole.MarkupLine("");
-            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
-            AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
-            AnsiConsole.MarkupLine($"[grey]Created:[/] {last.DateOfCreation:yyyy-MM-dd}");
-            AnsiConsole.MarkupLine("");
+        //    // Visa lite info om projektet
+        //    AnsiConsole.MarkupLine("");
+        //    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
+        //    AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
+        //    AnsiConsole.MarkupLine($"[grey]Created:[/] {last.DateOfCreation:yyyy-MM-dd}");
+        //    AnsiConsole.MarkupLine("");
 
-            var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[#FFA500]What do you want to do with this project?[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices("Open project", "Back"));
+        //    var choice = AnsiConsole.Prompt(
+        //        new SelectionPrompt<string>()
+        //            .Title("[#FFA500]What do you want to do with this project?[/]")
+        //            .HighlightStyle(new Style(Color.Orange1))
+        //            .AddChoices("Open project", "Back"));
 
-            if (choice == "Open project")
-            {
-                // gå direkt till samma meny som när man valt projekt via listan
-                ProjectEditMenu(last);
-            }
-            else
-            {
-                // Back – bara gå tillbaka till huvudmenyn
-                return;
-            }
-        }
+        //    if (choice == "Open project")
+        //    {
+        //        // gå direkt till samma meny som när man valt projekt via listan
+        //        ProjectEditMenu(last);
+        //    }
+        //    else
+        //    {
+        //        // Back – bara gå tillbaka till huvudmenyn
+        //        return;
+        //    }
+        //}
 
         // ----- WORLD MENU -----
 
@@ -853,7 +853,7 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Back":
-                        ProjectEditMenu(currentProject);
+                        //ProjectEditMenu(currentProject);
                         break;
                 }
             }

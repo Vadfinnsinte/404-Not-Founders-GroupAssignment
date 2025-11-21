@@ -92,7 +92,7 @@ namespace _404_not_founders.Models
                     bool loggedIn = true;
                     bool running = true;
                     string username = currentUser?.Username;
-                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);  // should go to project menu
+                    //menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);  // should go to project menu
                     if (currentUser != null) currentUser.Username = username;
                     break;
             }
