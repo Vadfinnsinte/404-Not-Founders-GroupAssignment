@@ -1,5 +1,5 @@
-# Adventurer’s Journal
-### 404-Not-Founders-GroupAssignment
+# Adventurer’s Journal #### 404-Not-Founders-GroupAssignment
+
 
 An app that helps you to store all that valuable information you want for your adventures in roleplays, writing projects or any ways you see fit.
 
@@ -53,12 +53,12 @@ Error (error från server eller om du skrivit fel): Red
 Success (Något har registrerats korrekt): Green 
 
 In the menues we choosed to use Specter.Consoles SelectionPromt for a nice look.
-<img src="https://i.imgur.com/ZOHkNbg.jpeg" width="600" alt="menu in white and orange" />
+<img src="https://i.imgur.com/ZOHkNbg.jpeg" width="800" alt="menu in white and orange" />
 
 
 To display characters, storylines, and worlds, we use Table, with AddColumn and AddRow.
 
-<img src="https://i.imgur.com/rH39yoK.jpeg" width="500" alt="menu in white and orange" />
+<img src="https://i.imgur.com/rH39yoK.jpeg" width="800" alt="menu in white and orange" />
 
 
 # Project Description
