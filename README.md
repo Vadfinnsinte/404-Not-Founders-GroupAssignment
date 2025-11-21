@@ -4,7 +4,7 @@
 An app that helps you to store all that valuable information you want for your adventures in roleplays, writing projects or any ways you see fit.
 # Design overview (class diagram / pseudo diagram)
 
-<img src="https://i.imgur.com/3JhtW88.jpeg" width="200" alt="class-diagrams" />
+<img src="https://i.imgur.com/3JhtW88.jpeg" width="400" alt="class-diagrams" />
 
 At first we decided on these five classes that you see in the Class Diagram. But later on we decided to add a few more classes to ease the build of the program. At first we chose to create a MenuHelper class to put all our menus in but after some time it got too big and difficult to handle, so we had to divide MenuHelper into smaller classes. We also added a few UI classes for our programs UI and two services classes.
 
@@ -23,7 +23,7 @@ Title: Använd hex färgen #FFA500.
 Error (error från server eller om du skrivit fel): Red
 Success (Något har registrerats korrekt): Green 
 
-<img src="https://i.imgur.com/ZOHkNbg.jpeg" width="400" alt="menu in white and orange" />
+<img src="https://i.imgur.com/ZOHkNbg.jpeg" width="600" alt="menu in white and orange" />
 
 
 # HOW TO USE UserService: 
