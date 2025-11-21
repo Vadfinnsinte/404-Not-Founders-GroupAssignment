@@ -12,14 +12,12 @@ namespace _404_not_founders.Menus
 {
     public class StorylineChoisesMenu
     {
-        //private readonly User _currentUser;
-        //private readonly ProjectService _projectService;
+
         private readonly UserService _userService;
 
         public StorylineChoisesMenu(UserService userService)
         {
-            //_currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
-            //_projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
+
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
         public void StorylineMenu(Project project)

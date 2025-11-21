@@ -21,9 +21,6 @@ namespace _404_not_founders.Menus
 
         public void SetCurrentUser(User user) => _currentUser = user;
 
-
-
-        // Add this getter so other classes can read the currently logged-in user
         public User? CurrentUser => _currentUser;
 
         // ----- HUVUDMENY (login/reg/avsluta) -----

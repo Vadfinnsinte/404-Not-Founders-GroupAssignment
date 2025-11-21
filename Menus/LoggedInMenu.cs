@@ -56,7 +56,7 @@ namespace _404_not_founders.Menus
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        //RunApp();
+                       
                         break;
                     case "Add project":
                         ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");

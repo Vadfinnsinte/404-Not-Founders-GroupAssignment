@@ -10,9 +10,9 @@ namespace _404_not_founders.Menus
 
         private readonly UserService _userService;
 
-        public WorldChoisesMenu( UserService userService)
+        public WorldChoisesMenu(UserService userService)
         {
-       
+
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
         private World? SelectWorld(Project project, string title)

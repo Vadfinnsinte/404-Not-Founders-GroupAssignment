@@ -10,11 +10,11 @@ namespace _404_not_founders.UI
     public class AskStepInput
     {
         public static string AskStepInputs(
-    string prompt,
-    bool allowBack = true,
-    bool allowExit = true,
-    Func<string, bool>? validator = null,
-    string? validationMessage = null)
+        string prompt,
+        bool allowBack = true,
+        bool allowExit = true,
+        Func<string, bool>? validator = null,
+        string? validationMessage = null)
         {
             while (true)
             {
