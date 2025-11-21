@@ -124,12 +124,14 @@ namespace _404_not_founders.Menus
                 switch (choice)
                 {
                     case "Edit/Add Characters":
-                        //character.ChracterMenu2(_userService, _projectService, this, project);
+                        CharacterChoisesMenu characterChoisesMenu = new CharacterChoisesMenu(_currentUser, _projectService, _userService);
+                        characterChoisesMenu.ChracterMenu(project);
                         break;
                     case "Edit/Add worlds":
                         if (_currentUser != null)
                         {
-                            //WorldMenu(_currentUser, project);
+                            WorldChoisesMenu worldChoisesMenu = new WorldChoisesMenu(_userService);
+                            worldChoisesMenu.WorldMenu(_currentUser, project);
                         }
                         else
                         {

@@ -42,7 +42,7 @@ namespace _404_not_founders.Menus
                 Console.Clear();
                 ConsoleHelpers.Info($"Main menu");
                 AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
-                var choice = MenuHelper.Menu("What would you like to do?",
+                var choice = MenuChoises.Menu("What would you like to do?",
                                   "Add project",
                                   "Handle project",
                                   "Latest project",

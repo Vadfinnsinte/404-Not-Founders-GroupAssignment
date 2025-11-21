@@ -240,10 +240,7 @@ namespace _404_not_founders.Models
         {
             ShowInfoCard.ShowObject(this);
         }
-        public void Change()
-        {
-            Console.WriteLine("Coming soon");
-        }
+
         public void DeleteWorld(Project project, UserService userService)
         {
             Console.Clear();

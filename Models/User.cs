@@ -79,7 +79,7 @@ namespace _404_not_founders.Models
                 // Bekräfta och skapa användaren
                 if (step == 3)
                 {
-                    var confirm = MenuHelper.Menu("Do you want to register this user?", "Yes", "No", "Exit");
+                    var confirm = MenuChoises.Menu("Do you want to register this user?", "Yes", "No", "Exit");
                     if (confirm == "Exit") Environment.Exit(0);
                     if (confirm == "No") { step = 0; continue; }
                     if (confirm == "Yes")
@@ -111,7 +111,7 @@ namespace _404_not_founders.Models
                 ConsoleHelpers.Info($"Redigera konto");
                 ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
-                var choice = MenuHelper.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
+                var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
                 switch (choice)
                 {
                     case "E-mail":
@@ -119,7 +119,7 @@ namespace _404_not_founders.Models
                         if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
-                        var confirmEmail = MenuHelper.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
+                        var confirmEmail = MenuChoises.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
                         if (confirmEmail == "Yes")
                         {
                             if (!userService.Users.Exists(u => u.Email == newEmail))
@@ -139,7 +139,7 @@ namespace _404_not_founders.Models
                         if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
-                        var confirmName = MenuHelper.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
+                        var confirmName = MenuChoises.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
                         if (confirmName == "Yes")
                         {
                             if (!userService.Users.Exists(u => u.Username == newName))
@@ -160,7 +160,7 @@ namespace _404_not_founders.Models
                         if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
-                        var confirmPass = MenuHelper.Menu("Confirm change to new password?", "Yes", "No");
+                        var confirmPass = MenuChoises.Menu("Confirm change to new password?", "Yes", "No");
                         if (confirmPass == "Yes")
                         {
                             Password = newPassword;
