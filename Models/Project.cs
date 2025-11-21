@@ -37,6 +37,7 @@ namespace _404_not_founders.Models
              };
 
             // Add project to user's project list and save
+            AnsiConsole.MarkupLine("[green]Project created![/]");
             currentUser.Projects.Add(newProject);
             userService.SaveUserService();
             return (newProject);
