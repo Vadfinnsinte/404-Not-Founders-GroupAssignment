@@ -24,15 +24,13 @@ namespace _404_not_founders.Menus
         }
         public void ShowProjectMenu()
         {
-            //             Info("Projektmeny");
-            //             DelayAndClear();
             if (_currentUser == null)
             {
                 AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
-                Console.WriteLine(_currentUser);
-            }// 
-
-            while (true)
+                return;
+            }
+            bool runProjectMenu = true;
+            while (runProjectMenu)
             {
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -40,22 +38,31 @@ namespace _404_not_founders.Menus
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Show all projects", "Search projects", "Back"));
 
-                if (choice == "Back") break;
+                if (choice == "Back")
+                {
+                    runProjectMenu = false;
+                    break;
+
+                }
 
                 if (choice == "Show all projects")
                 {
                     var list = _projectService.GetAll(_currentUser);
+
                     if (list == null || list.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[yellow]No projects yet.[/]");
                         AnsiClearHelper.WaitForKeyAndClear();
-                        break;
-
+                        continue;
                     }
 
+                    // ---- SELECT with BACK ----
                     var selected = SelectFromList(list, "Select a project");
-                    if (selected != null)
-                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                    if (selected == null)
+                        continue; // Back pressed
+
+                    _projectService.SetLastSelected(_currentUser, selected.Id);
+                    runProjectMenu = false;
                     ProjectEditMenu(selected);
                 }
                 else if (choice == "Search projects")
@@ -67,37 +74,52 @@ namespace _404_not_founders.Menus
                     {
                         AnsiConsole.MarkupLine("[red]No results[/]");
                         AnsiClearHelper.WaitForKeyAndClear();
-                        break;
+                        continue;
                     }
 
+                    // ---- SELECT with BACK ----
                     var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
-                    if (selected != null)
-                        _projectService.SetLastSelected(_currentUser, selected.Id);
+                    if (selected == null)
+                        continue; // Back pressed
 
+                    _projectService.SetLastSelected(_currentUser, selected.Id);
                     AnsiConsole.Clear();
+                    runProjectMenu = false;
                     ProjectEditMenu(selected);
                 }
 
             }
-
         }
+
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
         {
-            if (projects == null || projects.Count == 0) return null;
+            if (projects == null || projects.Count == 0)
+                return null;
 
             var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
 
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<Project>()
+            // --- Create display list ---
+            var displayList = sorted.Select(p => p.title).ToList();
+            displayList.Add("Back");
+
+            var selectedTitle = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
                     .Title($"[bold]{title}[/]")
                     .PageSize(10)
                     .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices(sorted)
-                    .UseConverter(p => $"{p.title} ({p.DateOfCreation:yyyy-MM-dd})"));
+                    .AddChoices(displayList));
 
+            // If user selects “Back”
+            if (selectedTitle == "Back")
+            {
+                AnsiConsole.Clear();
+                return null;
+            }
+
+            // Return the matching project
+            var selectedProject = sorted.First(p => p.title == selectedTitle);
             AnsiConsole.Clear();
-            return selected;
-
+            return selectedProject;
         }
         public void ProjectEditMenu(Project project)
         {
