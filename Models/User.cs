@@ -25,7 +25,7 @@ namespace _404_not_founders.Models
             {
                 Console.Clear();
                 ConsoleHelpers.Info("[#FFA500]Register new user[/]");
-                ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+                ConsoleHelpers.InputInstruction(true);
 
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{email}[/]");
                 if (step >= 2) AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
