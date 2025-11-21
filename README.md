@@ -10,7 +10,7 @@ At first we decided on these five classes that you see in the Class Diagram. But
 
 ### We also made a flowchart that looks like this:
 
-<img src="https://i.imgur.com/zNck1Af.png" width="200" alt="A flowchart" />
+<img src="https://i.imgur.com/zNck1Af.png" width="400" alt="A flowchart" />
 
 This was very useful as it helped us plan the tasks needed to create the app. It let us see what menus and functions we needed to help the User get a smooth user experience.
 
@@ -23,7 +23,7 @@ Title: Använd hex färgen #FFA500.
 Error (error från server eller om du skrivit fel): Red
 Success (Något har registrerats korrekt): Green 
 
-<img src="https://i.imgur.com/ZOHkNbg.jpeg" width="200" alt="menu in white and orange" />
+<img src="https://i.imgur.com/ZOHkNbg.jpeg" width="400" alt="menu in white and orange" />
 
 
 # HOW TO USE UserService: 
