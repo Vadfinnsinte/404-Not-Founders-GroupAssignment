@@ -50,6 +50,7 @@ namespace _404_not_founders.Models
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Save this project?[/]")
+                            .HighlightStyle(Color.Orange1)
                             .AddChoices("Yes", "No (Start over)", "Exit"));
 
                     if (confirm == "Exit") return null;
@@ -86,7 +87,11 @@ namespace _404_not_founders.Models
 
                 // Handle E
                 if (input == "E")
+                {
+                    Console.Clear();
                     return null;
+
+                }
 
                 // Store values
                 if (step == 0) title = input;
@@ -140,7 +145,7 @@ namespace _404_not_founders.Models
         }
         public void ShowAll()
         {
-            AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+            //AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
             ShowSection("Project", () => Show());
 
             ShowAllStorylines();
