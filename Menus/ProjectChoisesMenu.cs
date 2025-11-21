@@ -108,18 +108,7 @@ namespace _404_not_founders.Menus
 
             while (runEdit)
             {
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[#FFA500]Project Edit Menu[/]")
-                        .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices(
-                            "Edit/Add Characters",
-                            "Edit/Add worlds",
-                            "Edit/Add Storylines",
-                            "Show Everything",
-                            "Back to main menu"
-                        )
-                );
+                var choice = ProjectEditVisuals.ShowEditMenu(project);
 
                 switch (choice)
                 {
@@ -191,6 +180,8 @@ namespace _404_not_founders.Menus
             if (choice == "Open project")
             {
                 // gå direkt till samma meny som när man valt projekt via listan
+                Console.WriteLine("Going to project...");
+                ConsoleHelpers.DelayAndClear();
                 ProjectEditMenu(last);
             }
             else
