@@ -32,8 +32,7 @@ namespace _404_not_founders.Menus
             {
                 if (_currentUser == null)
                 {
-                    ConsoleHelpers.Result(false, "No user logged in!");
-                    ConsoleHelpers.DelayAndClear();
+                    Console.Clear();
                     loggedIn = false;
                     currentUser = null;
                     return;
