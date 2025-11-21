@@ -120,7 +120,11 @@ namespace _404_not_founders.Menus
 
                 string input = AskStepInput.AskStepInputs(prompt);
 
-                if (input == "E") return; // Exit
+                if (input == "E")
+                {
+                    Console.Clear();
+                    return; // Exit
+                }
                 if (input == "B")
                 {
                     if (step > 0) step--; // Go back
