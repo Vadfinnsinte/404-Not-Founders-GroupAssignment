@@ -118,7 +118,7 @@ namespace _404_not_founders.Menus
                     AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
                 }
             }
-
+            Console.Clear();
             Console.WriteLine();
             ConsoleHelpers.Info("Storyline summary:");
             AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
