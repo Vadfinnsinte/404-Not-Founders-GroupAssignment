@@ -24,11 +24,11 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info("[underline #FFA500]Register new user[/]");
+                MenuHelper.Info("[#FFA500]Register new user[/]");
                 MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
-                if (step >= 1) MenuHelper.Info($"[grey]E-mail:[/] [#FFA500]{email}[/]");
-                if (step >= 2) MenuHelper.Info($"[grey]Username:[/] [#FFA500]{username}[/]");
+                if (step >= 1) AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{email}[/]");
+                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
 
                 var value = step switch
                 {
@@ -103,16 +103,80 @@ namespace _404_not_founders.Models
             }
         }
 
+        public bool EditUser(UserService userService, ref string username)
+        {
+            while (true)
+            {
+                Console.Clear();
+                MenuHelper.Info($"Redigera konto");
+                MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+
+                var choice = MenuHelper.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
+                switch (choice)
+                {
+                    case "E-mail":
+                        string newEmail = MenuHelper.AskInput("[#FFA500]New E-mail:[/]");
+                        if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
+                        var confirmEmail = MenuHelper.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
+                        if (confirmEmail == "Yes")
+                        {
+                            if (!userService.Users.Exists(u => u.Email == newEmail))
+                            {
+                                Email = newEmail;
+                                userService.SaveUserService();
+                                MenuHelper.Result(true, "E-mail updated.");
+                            }
+                            else
+                                MenuHelper.Result(false, "Invalid or already taken E-mail.");
+                            MenuHelper.DelayAndClear(1200);
+                        }
+                        break;
+
+                    case "Username":
+                        string newName = MenuHelper.AskInput("[#FFA500]New username:[/]");
+                        if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
+                        var confirmName = MenuHelper.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
+                        if (confirmName == "Yes")
+                        {
+                            if (!userService.Users.Exists(u => u.Username == newName))
+                            {
+                                Username = newName;
+                                username = newName;
+                                userService.SaveUserService();
+                                MenuHelper.Result(true, $"Username changed to {newName}.");
+                            }
+                            else
+                                MenuHelper.Result(false, "Invalid or already taken username.");
+                            MenuHelper.DelayAndClear(1200);
+                        }
+                        break;
+
+                    case "Password":
+                        string newPassword = MenuHelper.AskInput("[#FFA500]New password:[/]", true);
+                        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
+                        var confirmPass = MenuHelper.Menu("Confirm change to new password?", "Yes", "No");
+                        if (confirmPass == "Yes")
+                        {
+                            Password = newPassword;
+                            userService.SaveUserService();
+                            MenuHelper.Result(true, "Password updated.");
+                            MenuHelper.DelayAndClear(1200);
+                        }
+                        break;
+
+                    case "Back":
+                        return true; // Bara här visas inloggningsfeedback!
+                }
+            }
+        }
 
 
-        public void Show()
-        {
-            Console.WriteLine("Coming soon");
-        }
-        public void Change()
-        {
-            Console.WriteLine("Coming soon");
-        }
         public void Delete()
         {
             Console.WriteLine("Coming soon");
