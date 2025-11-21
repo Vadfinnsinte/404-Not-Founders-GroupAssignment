@@ -12,7 +12,7 @@ namespace _404_not_founders.Models
     {
         public string title { get; set; }
         public string description { get; set; }
-        public DateTime dateOfCreation;
+        public DateTime DateOfCreation { get; set; } = DateTime.Now;
         public Guid Id { get; set; } = Guid.NewGuid();
         //public List<Storyline> Storylines;
         public List<World> Worlds { get; set; } = new List<World>();
@@ -31,7 +31,7 @@ namespace _404_not_founders.Models
             {
                 title = addProjectName,
                 description = addProjectDescription,
-                dateOfCreation = DateTime.Now,
+                DateOfCreation = DateTime.Now,
                 Storylines = new List<Storyline>(),
                 Characters = new List<Character>()
              };

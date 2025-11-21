@@ -328,7 +328,7 @@ namespace _404_not_founders.Menus
         {
             if (projects == null || projects.Count == 0) return null;
 
-            var sorted = projects.OrderByDescending(p => p.dateOfCreation).ToList();
+            var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
 
             //var table = new Table().Border(TableBorder.Rounded);
             //table.AddColumn("[#FFA500]Title[/]");
@@ -343,7 +343,7 @@ namespace _404_not_founders.Menus
                     .PageSize(10)
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(sorted)
-                    .UseConverter(p => $"{p.title} ({p.dateOfCreation:yyyy-MM-dd})"));
+                    .UseConverter(p => $"{p.title} ({p.DateOfCreation:yyyy-MM-dd})"));
 
             AnsiConsole.Clear();
             return selected;
@@ -493,6 +493,29 @@ namespace _404_not_founders.Menus
             var ideaNotes = AnsiConsole.Ask<string>("[#FFA500]Idea notes:[/]");
             var otherInfo = AnsiConsole.Ask<string>("[#FFA500]Other information:[/]");
 
+            project.Storylines ??= new List<Storyline>();
+            int maxOrder = project.Storylines.Count + 1;
+            int orderInProject;
+
+            if (maxOrder == 1)
+            {
+                
+                orderInProject = 1;
+            }
+            else
+            {
+                while (true)
+                {
+                    var input = AnsiConsole.Ask<string>(
+                        $"[#FFA500]Order in project (1 - {maxOrder}):[/]");
+
+                    if (int.TryParse(input, out orderInProject) &&
+                        orderInProject >= 1 && orderInProject <= maxOrder)
+                        break;
+
+                    AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
+                }
+            }
 
             Console.WriteLine();
             Info("Storyline summary:");
@@ -525,9 +548,11 @@ namespace _404_not_founders.Menus
                 return;
             }
 
-
-            project.Storylines ??= new List<Storyline>();
-
+            foreach (var sl in project.Storylines
+                .Where(sl => sl.orderInProject >= orderInProject))
+            {
+                sl.orderInProject++;
+            }
             var s = new Storyline
             {
                 Title = title,
@@ -537,7 +562,7 @@ namespace _404_not_founders.Menus
                 Story = story,
                 IdeaNotes = ideaNotes,
                 OtherInfo = otherInfo,
-                orderInProject = project.Storylines.Count + 1,
+                orderInProject = orderInProject,
                 dateOfLastEdit = DateTime.Now
             };
 
@@ -583,6 +608,7 @@ namespace _404_not_founders.Menus
                             "Story",
                             "Idea notes",
                             "Other info",
+                            "Order in project",
                             "Done")
                         .HighlightStyle(Color.Orange1));
 
@@ -601,7 +627,6 @@ namespace _404_not_founders.Menus
 
                 if (choice == "Done")
                 {
-
                     Console.Clear();
                     Info("Storyline summary:");
                     AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
@@ -611,6 +636,7 @@ namespace _404_not_founders.Menus
                     AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
                     AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
                     AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+                    AnsiConsole.MarkupLine($"[grey]Order in project:[/] {temp.orderInProject}");
 
                     Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
@@ -621,14 +647,12 @@ namespace _404_not_founders.Menus
 
                     if (confirm == "Exit")
                     {
-
                         DelayAndClear();
                         return;
                     }
 
                     if (confirm == "No (Start over)")
                     {
-
                         temp.Title = original.Title;
                         temp.Synopsis = original.Synopsis;
                         temp.Theme = original.Theme;
@@ -636,12 +660,12 @@ namespace _404_not_founders.Menus
                         temp.Story = original.Story;
                         temp.IdeaNotes = original.IdeaNotes;
                         temp.OtherInfo = original.OtherInfo;
+                        temp.orderInProject = original.orderInProject;
                         continue;
                     }
 
                     if (confirm == "Yes")
                     {
-
                         original.Title = temp.Title;
                         original.Synopsis = temp.Synopsis;
                         original.Theme = temp.Theme;
@@ -650,6 +674,35 @@ namespace _404_not_founders.Menus
                         original.IdeaNotes = temp.IdeaNotes;
                         original.OtherInfo = temp.OtherInfo;
                         original.dateOfLastEdit = DateTime.Now;
+
+                        int oldOrder = original.orderInProject;
+                        int newOrder = temp.orderInProject;
+
+                        if (newOrder != oldOrder)
+                        {
+                            if (newOrder < oldOrder)
+                            {
+                                foreach (var sl in project.Storylines.Where(s =>
+                                             s != original &&
+                                             s.orderInProject >= newOrder &&
+                                             s.orderInProject < oldOrder))
+                                {
+                                    sl.orderInProject++;
+                                }
+                            }
+                            else
+                            {
+                                foreach (var sl in project.Storylines.Where(s =>
+                                             s != original &&
+                                             s.orderInProject <= newOrder &&
+                                             s.orderInProject > oldOrder))
+                                {
+                                    sl.orderInProject--;
+                                }
+                            }
+
+                            original.orderInProject = newOrder;
+                        }
 
                         _userService.SaveUserService();
                         Info("Storyline updated!");
@@ -681,6 +734,22 @@ namespace _404_not_founders.Menus
                         break;
                     case "Other info":
                         temp.OtherInfo = PromptNonEmpty("[#FFA500]New other information:[/]");
+                        break;
+                    case "Order in project":
+                        int maxOrder = project.Storylines.Count;
+                        while (true)
+                        {
+                            var input = AnsiConsole.Ask<string>(
+                                $"[#FFA500]New order in project (1 - {maxOrder}):[/]");
+                            if (int.TryParse(input, out var newOrder) &&
+                                newOrder >= 1 && newOrder <= maxOrder)
+                            {
+                                temp.orderInProject = newOrder;
+                                break;
+                            }
+
+                            AnsiConsole.MarkupLine("[red]Please enter a number within the range.[/]");
+                        }
                         break;
                 }
             }
@@ -747,7 +816,7 @@ namespace _404_not_founders.Menus
             AnsiConsole.MarkupLine("");
             AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
             AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
-            AnsiConsole.MarkupLine($"[grey]Created:[/] {last.dateOfCreation:yyyy-MM-dd}");
+            AnsiConsole.MarkupLine($"[grey]Created:[/] {last.DateOfCreation:yyyy-MM-dd}");
             AnsiConsole.MarkupLine("");
 
             var choice = AnsiConsole.Prompt(
