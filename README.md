@@ -1,4 +1,5 @@
-# Adventurer’s Journal #### 404-Not-Founders-GroupAssignment
+#### 404-Not-Founders-GroupAssignment
+# Adventurer’s Journal 
 
 
 An app that helps you to store all that valuable information you want for your adventures in roleplays, writing projects or any ways you see fit.
