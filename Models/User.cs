@@ -24,11 +24,11 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info("[underline #FFA500]Register new user[/]");
+                MenuHelper.Info("[#FFA500]Register new user[/]");
                 MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
-                if (step >= 1) MenuHelper.Info($"[grey]E-mail:[/] [#FFA500]{email}[/]");
-                if (step >= 2) MenuHelper.Info($"[grey]Username:[/] [#FFA500]{username}[/]");
+                if (step >= 1) AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{email}[/]");
+                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
 
                 var value = step switch
                 {
@@ -109,69 +109,68 @@ namespace _404_not_founders.Models
             {
                 Console.Clear();
                 MenuHelper.Info($"Redigera konto");
-                MenuHelper.Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
-                AnsiConsole.MarkupLine($"Inloggad som ({Username})");
+                MenuHelper.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
-                var choice = MenuHelper.Menu("Vad vill du ändra?", "E-post", "Användarnamn", "Lösenord", "Tillbaka");
+                var choice = MenuHelper.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
                 switch (choice)
                 {
-                    case "E-post":
-                        string newEmail = MenuHelper.AskInput("[#FFA500]Ny E-post:[/]");
+                    case "E-mail":
+                        string newEmail = MenuHelper.AskInput("[#FFA500]New E-mail:[/]");
                         if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
-                        var confirmEmail = MenuHelper.Menu($"Bekräfta ändring till \"{newEmail}\"?", "Ja", "Nej");
-                        if (confirmEmail == "Ja")
+                        var confirmEmail = MenuHelper.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
+                        if (confirmEmail == "Yes")
                         {
                             if (!userService.Users.Exists(u => u.Email == newEmail))
                             {
                                 Email = newEmail;
                                 userService.SaveUserService();
-                                MenuHelper.Result(true, "E-post uppdaterad.");
+                                MenuHelper.Result(true, "E-mail updated.");
                             }
                             else
-                                MenuHelper.Result(false, "Ogiltig eller redan upptagen e-post.");
+                                MenuHelper.Result(false, "Invalid or already taken E-mail.");
                             MenuHelper.DelayAndClear(1200);
                         }
                         break;
 
-                    case "Användarnamn":
-                        string newName = MenuHelper.AskInput("[#FFA500]Nytt användarnamn:[/]");
+                    case "Username":
+                        string newName = MenuHelper.AskInput("[#FFA500]New username:[/]");
                         if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
-                        var confirmName = MenuHelper.Menu($"Bekräfta ändring till \"{newName}\"?", "Ja", "Nej");
-                        if (confirmName == "Ja")
+                        var confirmName = MenuHelper.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
+                        if (confirmName == "No")
                         {
                             if (!userService.Users.Exists(u => u.Username == newName))
                             {
                                 Username = newName;
                                 username = newName;
                                 userService.SaveUserService();
-                                MenuHelper.Result(true, $"Användarnamn uppdaterat till {newName}.");
+                                MenuHelper.Result(true, $"Username changed to {newName}.");
                             }
                             else
-                                MenuHelper.Result(false, "Ogiltigt eller redan upptaget användarnamn.");
+                                MenuHelper.Result(false, "Invalid or already taken username.");
                             MenuHelper.DelayAndClear(1200);
                         }
                         break;
 
-                    case "Lösenord":
-                        string newPassword = MenuHelper.AskInput("[#FFA500]Nytt lösenord:[/]", true);
+                    case "Password":
+                        string newPassword = MenuHelper.AskInput("[#FFA500]New password:[/]", true);
                         if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
-                        var confirmPass = MenuHelper.Menu("Bekräfta ändring till nytt lösenord?", "Ja", "Nej");
-                        if (confirmPass == "Ja")
+                        var confirmPass = MenuHelper.Menu("Confirm change to new password?", "Yes", "No");
+                        if (confirmPass == "Yes")
                         {
                             Password = newPassword;
                             userService.SaveUserService();
-                            MenuHelper.Result(true, "Lösenord uppdaterat.");
+                            MenuHelper.Result(true, "Password updated.");
                             MenuHelper.DelayAndClear(1200);
                         }
                         break;
 
-                    case "Tillbaka":
+                    case "Back":
                         return true; // Bara här visas inloggningsfeedback!
                 }
             }

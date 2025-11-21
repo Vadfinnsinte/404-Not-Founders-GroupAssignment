@@ -191,35 +191,30 @@ namespace _404_not_founders.Menus
                 }
 
                 Console.Clear();
-                // Visa huvudmenyn
-                Info("Huvudmeny");
-                // Visa användarnamnet under menyn i vit text (default)
-                AnsiConsole.MarkupLine($"Inloggad som: {_currentUser.Username}");
-
-                var choice = Menu(
-                    "Vad vill du göra?",
-                    "Lägg till projekt",
-                    "Visa projekt",
-                    "Senaste projekt",
-                    "Redigera konto",
-                    "Logga ut",
-                    "Avsluta");
-
-
+                Info($"Main menu");
+                  AnsiConsole.MarkupLine($"User: {_currentUser.Username}");
+                var choice = Menu("What would you like to do?",
+                                  "Add project",
+                                  "Handle project",
+                                  "Latest project",
+                                  "Edit account",
+                                  "Log out",
+                                  "Quit");
                 switch (choice)
                 {
                     case "Quit":
                         running = false;
-                        return;
-                    case "Logga ut":
-                        Result(true, "Du loggas ut...");
+                        break;
+                    case "Log out":
+                        Result(true, "Logging out...");
                         DelayAndClear();
                         loggedIn = false;
                         currentUser = null;
                         _currentUser = null;
-                        return;
-                    case "Lägg till projekt":
-                        Info("[grey italic]Skriv E för att gå tillbaka eller B för att backa till föregående steg[/]");
+                        RunApp();
+                        break;
+                    case "Add project":
+                        Info("[grey italic]Press E to go back or B to return to the previous step[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
                         DelayAndClear();
@@ -241,10 +236,8 @@ namespace _404_not_founders.Menus
                             Console.ReadKey(true);
                         }
                         break;
-                    case "Redigera konto":
+                    case "Edit account":
                         EditUserMenu(ref currentUser);
-              case       case "Edit account":
-                        // Lägg till redigeringslogik här om behövs.
                         break;
                 }
             }
