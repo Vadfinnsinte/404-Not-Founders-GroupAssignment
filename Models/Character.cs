@@ -19,100 +19,20 @@ namespace _404_not_founders.Models
         public string Class { get; set; }
         public string OtherInfo { get; set; }
 
-        private const string MainTitleColor = "#FFA500";
 
-        public string ChracterMenu1(string title, params string[] choices) =>
-            AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title($"[#{MainTitleColor}]{title}[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices(choices)
-                    .UseConverter(choice => $"[white]{choice}[/]")
-            );
-
-       
-        public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
-        {
-            
-            User? currentUser = menuHelper.CurrentUser;
-            var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Edit Character", "Delete Character", "Back to Main Menu");
-            switch (choice)
-            {
-                case "Add Character":
-                    Add(currentUser, projectService, userService, menuHelper);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Show Character":
-                    // Show characters from the actual project
-                    ShowCharacters(currentProject);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Edit Character":
-                
-                    if (currentProject.Characters == null || currentProject.Characters.Count == 0)
-                    {
-                        AnsiConsole.MarkupLine("[grey]No characters in this project yet.[/]");
-                        Console.ReadKey(true);
-                        break;
-                    }
-
-                    EditCharacter(currentProject, userService);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject); // tillbaka till menyn
-                    break;
-                case "Delete Character":
-                    if (currentProject.Characters == null || currentProject.Characters.Count == 0)
-                    {
-                        AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
-                        MenuHelper.DelayAndClear();
-                        break;
-                    }
-
-                    var characterChoices = currentProject.Characters.Select(w => w.Name).ToList();
-
-                    characterChoices.Add("Back to Menu");
-
-                    var selectedCharacter = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("[#FFA500]Choose character to remove[/]")
-                            .HighlightStyle(new Style(Color.Orange1))
-                            .AddChoices(characterChoices));
-
-                    if (selectedCharacter == "Back to Menu")
-                    {
-                        break;
-                    }
-
-                    var characterToDelete = currentProject.Characters.First(w => w.Name == selectedCharacter);
-
-                    characterToDelete.DeleteCharacter(currentProject, userService);
-
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Back to Main Menu": 
-                    bool loggedIn = true;
-                    bool running = true;
-                    string username = currentUser?.Username;
-                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);  // should go to project menu
-                    if (currentUser != null) currentUser.Username = username;
-                    break;
-            }
-        }
-
-       
-
-        public void Add(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper)
+        public void Add(User currentUser, ProjectService projectService, UserService userService)
         {
             // Lokala variabler för fältet som byggs upp stegvis
             string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
             int age = 0, level = 0;
             // step styr vilken input som efterfrågas; 0..8 där 8 = bekräftelse
             int step = 0;
-
-            while (true)
+            bool addingCharacter = true;
+            while (addingCharacter)
             {
                 Console.Clear();
-                MenuHelper.Info("Create New Character");
-                MenuHelper.InputInstruction(true);
+                ConsoleHelpers.Info("Create New Character");
+                ConsoleHelpers.InputInstruction(true);
 
                 // Visa redan ifyllda fält som kontext för användaren
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
@@ -131,35 +51,34 @@ namespace _404_not_founders.Models
                     case 0:
                         // Namn: enkel textinput
                         Console.Write("Name: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 1:
                         // Race: enkel textinput
                         Console.Write("Race: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 2:
                         // Description: längre text, inga särskilda valideringar här
                         Console.Write("Description: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 3:
                         // Gender: fri text; överväg enum eller valmeny om du vill begränsa alternativ
                         Console.Write("Gender: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 4:
                         // Age: tillåter tomt = 0, validerar heltal
                         Console.Write("Age (leave empty for 0): ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
                         {
                             if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
                             if (!int.TryParse(input.Trim(), out age))
                             {
                                 Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
+                     
                                 continue;
                             }
                         }
@@ -167,15 +86,14 @@ namespace _404_not_founders.Models
                     case 5:
                         // Level: samma logik som age
                         Console.Write("Level (leave empty for 0): ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
                         {
                             if (string.IsNullOrWhiteSpace(input)) { level = 0; step++; continue; }
                             if (!int.TryParse(input.Trim(), out level))
                             {
                                 Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                                Console.WriteLine("Press any key to try again...");
-                                Console.ReadKey(true);
+                         ;
                                 continue;
                             }
                         }
@@ -183,17 +101,17 @@ namespace _404_not_founders.Models
                     case 6:
                         // Class: fri text, överväg att kalla detta "characterClass" för tydlighet
                         Console.Write("Class: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 7:
                         // Other info: valfri extra text
                         Console.Write("Other info: ");
-                        input = MenuHelper.ReadBackOrExit();
+                        input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 8:
                         // Bekräftelsesteg: ja/nej/avsluta
                         Project project = null;
-                        var confirm = ChracterMenu1("Confirm character creation", "Yes", "No");
+                        var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }  // Börjar om från början
                         if (confirm == "Yes")
                         {
@@ -249,8 +167,8 @@ namespace _404_not_founders.Models
 
                             Console.WriteLine();
                             Console.WriteLine($"Character '{name}' created.");
-                            Console.WriteLine("Press any key to continue...");
-                            MenuHelper.DelayAndClear();
+                           
+                            ConsoleHelpers.DelayAndClear();
 
                             return; // Klart
                         }
@@ -264,8 +182,9 @@ namespace _404_not_founders.Models
                 if (input == "E")
                 {
                     // HÄR: Anropar menymetod och skickar null som currentProject — se till att metoden accepterar null
+                    addingCharacter = false;
                     Console.Clear();
-                    ChracterMenu2(userService, projectService, menuHelper, null);
+                    return;
                 }
 
                 if (input == "B")
@@ -299,7 +218,7 @@ namespace _404_not_founders.Models
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -307,13 +226,13 @@ namespace _404_not_founders.Models
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
-                    .Title($"[#{MainTitleColor}]Select character to show[/]")
+                    .Title($"[#FFA500]Select character to show[/]")
                     .HighlightStyle(new Style(Color.Orange1))
                     .PageSize(10)
                     .AddChoices(project.Characters)
@@ -325,14 +244,14 @@ namespace _404_not_founders.Models
             Console.WriteLine();
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
-            MenuHelper.DelayAndClear();
+            ConsoleHelpers.DelayAndClear();
         }
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
 
-        private void EditCharacter(Project project, UserService userService)
+        public void EditCharacter(Project project, UserService userService)
         {
             var original = SelectCharacter(project, "Choose character to edit");
             if (original == null) return;
@@ -352,7 +271,7 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info($"Edit character: [#FFA500]{temp.Name}[/]");
+                ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -397,7 +316,7 @@ namespace _404_not_founders.Models
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    MenuHelper.Info("Character summary:");
+                    ConsoleHelpers.Info("Character summary:");
                     AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{temp.Name}[/]");
                     AnsiConsole.MarkupLine($"[grey]Race:[/] {temp.Race}");
                     AnsiConsole.MarkupLine($"[grey]Description:[/] {temp.Description}");
@@ -416,7 +335,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Exit")
                     {
-                        MenuHelper.DelayAndClear();
+                        ConsoleHelpers.DelayAndClear();
                         return;
                     }
 
@@ -445,8 +364,8 @@ namespace _404_not_founders.Models
                         original.OtherInfo = temp.OtherInfo;
 
                         userService.SaveUserService();
-                        MenuHelper.Info("Character updated!");
-                        MenuHelper.DelayAndClear();
+                        ConsoleHelpers.Info("Character updated!");
+                        ConsoleHelpers.DelayAndClear();
                         return;
                     }
                 }
