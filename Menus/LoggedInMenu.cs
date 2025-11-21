@@ -65,6 +65,12 @@ namespace _404_not_founders.Menus
                         ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
                         var newProject = new Project();
                         var addedProject = newProject.Add(_currentUser, _userService);
+                        if (addedProject == null)
+                        {
+                            ConsoleHelpers.Info("Project creation cancelled.");
+                            ConsoleHelpers.DelayAndClear();
+                            break;
+                        }
                         ConsoleHelpers.DelayAndClear();
 
                         // Använd ProjectChoisesMenu istället för _menuHelper

@@ -22,26 +22,78 @@ namespace _404_not_founders.Models
 
         public Project Add(User currentUser, UserService userService)
         {
-            // Prompt user for project details
-            string addProjectName = AnsiConsole.Ask<string>("[#FFA500]Enter project title:[/]");
-            string addProjectDescription = AnsiConsole.Ask<string>("[#FFA500]Enter project description:[/]");
+            string title = "";
+            string description = "";
+            int step = 0;
 
-            // Create new project
-            var newProject = new Project
+            while (true)
             {
-                title = addProjectName,
-                description = addProjectDescription,
-                DateOfCreation = DateTime.Now,
-                Storylines = new List<Storyline>(),
-                Characters = new List<Character>()
-             };
+                Console.Clear();
+                AnsiConsole.MarkupLine("[underline #FFA500]Create New Project[/]");
+                AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
+                Console.WriteLine();
 
-            // Add project to user's project list and save
-            AnsiConsole.MarkupLine("[green]Project created![/]");
-            currentUser.Projects.Add(newProject);
-            userService.SaveUserService();
-            return (newProject);
+                // Show previous inputs
+                if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Title:[/] {title}");
+                if (step >= 2)
+                    AnsiConsole.MarkupLine($"[#FFA500]Description:[/] {description}");
+                string prompt = step switch
+                {
+                    0 => "Enter project title:",
+                    1 => "Enter project description:",
+                    _ => ""
+                };
 
+                if (step == 2)
+                {
+                    // Confirm
+                    var confirm = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[#FFA500]Save this project?[/]")
+                            .AddChoices("Yes", "No (Start over)", "Exit"));
+
+                    if (confirm == "Exit") return null;
+                    if (confirm == "No (Start over)") { step = 0; continue; }
+
+                    if (confirm == "Yes")
+                    {
+                        var newProject = new Project
+                        {
+                            title = title,
+                            description = description,
+                            DateOfCreation = DateTime.Now,
+                            Storylines = new List<Storyline>(),
+                            Characters = new List<Character>()
+                        };
+
+                        currentUser.Projects.Add(newProject);
+                        userService.SaveUserService();
+
+                        AnsiConsole.MarkupLine("[green]Project created![/]");
+                        Thread.Sleep(1200);
+                        return newProject;
+                    }
+                }
+
+                string input = AskStepInput.AskStepInputs(prompt);
+
+                // Handle B
+                if (input == "B")
+                {
+                    if (step > 0) step--;
+                    continue;
+                }
+
+                // Handle E
+                if (input == "E")
+                    return null;
+
+                // Store values
+                if (step == 0) title = input;
+                if (step == 1) description = input;
+
+                step++;
+            }
         }
 
         public void AddCharacter(Character character, UserService userService)
