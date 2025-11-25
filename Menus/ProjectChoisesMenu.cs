@@ -156,7 +156,7 @@ namespace _404_not_founders.Menus
                         break;
                     case "Show Everything":
                         Console.Clear();
-                        project.ShowAll();
+                        project.ShowAll(_userService, _projectService, new MenuHelper(_userService, _projectService));
                         break;
                     case "Back to main menu":
                         Console.Clear();

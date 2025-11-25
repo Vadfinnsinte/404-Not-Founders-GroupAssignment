@@ -10,7 +10,7 @@ namespace _404_not_founders.Models
 {
     public class Character
     {
-        public string Names { get; set; }
+        public string Name { get; set; }
         public string Race { get; set; }
         public string Description { get; set; }
         public string Gender { get; set; }
@@ -18,6 +18,7 @@ namespace _404_not_founders.Models
         public int Level { get; set; }
         public string Class { get; set; }
         public string OtherInfo { get; set; }
+
 
 
         public void Add(User currentUser, ProjectService projectService, UserService userService)
@@ -140,7 +141,7 @@ namespace _404_not_founders.Models
                             // Bygg ny Character-instans
                             var newCharacter = new Character
                             {
-                                Names = name,
+                                Name = name,
                                 Race = race,
                                 Description = description,
                                 Gender = gender,
@@ -236,7 +237,7 @@ namespace _404_not_founders.Models
                     .HighlightStyle(new Style(Color.Orange1))
                     .PageSize(10)
                     .AddChoices(project.Characters)
-                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Names) ? "(unnamed)" : c.Names)
+                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)
             );
 
             Console.Clear();
@@ -415,10 +416,9 @@ namespace _404_not_founders.Models
                     .AddChoices(project.Characters)
                     .UseConverter(c => $"{c.Name} ({c.Race})"));
         }
-        public void DeleteCharacter(Project project, UserService userService)
+        public void DeleteCharacter(Project project, UserService userService, User currentUser)
         {
-           
-            Project project = currentProject;
+
 
             // Om inget projekt skickades in men det finns en inloggad användare,
             // försök hitta ett lämpligt projekt från användarens lista
@@ -440,7 +440,7 @@ namespace _404_not_founders.Models
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project selected. Select or create a project before editing characters.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -448,35 +448,38 @@ namespace _404_not_founders.Models
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project to change.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
             // Fråga användaren vilken karaktär som ska redigeras
             var toEdit = AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
-                    .Title($"[#{MainTitleColor}]Select character to change[/]")
+                    .Title($"[#FFA500]Select character to change[/]")
                     .HighlightStyle(new Style(Color.Orange1))
                     .PageSize(10)
                     .AddChoices(project.Characters)
-                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Names) ? "(unnamed)" : c.Names)
+                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)
             );
 
             if (toEdit == null)
             {
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
+            // Declare addingCharacter here to fix CS0103
+            bool addingCharacter = true;
+
             // Loop för redigering tills användaren sparar eller avbryter
-            while (true)
+            while (addingCharacter)
             {
                 Console.Clear();
-                MenuHelper.Info($"Editing: {(string.IsNullOrWhiteSpace(toEdit.Names) ? "(unnamed)" : toEdit.Names)}");
-                MenuHelper.InputInstruction(true);
+                ConsoleHelpers.Info($"Editing: {(string.IsNullOrWhiteSpace(toEdit.Name) ? "(unnamed)" : toEdit.Name)}");
+                ConsoleHelpers.InputInstruction(true);
 
                 // Visa aktuella fältvärden
-                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{toEdit.Names}[/]");
+                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{toEdit.Name}[/]");
                 AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{toEdit.Race}[/]");
                 AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{toEdit.Description}[/]");
                 AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{toEdit.Gender}[/]");
@@ -486,14 +489,17 @@ namespace _404_not_founders.Models
                 AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{toEdit.OtherInfo}[/]");
                 Console.WriteLine();
 
-                var field = CharacterColorController("Choose field to edit",
-                    "Name", "Race", "Description", "Gender", "Age", "Level", "Class", "Other info", "Save and Exit", "Cancel");
+                var field = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[#FFA500]Choose field to edit[/]")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices("Name", "Race", "Description", "Gender", "Age", "Level", "Class", "Other info", "Save and Exit", "Cancel")
+                );
 
                 // Avbryt helt om användaren väljer Cancel
                 if (field == "Cancel")
                 {
-                    MenuHelper.DelayAndClear();
-                    ChracterMenu(userService, projectService, menuHelper, project);
+                    ConsoleHelpers.DelayAndClear();
                     return;
                 }
 
@@ -511,18 +517,23 @@ namespace _404_not_founders.Models
                     }
                     Console.WriteLine("Press any key to continue...");
                     Console.ReadKey(true);
-                    MenuHelper.DelayAndClear();
+                    ConsoleHelpers.DelayAndClear();
                     return;
                 }
 
                 // Läs in nytt värde för valt fält
                 Console.Write($"{field}: ");
-                var input = MenuHelper.ReadBackOrExit();
+                var input = ConsoleHelpers.ReadBackOrExit();
 
-                    AnsiConsole.MarkupLine($"The character '[orange1]{this.Name}[/]' has been deleted!");
-                    Thread.Sleep(1200);
+                // Hantera specialkommandon "E" = Exit, "B" = Back från MenuHelper.ReadBackOrExit
+                if (input == "E")
+                {
+                    // HÄR: Anropar menymetod och skickar null som currentProject — se till att metoden accepterar null
+                    addingCharacter = false;
                     Console.Clear();
+                    return;
                 }
+
                 if (input == "B")
                 {
                     continue;
@@ -533,7 +544,7 @@ namespace _404_not_founders.Models
                 {
                     case "Name":
                         // Trim tar bort inledande/avslutande blanksteg; ?? "" säkerställer att fältet aldrig blir null
-                        toEdit.Names = input?.Trim() ?? "";
+                        toEdit.Name = input?.Trim() ?? "";
                         break;
                     case "Race":
                         toEdit.Race = input?.Trim() ?? "";
@@ -569,10 +580,12 @@ namespace _404_not_founders.Models
                     case "Other info":
                         toEdit.OtherInfo = input?.Trim() ?? "";
                         break;
+
                 }
             }
         }
-
+            
+ 
 
         public void Delete()
         {

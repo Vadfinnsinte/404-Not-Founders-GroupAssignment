@@ -40,8 +40,7 @@ namespace _404_not_founders.Menus
                         break;
                     case "Show Character":
                         // Show characters from the actual project
-                        newCharacter.ShowCharacters(currentProject);
-
+                        newCharacter.ShowCharacters(_userService, _projectService, new MenuHelper(_userService, _projectService), currentProject);
                         break;
                     case "Edit Character":
 
@@ -81,7 +80,7 @@ namespace _404_not_founders.Menus
 
                         var characterToDelete = currentProject.Characters.First(w => w.Name == selectedCharacter);
 
-                        characterToDelete.DeleteCharacter(currentProject, _userService);
+                        characterToDelete.DeleteCharacter(currentProject, _userService, _currentUser);
 
 
                         break;
