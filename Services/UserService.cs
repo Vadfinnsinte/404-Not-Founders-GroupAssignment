@@ -58,9 +58,6 @@ namespace _404_not_founders.Services
                 if (loaded != null)
                 {
                     Users = loaded.Users;
-                    //Characters = loaded.Characters;
-                    //Storylines = loaded.Storylines;
-                    //Worlds = loaded.Worlds;
                 }
 
             }

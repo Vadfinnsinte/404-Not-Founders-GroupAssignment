@@ -57,6 +57,7 @@ namespace _404_not_founders.Models
 
                     AnsiConsole.MarkupLine($"The storyline '[orange1]{this.Title}[/]' has been deleted!");
                     Thread.Sleep(1200);
+                    Console.Clear();
                 }
                 else
                 {
