@@ -1,48 +1,57 @@
-﻿using _404_not_founders.Models;
-using _404_not_founders.Services;
-using _404_not_founders.UI;
-using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using _404_not_founders.UI;             // ConsoleHelpers, AnsiClearHelper, ShowInfoCard
+using _404_not_founders.Models;         // User, Project, Character, World, Storyline
+using _404_not_founders.Services;       // UserService, ProjectService, DungeonMasterAI
+using Spectre.Console;                  // Meny, markeringar och prompts
+using Microsoft.Extensions.Configuration; // För API-nyckel och config
+using System;                           // Console, Thread.Sleep etc
+using System.Threading.Tasks;           // async/await
+using System.Collections.Generic;       // IReadOnlyList
+using System.Linq;                      // LINQ
 
 namespace _404_not_founders.Menus
 {
     public class ProjectChoisesMenu
     {
         private readonly User _currentUser;
-        private readonly ProjectService _projectService;
+        private readonly Project _currentProject;
         private readonly UserService _userService;
+        private readonly ProjectService _projectService;
 
-        public ProjectChoisesMenu(User currentUser, ProjectService projectService, UserService userService)
+        public ProjectChoisesMenu(User currentUser, Project currentProject, UserService userService, ProjectService projectService)
         {
-            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
-            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _currentUser = currentUser;
+            _currentProject = currentProject;
+            _userService = userService;
+            _projectService = projectService;
         }
-        public void ShowProjectMenu()
+
+
+        // --- FIX: async Task ---
+        public async Task ShowProjectMenu()
         {
             if (_currentUser == null)
             {
                 AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
+                await Task.CompletedTask;
                 return;
             }
             bool runProjectMenu = true;
             while (runProjectMenu)
             {
+                Console.Clear();
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[#FFA500]Project Menu[/]")
                         .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices("Show all projects", "Search projects", "Back"));
+                        .AddChoices(
+                            "Show all projects",
+                            "Search projects",
+                            "Back"));
 
                 if (choice == "Back")
                 {
                     runProjectMenu = false;
                     break;
-
                 }
 
                 if (choice == "Show all projects")
@@ -56,14 +65,13 @@ namespace _404_not_founders.Menus
                         continue;
                     }
 
-                    // ---- SELECT with BACK ----
                     var selected = SelectFromList(list, "Select a project");
                     if (selected == null)
-                        continue; // Back pressed
+                        continue;
 
                     _projectService.SetLastSelected(_currentUser, selected.Id);
-                    runProjectMenu = false;
-                    ProjectEditMenu(selected);
+                    await ProjectEditMenu(selected, _userService);
+                    // INGEN runProjectMenu = false här – så menyn loopar kvar
                 }
                 else if (choice == "Search projects")
                 {
@@ -77,18 +85,17 @@ namespace _404_not_founders.Menus
                         continue;
                     }
 
-                    // ---- SELECT with BACK ----
                     var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
                     if (selected == null)
-                        continue; // Back pressed
+                        continue;
 
                     _projectService.SetLastSelected(_currentUser, selected.Id);
                     AnsiConsole.Clear();
-                    runProjectMenu = false;
-                    ProjectEditMenu(selected);
+                    await ProjectEditMenu(selected, _userService);
+                    // INGEN runProjectMenu = false här heller!
                 }
-
             }
+            await Task.CompletedTask;
         }
 
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
@@ -97,8 +104,6 @@ namespace _404_not_founders.Menus
                 return null;
 
             var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
-
-            // --- Create display list ---
             var displayList = sorted.Select(p => p.title).ToList();
             displayList.Add("Back");
 
@@ -109,84 +114,104 @@ namespace _404_not_founders.Menus
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices(displayList));
 
-            // If user selects “Back”
             if (selectedTitle == "Back")
             {
                 AnsiConsole.Clear();
                 return null;
             }
 
-            // Return the matching project
             var selectedProject = sorted.First(p => p.title == selectedTitle);
             AnsiConsole.Clear();
             return selectedProject;
         }
-        public void ProjectEditMenu(Project project)
+
+        // --- FIX: async Task ---
+        public async Task ProjectEditMenu(Project project, UserService userService)
         {
-            Character character = new Character();
-            bool running = true, loggedIn = true;
             bool runEdit = true;
-            string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
 
             while (runEdit)
             {
+                Console.Clear(); // <-- Rensa alltid inför varje menyval!
+
                 var choice = ProjectEditVisuals.ShowEditMenu(project);
 
                 switch (choice)
                 {
                     case "Edit/Add Characters":
-                        CharacterChoisesMenu characterChoisesMenu = new CharacterChoisesMenu(_currentUser, _projectService, _userService);
-                        characterChoisesMenu.ChracterMenu(project);
+                        {
+                            var characterChoisesMenu = new CharacterChoisesMenu(_currentUser, _projectService, _userService);
+                            await characterChoisesMenu.ChracterMenu(project, userService);
+                            // Efter undermeny: tillbaks till ProjectEditMenu, som nu är ren!
+                        }
                         break;
+
                     case "Edit/Add worlds":
-                        if (_currentUser != null)
                         {
-                            WorldChoisesMenu worldChoisesMenu = new WorldChoisesMenu(_userService);
-                            worldChoisesMenu.WorldMenu(_currentUser, project);
-                        }
-                        else
-                        {
-                            AnsiConsole.MarkupLine("[red]No user logged in![/]");
-                            ConsoleHelpers.DelayAndClear();
+                            if (_currentUser != null)
+                            {
+                                var worldChoisesMenu = new WorldChoisesMenu(_userService);
+                                await worldChoisesMenu.WorldMenu(_currentUser, project, _userService);
+                                // Efter undermeny: tillbaks till ProjectEditMenu, som nu är ren!
+                            }
+                            else
+                            {
+                                AnsiConsole.MarkupLine("[red]No User logged in![/]");
+                                ConsoleHelpers.DelayAndClear();
+                            }
                         }
                         break;
+
                     case "Edit/Add Storylines":
-                        StorylineChoisesMenu storylineMenu = new StorylineChoisesMenu(_userService);
-                        storylineMenu.StorylineMenu(project);
+                        {
+                            var storylineMenu = new StorylineChoisesMenu(_userService);
+                            await storylineMenu.StorylineMenu(project, _userService);
+                            // Efter undermeny: tillbaks till ProjectEditMenu, som nu är ren!
+                        }
                         break;
+
                     case "Show Everything":
-                        Console.Clear();
-                        project.ShowAll();
+                        {
+                            Console.Clear(); // Rensa inför visning!
+                            project.ShowAll(project);
+                            // Efter visning: tillbaks till ProjectEditMenu, ren!
+                        }
                         break;
+
                     case "Back to main menu":
                         Console.Clear();
-                        
                         runEdit = false;
                         break;
+
                     default:
-                        Console.WriteLine("Something went wrong... going back to menu");
-                        return;
+                        {
+                            Console.WriteLine("Something went wrong... going back to menu");
+                            // Här gör du inget return – du looper vidare, menyn blir ren i nästa varv!
+                        }
+                        break;
                 }
             }
-            //DelayAndClear();
+            await Task.CompletedTask;
         }
-        public void ShowLastProjectMenu(User currentUser)
+
+
+        // --- FIX: async Task ---
+        public async Task ShowLastProjectMenu(User currentUser)
         {
             Console.Clear();
-            ConsoleHelpers.Info("Last selected project");
+            ConsoleHelpers.Info("Last selected Project");
 
-            // hämta senaste valda projektet för den här användaren
             var last = _projectService.GetLastSelected(currentUser);
 
             if (last == null)
             {
-                AnsiConsole.MarkupLine("[grey]You have no last selected project yet.[/]");
-                AnsiConsole.MarkupLine("[grey]Open a project from \"Show projects\" first.[/]");
+                AnsiConsole.MarkupLine("[grey]You have no last selected Project yet.[/]");
+                AnsiConsole.MarkupLine("[grey]Open a Project from \"Show Projects\" first.[/]");
                 Console.ReadKey(true);
+                await Task.CompletedTask;
                 return;
             }
 
-            // Visa lite info om projektet
             AnsiConsole.MarkupLine("");
             AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
             AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
@@ -195,20 +220,19 @@ namespace _404_not_founders.Menus
 
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[#FFA500]What do you want to do with this project?[/]")
+                    .Title("[#FFA500]What do you want to do with this Project?[/]")
                     .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices("Open project", "Back"));
+                    .AddChoices("Open Project", "Back"));
 
-            if (choice == "Open project")
+            if (choice == "Open Project")
             {
-                // gå direkt till samma meny som när man valt projekt via listan
-                Console.WriteLine("Going to project...");
+                Console.WriteLine("Going to Project...");
                 ConsoleHelpers.DelayAndClear();
-                ProjectEditMenu(last);
+                await ProjectEditMenu(last, _userService);
             }
             else
             {
-                // Back – bara gå tillbaka till huvudmenyn
+                await Task.CompletedTask;
                 return;
             }
         }
