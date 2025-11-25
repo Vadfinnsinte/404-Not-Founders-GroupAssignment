@@ -16,25 +16,20 @@ namespace _404_not_founders.Models
         public List<Project> Projects { get; set; } = new List<Project>();
         public Guid? LastSelectedProjectId { get; set; }
 
-        // ------- LÄGG IN HÄR -------
-        public static (bool success, string registeredUser) RegisterUser(List<User> users, UserService userService)
+        public static bool RegisterUser(List<User> users, out string registeredUser, UserService userService)
         {
-            string registeredUser = null;
+            registeredUser = null;
             string email = "", username = "", password = "";
-            int step = 0; // Steg i formuläret
-
+            int step = 0;
             while (true)
             {
-                // Visa instruktioner och nuvarande innehåll
                 Console.Clear();
                 ConsoleHelpers.Info("[#FFA500]Register new user[/]");
                 ConsoleHelpers.InputInstruction(true);
 
-                // Visa tidigare ifyllda fält i processen
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{email}[/]");
                 if (step >= 2) AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
 
-                // Select input prompt based on steg
                 var value = step switch
                 {
                     0 => ConsoleHelpers.AskInput("[#FFA500]E-mail:[/]"),
@@ -43,11 +38,11 @@ namespace _404_not_founders.Models
                     _ => null
                 };
 
-                // Avbryt hela processen
+                // E = Exit/Avbryt hela registreringen (går tillbaka till login/register)
                 if (string.IsNullOrWhiteSpace(value) || value.Trim().Equals("E", StringComparison.OrdinalIgnoreCase))
-                    return (false, null);
+                    return false;
 
-                // Gå bakåt i stegen
+                // B = Backa till föregående steg (eller avbryter om möjligt)
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
                 {
                     if (step > 0)
@@ -59,42 +54,36 @@ namespace _404_not_founders.Models
                     continue;
                 }
 
-                // Validera email
+                // Fältvalidering
                 if (step == 0)
                 {
                     if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        ConsoleHelpers.Result(false, "Email address is already registered.");
-                        ConsoleHelpers.DelayAndClear(1200);
-                        continue;
+                        ConsoleHelpers.Result(false, "Email address is already registered."); ConsoleHelpers.DelayAndClear(1200); continue;
                     }
                     email = value; step++;
                 }
-                // Validera username
                 else if (step == 1)
                 {
                     if (users.Exists(u => u.Username.Equals(value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        ConsoleHelpers.Result(false, "The username is already taken.");
-                        ConsoleHelpers.DelayAndClear(1200);
-                        continue;
+                        ConsoleHelpers.Result(false, "The username is already taken."); ConsoleHelpers.DelayAndClear(1200); continue;
                     }
                     username = value; step++;
                 }
-                // Spara lösenord och gå vidare
                 else if (step == 2)
                 {
                     password = value; step++;
                 }
 
-                // När alla fält är ifyllda: bekräfta
+                // Bekräfta och skapa användaren
                 if (step == 3)
                 {
                     var confirm = MenuChoises.Menu("Do you want to register this user?", "Yes", "No");
+             
                     if (confirm == "No") { step = 0; continue; }
                     if (confirm == "Yes")
                     {
-                        // Skapa och spara användare
                         users.Add(new User
                         {
                             Email = email,
@@ -107,35 +96,29 @@ namespace _404_not_founders.Models
                         ConsoleHelpers.Result(true, "Registering user...!");
                         ConsoleHelpers.DelayAndClear(800);
                         registeredUser = username;
-                        return (true, registeredUser);
+                        return true;
                     }
                     step = 0;
                 }
             }
         }
-        // ------- SLUT RegisterUser -------
 
-
-        /// Redigera användare. Returnerar tuple (om edit är färdig, och eventuellt nytt username)
-        public (bool finished, string updatedUser) EditUser(UserService userService, string username)
+        public bool EditUser(UserService userService, ref string username)
         {
             while (true)
             {
-                // Visa redigeringsmeny
                 Console.Clear();
-                ConsoleHelpers.Info("Redigera konto");
+                ConsoleHelpers.Info($"Redigera konto");
                 ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
                 var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
-
                 switch (choice)
                 {
                     case "E-mail":
                         string newEmail = ConsoleHelpers.AskInput("[#FFA500]New E-mail:[/]");
-                        if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase))
-                            return (false, username);
-                        if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase))
-                            break;
+                        if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
                         var confirmEmail = MenuChoises.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
                         if (confirmEmail == "Yes")
                         {
@@ -146,43 +129,37 @@ namespace _404_not_founders.Models
                                 ConsoleHelpers.Result(true, "E-mail updated.");
                             }
                             else
-                            {
                                 ConsoleHelpers.Result(false, "Invalid or already taken E-mail.");
-                            }
                             ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
                     case "Username":
                         string newName = ConsoleHelpers.AskInput("[#FFA500]New username:[/]");
-                        if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase))
-                            return (false, username);
-                        if (newName.Equals("B", StringComparison.OrdinalIgnoreCase))
-                            break;
+                        if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
                         var confirmName = MenuChoises.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
                         if (confirmName == "Yes")
                         {
                             if (!userService.Users.Exists(u => u.Username == newName))
                             {
                                 Username = newName;
+                                username = newName;
                                 userService.SaveUserService();
                                 ConsoleHelpers.Result(true, $"Username changed to {newName}.");
-                                username = newName; // Uppdatera och returnera nya namnet
                             }
                             else
-                            {
                                 ConsoleHelpers.Result(false, "Invalid or already taken username.");
-                            }
                             ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
                     case "Password":
                         string newPassword = ConsoleHelpers.AskInput("[#FFA500]New password:[/]", true);
-                        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase))
-                            return (false, username);
-                        if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase))
-                            break;
+                        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
                         var confirmPass = MenuChoises.Menu("Confirm change to new password?", "Yes", "No");
                         if (confirmPass == "Yes")
                         {
@@ -194,11 +171,11 @@ namespace _404_not_founders.Models
                         break;
 
                     case "Back":
-                        // Klar med edit, returnera status och username
-                        return (true, username);
+                        return true; // Bara här visas inloggningsfeedback!
                 }
             }
         }
+
 
         public void Delete()
         {

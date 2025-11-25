@@ -1,14 +1,12 @@
-﻿using _404_not_founders.UI;             // ConsoleHelpers, AnsiClearHelper, ShowInfoCard
-using _404_not_founders.Models;         // User, Project, Character, World, Storyline
-using _404_not_founders.Services;       // UserService, ProjectService, DungeonMasterAI
-using Spectre.Console;                  // Meny, markeringar och prompts
-using Microsoft.Extensions.Configuration; // För API-nyckel och config
-using System;                           // Console, Thread.Sleep etc
-using System.Threading.Tasks;           // async/await
-using System.Net.Http;                  // HttpClient
-using System.Collections.Generic;       // List<T>
-using System.Linq;                      // LINQ
-using System.Text;                      // StringBuilder
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI;
+using Spectre.Console;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
@@ -22,8 +20,7 @@ namespace _404_not_founders.Menus
 
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
-
-        public async Task StorylineMenu(Project project, UserService userService)
+        public void StorylineMenu(Project project)
         {
             bool runStoryline = true;
             while (runStoryline)
@@ -31,34 +28,24 @@ namespace _404_not_founders.Menus
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
-                        .AddChoices(
-                            "Generate Storyline with AI", // Se Storyline.cs för metoden
-                            "Add Storyline",
-                            "Show Storylines",
-                            "Edit Storyline",
-                            "Remove Storyline",
-                            "Back")
+                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
                 switch (choice)
                 {
-                    case "Generate Storyline with AI":
-                        {
-                            var storylineForAi = new Storyline();
-                            await storylineForAi.GenerateStorylineWithGeminiAI(project, userService);
-                        }
-                        break;
                     case "Add Storyline":
-                        var newStoryline = new Storyline();
-                        newStoryline.Add();
+                        AddStorylineToProject(project);
                         break;
                     case "Show Storylines":
-                        project.ShowAllStorylines(project);
+                        project.ShowAllStorylines();
+                        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
+
                     case "Edit Storyline":
                         EditStoryline(project);
                         break;
-                    case "Remove Storyline":  // Rätta till menytext: "Remove Storyline"
+                    case "Delete Storyline":
                         if (project.Storylines == null || project.Storylines.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
@@ -67,6 +54,7 @@ namespace _404_not_founders.Menus
                         }
 
                         var storylineChoices = project.Storylines.Select(w => w.Title).ToList();
+
                         storylineChoices.Add("Back to Menu");
 
                         var selectedStoryline = AnsiConsole.Prompt(
@@ -91,8 +79,6 @@ namespace _404_not_founders.Menus
                 }
             }
         }
-
-
         private void AddStorylineToProject(Project project)
         {
             Console.Clear();
@@ -434,5 +420,8 @@ namespace _404_not_founders.Menus
                     .AddChoices(sorted)
                     .UseConverter(s => $"{s.orderInProject}. {s.Title}"));
         }
+
+
+
     }
 }

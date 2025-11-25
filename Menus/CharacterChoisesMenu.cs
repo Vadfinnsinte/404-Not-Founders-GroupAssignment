@@ -1,13 +1,12 @@
-﻿using _404_not_founders.UI;             // ConsoleHelpers, AnsiClearHelper, ShowInfoCard
-using _404_not_founders.Models;         // User, Project, Character, World, Storyline
-using _404_not_founders.Services;       // UserService, ProjectService, DungeonMasterAI
-using Spectre.Console;                  // Meny, markeringar och prompts
-using Microsoft.Extensions.Configuration; // För API-nyckel och config
-using System;                           // Console, Thread.Sleep etc
-using System.Threading.Tasks;           // async/await
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI;
+using Spectre.Console;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
@@ -23,66 +22,38 @@ namespace _404_not_founders.Menus
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
-
-        // FIX: async Task
-        public async Task ChracterMenu(Project currentProject, UserService userService)
+        public void ChracterMenu(Project currentProject)
         {
             Character newCharacter = new Character();
             User? currentUser = _currentUser;
             bool runCharacterMenu = true;
-
             while (runCharacterMenu)
             {
-                var choice = MenuChoises.Menu("Character Menu",
-                    "Generate Character with AI",
-                    "Add Character",
-                    "Show Character",
-                    "Edit Character",
-                    "Delete Character",
-                    "Back"
-                );
+                var choice = MenuChoises.Menu("Character Menu", "Add Character", "Show Character", "Edit Character", "Delete Character", "Back");
 
                 switch (choice)
                 {
-                    case "Generate Character with AI":
-                        {
-                            var newChar = new Character();
-                            await newChar.GenerateCharacterWithGeminiAI(currentProject, userService);
-                        }
-                        break;
                     case "Add Character":
-                        {
-                            var newChar = new Character();
-                            newChar.Add(_currentUser, _projectService, _userService);
 
-                            ConsoleHelpers.Info("Character created!");
-                            Console.WriteLine("Press any key to continue...");
-                            Console.ReadKey(true);
-                            Console.Clear();
-
-                            var postChoice = AnsiConsole.Prompt(
-                                new SelectionPrompt<string>()
-                                    .Title("[#FFA500]What do you want to do next?[/]")
-                                    .HighlightStyle(Color.Orange1)
-                                    .AddChoices("Show Character", "Back"));
-
-                            if (postChoice == "Show Character")
-                                newChar.ShowCharacters(currentProject);
-                            else if (postChoice == "Back")
-                                break;
-                            break;
-                        }
+                        newCharacter.Add(currentUser, _projectService, _userService);
+                       
+                        break;
                     case "Show Character":
+                        // Show characters from the actual project
                         newCharacter.ShowCharacters(currentProject);
+
                         break;
                     case "Edit Character":
+
                         if (currentProject.Characters == null || currentProject.Characters.Count == 0)
                         {
-                            AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
+                            AnsiConsole.MarkupLine("[grey]No characters in this project yet.[/]");
                             Console.ReadKey(true);
                             break;
                         }
+
                         newCharacter.EditCharacter(currentProject, _userService);
+
                         break;
                     case "Delete Character":
                         if (currentProject.Characters == null || currentProject.Characters.Count == 0)
@@ -91,29 +62,38 @@ namespace _404_not_founders.Menus
                             ConsoleHelpers.DelayAndClear();
                             break;
                         }
+
                         var characterChoices = currentProject.Characters.Select(w => w.Name).ToList();
+
                         characterChoices.Add("Back");
 
                         var selectedCharacter = AnsiConsole.Prompt(
                             new SelectionPrompt<string>()
-                                .Title("[#FFA500]Choose Character to remove[/]")
+                                .Title("[#FFA500]Choose character to remove[/]")
                                 .HighlightStyle(new Style(Color.Orange1))
                                 .AddChoices(characterChoices));
 
                         if (selectedCharacter == "Back")
                         {
+
                             break;
                         }
 
                         var characterToDelete = currentProject.Characters.First(w => w.Name == selectedCharacter);
+
                         characterToDelete.DeleteCharacter(currentProject, _userService);
+
+
                         break;
                     case "Back":
+
                         runCharacterMenu = false;
+
                         break;
                 }
             }
-            await Task.CompletedTask;
         }
+
+
     }
 }
