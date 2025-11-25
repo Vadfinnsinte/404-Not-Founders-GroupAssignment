@@ -1,10 +1,11 @@
-﻿using System;
-using _404_not_founders.Menus;
-using _404_not_founders.Services;
-using Spectre.Console;
-using _404_not_founders.UI;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;                                   // Console, InvalidOperationException
+using _404_not_founders.Menus;                  // MenuChoises
+using _404_not_founders.Services;               // UserService, ProjectService, DungeonMasterAI
+using Spectre.Console;                          // Meny, markeringar och prompts
+using _404_not_founders.UI;                     // ConsoleHelpers, ShowInfoCard
+using System.Collections.Generic;               // List
+using System.Linq;                              // LINQ
+using Microsoft.Extensions.Configuration;       // För API-nyckel och config
 
 namespace _404_not_founders.Models
 {
@@ -214,15 +215,13 @@ namespace _404_not_founders.Models
 
         public void ShowCharacters(Project project)
         {
-            // Kontrollera att ett projekt faktiskt skickats in
+            // Kontrollera så projekt och karaktärer finns
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
                 ConsoleHelpers.DelayAndClear();
                 return;
             }
-
-            // Säkra att projektet har en lista med karaktärer och att den inte är tom
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
@@ -230,21 +229,32 @@ namespace _404_not_founders.Models
                 return;
             }
 
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<Character>()
-                    .Title($"[#FFA500]Select character to show[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .PageSize(10)
-                    .AddChoices(project.Characters)
-                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)
-            );
+            while (true)
+            {
+                var characterChoices = project.Characters.Select(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name).ToList();
+                characterChoices.Add("Back");
 
-            Console.Clear();
-            ShowInfoCard.ShowObject(selected);
-            Console.WriteLine();
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey(true);
-            ConsoleHelpers.DelayAndClear();
+                var selected = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title($"[#FFA500]Select character to show[/]")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .PageSize(10)
+                        .AddChoices(characterChoices));
+
+                if (selected == "Back")
+                {
+                    Console.Clear();
+                    break;
+                }
+
+                var obj = project.Characters.First(c => c.Name == selected);
+                Console.Clear();
+                ShowInfoCard.ShowObject(obj);
+                Console.WriteLine();
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey(true);
+                Console.Clear();
+            }
         }
         public void Show()
         {
@@ -453,6 +463,112 @@ namespace _404_not_founders.Models
             }
         }
 
-     
+        public async Task GenerateCharacterWithGeminiAI(Project currentProject, UserService userService)
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+            string googleApiKey = config["GoogleAI:ApiKey"];
+            var aiHelper = new GeminiAIService(googleApiKey);
+
+            Console.WriteLine("Describe your Character, or press [Enter] for a fantasy default:");
+            var input = Console.ReadLine();
+            string prompt = string.IsNullOrWhiteSpace(input)
+                ? "Generate a uniquely original and randomized Dungeons & Dragons Character. Never use the same name, race, or background as previous outputs – make each character surprising and different! Format (Without asterisks or markdown): Name: ..., Race: ..., Class: ..., Gender: ..., Age: ..., Description: ..., Level: ..., Other info: ..."
+                : input;
+
+            Console.WriteLine("Generating Character with Gemini...");
+            string result = await aiHelper.GenerateAsync(prompt);
+
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                Console.WriteLine("\nYour Gemini-generated Character:\n" + result);
+                var newCharacter = ParseAITextToCharacter(result);
+
+                if (newCharacter != null)
+                {
+                    try
+                    {
+                        currentProject.AddCharacter(newCharacter, userService);
+                        userService.SaveUserService();
+
+                        ConsoleHelpers.Info(!string.IsNullOrWhiteSpace(newCharacter.Name)
+                            ? $"Character '{newCharacter.Name}' created!"
+                            : "Character created!");
+
+                        // Visa nyskapad karaktär direkt!
+                        Console.Clear();
+                        ShowInfoCard.ShowObject(newCharacter);
+
+                        // Antingen klassiskt "Press any key to continue..."
+                        Console.WriteLine("\nPress any key to go back.");
+                        Console.ReadKey(true);
+                        Console.Clear();
+
+                        // Eller, om du vill ha explicit "Back"-alternativ:
+                        // var choice = AnsiConsole.Prompt(
+                        //    new SelectionPrompt<string>()
+                        //        .Title("[#FFA500]What do you want to do next?[/]")
+                        //        .HighlightStyle(Color.Orange1)
+                        //        .AddChoices("Back"));
+                        // if (choice == "Back") Console.Clear();
+                        // ... (returnerar till huvudmenyn automatiskt här)
+
+                        // Efter detta returnerar du bara till huvudmenyn/karaktärsmenyn.
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to add character: {ex.Message}");
+                        Console.ReadKey(true);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unable to parse the AI character. Please check the format returned.");
+                    Console.ReadKey(true);
+                }
+            }
+            else
+            {
+                Console.WriteLine("AI did not return a result.");
+                Console.ReadKey(true);
+            }
+        }
+        public static Character? ParseAITextToCharacter(string input)
+        {
+            var character = new Character();
+            var lines = input.Split('\n');
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("Name:", StringComparison.OrdinalIgnoreCase))
+                    character.Name = line.Substring(5).Trim();
+                else if (line.StartsWith("Race:", StringComparison.OrdinalIgnoreCase))
+                    character.Race = line.Substring(5).Trim();
+                else if (line.StartsWith("Class:", StringComparison.OrdinalIgnoreCase))
+                    character.Class = line.Substring(6).Trim();
+                else if (line.StartsWith("Gender:", StringComparison.OrdinalIgnoreCase))
+                    character.Gender = line.Substring(7).Trim();
+                else if (line.StartsWith("Age:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = line.Substring(4).Trim();
+                    character.Age = int.TryParse(value, out int age) ? age : 0;
+                }
+                else if (line.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
+                    character.Description = line.Substring(12).Trim();
+                else if (line.StartsWith("Level:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = line.Substring(6).Trim();
+                    character.Level = int.TryParse(value, out int level) ? level : 0;
+                }
+                else if (line.StartsWith("Other info:", StringComparison.OrdinalIgnoreCase))
+                    character.OtherInfo = line.Substring(11).Trim();
+            }
+
+            // Kontrollera grundfält
+            if (string.IsNullOrWhiteSpace(character.Name) || string.IsNullOrWhiteSpace(character.Race))
+                return null;
+
+            return character;
+        }
     }
-};
+}

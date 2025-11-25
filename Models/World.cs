@@ -1,9 +1,8 @@
-﻿
-
-using _404_not_founders.Menus;
-using _404_not_founders.Services;
-using _404_not_founders.UI;
-using Spectre.Console;
+﻿using _404_not_founders.Menus;              // MenuChoises
+using _404_not_founders.Services;           // UserService, ProjectService, DungeonMasterAI
+using _404_not_founders.UI;                 // ConsoleHelpers, ShowInfoCard, AskStepInput
+using Spectre.Console;                      // Meny, markeringar och prompts
+using Microsoft.Extensions.Configuration;   // För API-nyckel och config
 
 namespace _404_not_founders.Models
 {
@@ -110,7 +109,7 @@ namespace _404_not_founders.Models
         }
         public void EditWorld(UserService userService)
         {
-            
+
             var temp = new World
             {
                 Name = this.Name,
@@ -139,7 +138,7 @@ namespace _404_not_founders.Models
                             "Other info",
                             "Done"));
 
-                
+
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -154,7 +153,7 @@ namespace _404_not_founders.Models
 
                 if (choice == "Done")
                 {
-                    
+
                     Console.Clear();
                     ConsoleHelpers.Info("World summary:");
                     AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{temp.Name}[/]");
@@ -173,7 +172,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Exit")
                     {
-                        
+
                         Thread.Sleep(800);
                         Console.Clear();
                         return;
@@ -181,7 +180,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "No (Start over)")
                     {
-                        
+
                         temp.Name = this.Name;
                         temp.Climate = this.Climate;
                         temp.Regions = this.Regions;
@@ -193,7 +192,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Yes")
                     {
-                        
+
                         this.Name = temp.Name;
                         this.Climate = temp.Climate;
                         this.Regions = temp.Regions;
@@ -209,7 +208,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
-                
+
                 switch (choice)
                 {
                     case "Name":
@@ -273,6 +272,126 @@ namespace _404_not_founders.Models
                 AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
                 Thread.Sleep(1200);
             }
+        }
+
+        public async Task<World?> GenerateWorldWithGeminiAI(Project currentProject, UserService userService)
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+            string googleApiKey = config["GoogleAI:ApiKey"];
+            var aiHelper = new GeminiAIService(googleApiKey);
+
+            Console.WriteLine("Describe your World, or press [Enter] for a fantasy default:");
+            var input = Console.ReadLine();
+
+            // Förbättrad prompt, alltid ALLA rubriker, projektbaserad:
+            string prompt = string.IsNullOrWhiteSpace(input)
+            ? $@"Generate a one-of-a-kind, highly randomized fantasy World for a Dungeons & Dragons campaign.
+            Base all details on this Project description: '{currentProject.description}'.
+
+            NEVER omit any section below. Always include EVERY header below, even if blank, even if unknown. 
+            If you can't invent something, write the header and leave it empty. Format, NO markdown or asterisks:
+
+            Name: ...
+            Climate: ...
+            Regions: ...
+            Enemies: ...
+            Factions: ...
+            OtherInfo: ...
+
+            Example:
+            Name: Aetherium
+            Climate: [your text]
+            Regions: [your text]
+            Enemies: [your text]
+            Factions: [your text]
+            OtherInfo: [your text]
+            "
+            : input + "\n\nFormat as above. Always include all headers, even if empty. Base your content on the current Project description.";
+
+            Console.WriteLine("Generating World with Gemini...");
+            string result = await aiHelper.GenerateAsync(prompt);
+
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                Console.WriteLine("\nYour Gemini-generated World:\n" + result);
+
+                var newWorld = ParseAITextToWorld(result);
+                if (newWorld != null)
+                {
+                    currentProject.Worlds.Add(newWorld);
+                    userService.SaveUserService();
+                    ConsoleHelpers.Info($"World '{newWorld.Name}' created!");
+                    Console.Clear();
+
+                    // Visningskod - alltid ALLA rubriker:
+                    AnsiConsole.MarkupLine("[bold orange1]World summary:[/]");
+                    AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{newWorld.Name}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Climate:[/] {ShowValue(newWorld.Climate)}");
+                    AnsiConsole.MarkupLine($"[grey]Regions:[/] {ShowValue(newWorld.Regions)}");
+                    AnsiConsole.MarkupLine($"[grey]Enemies:[/] {ShowValue(newWorld.Enemies)}");
+                    AnsiConsole.MarkupLine($"[grey]Factions:[/] {ShowValue(newWorld.Factions)}");
+                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {ShowValue(newWorld.OtherInfo)}");
+                    Console.WriteLine("\nPress any key to continue...");
+                    Console.ReadKey(true);
+                    Console.Clear();
+
+                    return newWorld;
+                }
+                else
+                {
+                    Console.WriteLine("Unable to parse generated World, check the format.");
+                    Console.ReadKey(true);
+                    return null;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Unable to generate AI-World with Gemini.");
+                Thread.Sleep(1200);
+                return null;
+            }
+        }
+
+        private static string ShowValue(string value) => string.IsNullOrWhiteSpace(value) ? "[grey]N/A[/]" : value;
+
+        public static World? ParseAITextToWorld(string input)
+        {
+            var world = new World();
+
+            // Splitta på radbrytning, hantera både \n och \r\n
+            var lines = input.Replace("\r\n", "\n").Split('\n');
+            foreach (var line in lines)
+            {
+                var cleanLine = line.Trim();
+                if (cleanLine.StartsWith("Name:", StringComparison.OrdinalIgnoreCase))
+                    world.Name = cleanLine.Substring(5).Trim();
+                else if (cleanLine.StartsWith("Climate:", StringComparison.OrdinalIgnoreCase))
+                    world.Climate = cleanLine.Substring(8).Trim();
+                else if (cleanLine.StartsWith("Regions:", StringComparison.OrdinalIgnoreCase))
+                    world.Regions = cleanLine.Substring(8).Trim();
+                else if (cleanLine.StartsWith("Enemies:", StringComparison.OrdinalIgnoreCase))
+                    world.Enemies = cleanLine.Substring(8).Trim();
+                else if (cleanLine.StartsWith("Factions:", StringComparison.OrdinalIgnoreCase))
+                    world.Factions = cleanLine.Substring(9).Trim();
+                else if (cleanLine.StartsWith("OtherInfo:", StringComparison.OrdinalIgnoreCase))
+                    world.OtherInfo = cleanLine.Substring(10).Trim();
+            }
+
+            // Sätt alltid default till tom sträng om saknas
+            world.Name = world.Name ?? "";
+            world.Climate = world.Climate ?? "";
+            world.Regions = world.Regions ?? "";
+            world.Enemies = world.Enemies ?? "";
+            world.Factions = world.Factions ?? "";
+            world.OtherInfo = world.OtherInfo ?? "";
+
+            // Minsta krav: Namn och klimat måste finnas!
+            if (string.IsNullOrWhiteSpace(world.Name) || string.IsNullOrWhiteSpace(world.Climate))
+                return null;
+
+            return world;
         }
     }
 }

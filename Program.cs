@@ -1,25 +1,41 @@
 ﻿using _404_not_founders.Menus;
 using _404_not_founders.Models;
 using _404_not_founders.Services;
+using Microsoft.Extensions.Configuration; // Kräver paket: Microsoft.Extensions.Configuration.Json
 
 namespace _404_not_founders
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            // Skapa och initiera UserService (laddar/läser JSON - en gång vid start)
+            // 1. Hämta API-nyckeln (säkrare än att skriva den direkt i koden)
+            // Alternativ A: Från Environment Variable (bäst för säkerhet)
+            var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY");
+
+            // Alternativ B: Hårdkodad (OK för test, men ladda INTE upp på GitHub!)
+            // string apiKey = "DIN_AI_NYCKEL_HÄR";
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Console.WriteLine("VARNING: Ingen API-nyckel hittades.");
+                // Du kan välja att avsluta eller fortsätta utan AI här
+            }
+
+            // 2. Initiera AI-tjänsten
+            var aiService = new GeminiAIService(apiKey);
+
+            // 3. Initiera övriga tjänster
             var userService = new UserService();
             var projectService = new ProjectService(userService);
 
             userService.LoadUserService();
 
-            // Skapa huvudmenyn och skicka med userService så att den kan hantera användare och sparning
-            var runApp = new RunApp(userService, projectService);
-                
+            // 4. Skicka med aiService till RunApp!
+            // OBS: Du behöver uppdatera konstruktorn i RunApp.cs för att ta emot denna parameter.
+            var runApp = new RunApp(userService, projectService, aiService);
 
-            // Starta applikationens huvudloop
-            runApp.Run();
+            await runApp.Run();
         }
     }
 }
