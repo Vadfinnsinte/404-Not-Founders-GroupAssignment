@@ -6,12 +6,11 @@ namespace _404_not_founders.UI
 {
     public class CreateStoryline
     {
-
+        // Handles promts and input to user when adding a storyline to the project.
         public static void Create(Project project)
         {
             while (true)
             {
-
 
                 Console.Clear();
                 ConsoleHelpers.Info("Create new storyline");
