@@ -28,7 +28,7 @@ namespace _404_not_founders.Menus
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
-                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
+                        .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Delete Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
                 switch (choice)
@@ -38,7 +38,6 @@ namespace _404_not_founders.Menus
                         break;
                     case "Show Storylines":
                         project.ShowAllStorylines();
-                        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
 
