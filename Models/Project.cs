@@ -11,6 +11,7 @@ namespace _404_not_founders.Models
 {
     public class Project
     {
+        // Basic project properties
         public string title { get; set; }
         public string description { get; set; }
         public DateTime DateOfCreation { get; set; } = DateTime.Now;
@@ -19,6 +20,7 @@ namespace _404_not_founders.Models
         public List<World> Worlds { get; set; } = new List<World>();
         public List<Storyline> Storylines { get; set; } = new();
 
+        // List of characters associated with the project
         public List<Character> Characters { get; set; } = new List<Character>();
 
         public Project Add(User currentUser, UserService userService)
@@ -162,6 +164,7 @@ namespace _404_not_founders.Models
             return;
         }
 
+        // Helper method to show a section with a header
         private void ShowSection(string header, Action action)
         {
             BigHeader.Show(header);

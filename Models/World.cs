@@ -109,6 +109,7 @@ namespace _404_not_founders.Models
                 step++;
             }
         }
+        // Method to edit world details
         public void EditWorld(UserService userService)
         {
             
@@ -140,7 +141,7 @@ namespace _404_not_founders.Models
                             "Other info",
                             "Done"));
 
-                
+                // Function to prompt for non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)

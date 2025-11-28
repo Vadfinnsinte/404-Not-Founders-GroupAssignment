@@ -104,6 +104,7 @@ namespace _404_not_founders.Models
             }
         }
 
+        // method to edit user details
         public bool EditUser(UserService userService, ref string username)
         {
             while (true)
@@ -112,6 +113,7 @@ namespace _404_not_founders.Models
                 ConsoleHelpers.Info($"Redigera konto");
                 ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
+                // Show current user details
                 var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
                 switch (choice)
                 {

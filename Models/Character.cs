@@ -230,7 +230,7 @@ namespace _404_not_founders.Models
                 ConsoleHelpers.DelayAndClear();
                 return;
             }
-
+            // lets user select a character to show
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
                     .Title($"[#FFA500]Select character to show[/]")
@@ -249,14 +249,16 @@ namespace _404_not_founders.Models
         }
         public void Show()
         {
+            // Uses ShowInfoCard to display character details
             ShowInfoCard.ShowObject(this);
         }
 
         public void EditCharacter(Project project, UserService userService)
         {
+            // Select character to edit
             var original = SelectCharacter(project, "Choose character to edit");
             if (original == null) return;
-
+            // Create a temporary copy to hold edits
             var temp = new Character
             {
                 Name = original.Name,
@@ -273,7 +275,7 @@ namespace _404_not_founders.Models
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
-
+                // Prompt for which field to edit
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("What do you want to change?")
@@ -289,7 +291,7 @@ namespace _404_not_founders.Models
                             "Other info",
                             "Done")
                         .HighlightStyle(Color.Orange1));
-
+                
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -301,7 +303,7 @@ namespace _404_not_founders.Models
                         AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
                     }
                 }
-
+                
                 int PromptInt(string prompt)
                 {
                     while (true)
@@ -400,6 +402,8 @@ namespace _404_not_founders.Models
                 }
             }
         }
+
+        // Helper method to select a character from a project
         private Character? SelectCharacter(Project project, string title)
         {
             if (project.Characters == null || project.Characters.Count == 0)
