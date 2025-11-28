@@ -277,6 +277,17 @@ namespace _404_not_founders.Models
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
 
+                // Show current temp values above the choice so edits are visible while picking fields
+                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Name) ? "(unnamed)" : temp.Name)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Race) ? "-" : temp.Race)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Description) ? "-" : temp.Description)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Gender) ? "-" : temp.Gender)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{temp.Age}[/]");
+                AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{temp.Level}[/]");
+                AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Class) ? "-" : temp.Class)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.OtherInfo) ? "-" : temp.OtherInfo)}[/]");
+                Console.WriteLine();
+
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("What do you want to change?")

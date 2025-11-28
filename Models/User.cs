@@ -105,73 +105,134 @@ namespace _404_not_founders.Models
 
         public bool EditUser(UserService userService, ref string username)
         {
+            // Work on a temporary copy so changes are visible before applying
+            var temp = new User
+            {
+                Email = this.Email,
+                Username = this.Username,
+                Password = this.Password,
+                CreationDate = this.CreationDate,
+                Projects = this.Projects,
+                LastSelectedProjectId = this.LastSelectedProjectId
+            };
+
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Redigera konto");
                 ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
-                var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
+                // Show live preview of temp values above the choice menu
+                AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Email) ? "-" : temp.Email)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Username) ? "-" : temp.Username)}[/]");
+                // Mask password in the preview
+                var masked = string.IsNullOrEmpty(temp.Password) ? "-" : new string('*', Math.Min(8, temp.Password.Length));
+                AnsiConsole.MarkupLine($"[grey]Password:[/] [#FFA500]{masked}[/]");
+                Console.WriteLine();
+
+                var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Done", "Back");
                 switch (choice)
                 {
                     case "E-mail":
-                        string newEmail = ConsoleHelpers.AskInput("[#FFA500]New E-mail:[/]");
-                        if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
-                        if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
-
-                        var confirmEmail = MenuChoises.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
-                        if (confirmEmail == "Yes")
                         {
-                            if (!userService.Users.Exists(u => u.Email == newEmail))
+                            string newEmail = ConsoleHelpers.AskInput("[#FFA500]New E-mail:[/]");
+                            if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                            if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
+                            var confirmEmail = MenuChoises.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
+                            if (confirmEmail == "Yes")
                             {
-                                Email = newEmail;
-                                userService.SaveUserService();
-                                ConsoleHelpers.Result(true, "E-mail updated.");
+                                if (!userService.Users.Exists(u => u.Email == newEmail && u != this))
+                                {
+                                    temp.Email = newEmail;
+                                    ConsoleHelpers.Result(true, "E-mail updated (preview).");
+                                }
+                                else
+                                    ConsoleHelpers.Result(false, "Invalid or already taken E-mail.");
+                                ConsoleHelpers.DelayAndClear(1200);
                             }
-                            else
-                                ConsoleHelpers.Result(false, "Invalid or already taken E-mail.");
-                            ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
                     case "Username":
-                        string newName = ConsoleHelpers.AskInput("[#FFA500]New username:[/]");
-                        if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
-                        if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
-
-                        var confirmName = MenuChoises.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
-                        if (confirmName == "Yes")
                         {
-                            if (!userService.Users.Exists(u => u.Username == newName))
+                            string newName = ConsoleHelpers.AskInput("[#FFA500]New username:[/]");
+                            if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                            if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
+                            var confirmName = MenuChoises.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
+                            if (confirmName == "Yes")
                             {
-                                Username = newName;
-                                username = newName;
-                                userService.SaveUserService();
-                                ConsoleHelpers.Result(true, $"Username changed to {newName}.");
+                                if (!userService.Users.Exists(u => u.Username == newName && u != this))
+                                {
+                                    temp.Username = newName;
+                                    ConsoleHelpers.Result(true, $"Username updated (preview).");
+                                }
+                                else
+                                    ConsoleHelpers.Result(false, "Invalid or already taken username.");
+                                ConsoleHelpers.DelayAndClear(1200);
                             }
-                            else
-                                ConsoleHelpers.Result(false, "Invalid or already taken username.");
-                            ConsoleHelpers.DelayAndClear(1200);
                         }
                         break;
 
                     case "Password":
-                        string newPassword = ConsoleHelpers.AskInput("[#FFA500]New password:[/]", true);
-                        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
-                        if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
-
-                        var confirmPass = MenuChoises.Menu("Confirm change to new password?", "Yes", "No");
-                        if (confirmPass == "Yes")
                         {
-                            Password = newPassword;
-                            userService.SaveUserService();
-                            ConsoleHelpers.Result(true, "Password updated.");
-                            ConsoleHelpers.DelayAndClear(1200);
+                            string newPassword = ConsoleHelpers.AskInput("[#FFA500]New password:[/]", true);
+                            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
+                            if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
+
+                            var confirmPass = MenuChoises.Menu("Confirm change to new password?", "Yes", "No");
+                            if (confirmPass == "Yes")
+                            {
+                                temp.Password = newPassword;
+                                ConsoleHelpers.Result(true, "Password updated (preview).");
+                                ConsoleHelpers.DelayAndClear(1200);
+                            }
+                        }
+                        break;
+
+                    case "Done":
+                        {
+                            Console.Clear();
+                            ConsoleHelpers.Info("Account summary:");
+                            AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{temp.Email}[/]");
+                            AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{temp.Username}[/]");
+                            AnsiConsole.MarkupLine($"[grey]Password:[/] [#FFA500]{(string.IsNullOrEmpty(temp.Password) ? "-" : new string('*', Math.Min(8, temp.Password.Length)))}[/]");
+
+                            Console.WriteLine();
+                            var confirmAll = MenuChoises.Menu("Are you happy with these changes?", "Yes", "No (Start over)", "Exit");
+
+                            if (confirmAll == "Exit")
+                            {
+                                ConsoleHelpers.DelayAndClear();
+                                return false;
+                            }
+
+                            if (confirmAll == "No (Start over)")
+                            {
+                                temp.Email = this.Email;
+                                temp.Username = this.Username;
+                                temp.Password = this.Password;
+                                continue;
+                            }
+
+                            if (confirmAll == "Yes")
+                            {
+                                // Apply changes to the real user and persist
+                                this.Email = temp.Email;
+                                this.Username = temp.Username;
+                                this.Password = temp.Password;
+                                username = temp.Username; // update external ref
+                                userService.SaveUserService();
+                                ConsoleHelpers.Result(true, "Account updated.");
+                                ConsoleHelpers.DelayAndClear(1200);
+                                return true;
+                            }
                         }
                         break;
 
                     case "Back":
-                        return true; // Bara här visas inloggningsfeedback!
+                        return true; // keep existing navigation behavior
                 }
             }
         }

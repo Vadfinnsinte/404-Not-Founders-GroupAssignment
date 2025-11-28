@@ -1,6 +1,4 @@
-﻿
-
-using _404_not_founders.Menus;
+﻿using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using _404_not_founders.UI;
 using Spectre.Console;
@@ -124,7 +122,15 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
+                // Show header and current temp values so edits are visible while choosing fields
                 ConsoleHelpers.Info($"Edit world: [#FFA500]{temp.Name}[/]");
+                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Name) ? "(unnamed)" : temp.Name)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Climate:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Climate) ? "-" : temp.Climate)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Regions:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Regions) ? "-" : temp.Regions)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Enemies:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Enemies) ? "-" : temp.Enemies)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Factions:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Factions) ? "-" : temp.Factions)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.OtherInfo) ? "-" : temp.OtherInfo)}[/]");
+                Console.WriteLine();
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -139,7 +145,7 @@ namespace _404_not_founders.Models
                             "Other info",
                             "Done"));
 
-                
+
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
