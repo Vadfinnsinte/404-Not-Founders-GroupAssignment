@@ -238,6 +238,17 @@ namespace _404_not_founders.Menus
             while (true)
             {
                 Console.Clear();
+                ConsoleHelpers.Info("Storyline summary:");
+                AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
+                AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
+                AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
+                AnsiConsole.MarkupLine($"[grey]Genre:[/] {temp.Genre}");
+                AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
+                AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
+                AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+                AnsiConsole.MarkupLine($"[grey]Order in project:[/] {temp.orderInProject}");
+
+                Console.Clear();
                 ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
 
                 var choice = AnsiConsole.Prompt(
