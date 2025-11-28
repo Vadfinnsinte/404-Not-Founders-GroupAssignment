@@ -247,10 +247,13 @@ namespace _404_not_founders.Models
             Console.ReadKey(true);
             ConsoleHelpers.DelayAndClear();
         }
+
+
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
+
 
         public void EditCharacter(Project project, UserService userService)
         {
@@ -583,13 +586,6 @@ namespace _404_not_founders.Models
 
                 }
             }
-        }
-            
- 
-
-        public void Delete()
-        {
-            Console.WriteLine("Coming soon");
         }
 
 
