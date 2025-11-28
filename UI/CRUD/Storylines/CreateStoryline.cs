@@ -3,7 +3,7 @@ using _404_not_founders.UI.Helpers;
 using Spectre.Console;
 using System.Reflection.Metadata.Ecma335;
 
-namespace _404_not_founders.UI.CRUD
+namespace _404_not_founders.UI.CRUD.Storylines
 {
     public class CreateStoryline
     {
@@ -118,7 +118,11 @@ namespace _404_not_founders.UI.CRUD
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Yes", "No (Start over)", "Exit"));
 
-                if (confirm == "Exit") return;
+                if (confirm == "Exit")
+                {
+                    Console.Clear();
+                    return;
+                }
                 if (confirm == "No (Start over)")
                 {
                     //AddStorylineToProject(project); // Restart
