@@ -3,7 +3,7 @@ using Spectre.Console;
 using Spectre.Console.Rendering;
 using System.Reflection;
 
-namespace _404_not_founders.UI
+namespace _404_not_founders.UI.Display
 {
     public class ShowInfoCard
     {
