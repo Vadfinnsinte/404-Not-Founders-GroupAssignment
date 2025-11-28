@@ -24,11 +24,8 @@ namespace _404_not_founders.Menus
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        // FIX: async Task
         public async Task ChracterMenu(Project currentProject, UserService userService)
         {
-            Character newCharacter = new Character();
-            User? currentUser = _currentUser;
             bool runCharacterMenu = true;
 
             while (runCharacterMenu)
@@ -48,72 +45,101 @@ namespace _404_not_founders.Menus
                         {
                             var newChar = new Character();
                             await newChar.GenerateCharacterWithGeminiAI(currentProject, userService);
+                            break;
                         }
-                        break;
+
                     case "Add Character":
                         {
                             var newChar = new Character();
-                            newChar.Add(_currentUser, _projectService, _userService);
-
-                            ConsoleHelpers.Info("Character created!");
-                            Console.WriteLine("Press any key to continue...");
-                            Console.ReadKey(true);
-                            Console.Clear();
-
-                            var postChoice = AnsiConsole.Prompt(
-                                new SelectionPrompt<string>()
-                                    .Title("[#FFA500]What do you want to do next?[/]")
-                                    .HighlightStyle(Color.Orange1)
-                                    .AddChoices("Show Character", "Back"));
-
-                            if (postChoice == "Show Character")
-                                newChar.ShowCharacters(currentProject);
-                            else if (postChoice == "Back")
-                                break;
+                            // Skapar och sparar karaktären (Add sköter saved-meddelande)
+                            newChar.Add(_currentUser, currentProject, _userService);
                             break;
                         }
                     case "Show Character":
-                        newCharacter.ShowCharacters(currentProject);
-                        break;
+                        {
+                            ShowCharacterSelection(currentProject);
+                            break;
+                        }
+
                     case "Edit Character":
-                        if (currentProject.Characters == null || currentProject.Characters.Count == 0)
                         {
-                            AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
-                            Console.ReadKey(true);
+                            if (currentProject.Characters == null || currentProject.Characters.Count == 0)
+                            {
+                                AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
+                                Console.ReadKey(true);
+                                break;
+                            }
+
+                            var character = SelectCharacter(currentProject, "Select Character to edit");
+                            if (character != null)
+                            {
+                                character.EditCharacter(_userService); // bara UserService, 1 argument
+                            }
                             break;
                         }
-                        newCharacter.EditCharacter(currentProject, _userService);
-                        break;
+
                     case "Delete Character":
-                        if (currentProject.Characters == null || currentProject.Characters.Count == 0)
                         {
-                            AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
-                            ConsoleHelpers.DelayAndClear();
-                            break;
-                        }
-                        var characterChoices = currentProject.Characters.Select(w => w.Name).ToList();
-                        characterChoices.Add("Back");
+                            if (currentProject.Characters == null || currentProject.Characters.Count == 0)
+                            {
+                                AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
+                                ConsoleHelpers.DelayAndClear();
+                                break;
+                            }
 
-                        var selectedCharacter = AnsiConsole.Prompt(
-                            new SelectionPrompt<string>()
-                                .Title("[#FFA500]Choose Character to remove[/]")
-                                .HighlightStyle(new Style(Color.Orange1))
-                                .AddChoices(characterChoices));
-
-                        if (selectedCharacter == "Back")
-                        {
+                            var character = SelectCharacter(currentProject, "Choose Character to remove");
+                            if (character != null)
+                            {
+                                character.DeleteCharacter(currentProject, _userService);
+                            }
                             break;
                         }
 
-                        var characterToDelete = currentProject.Characters.First(w => w.Name == selectedCharacter);
-                        characterToDelete.DeleteCharacter(currentProject, _userService);
-                        break;
                     case "Back":
                         runCharacterMenu = false;
                         break;
                 }
             }
+
             await Task.CompletedTask;
+        }
+
+        private Character? SelectCharacter(Project currentProject, string title)
+        {
+            var characterChoices = currentProject.Characters.Select(c => c.Name).ToList();
+            characterChoices.Add("Back");
+
+            var selectedCharacter = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(characterChoices));
+
+            if (selectedCharacter == "Back")
+                return null;
+
+            return currentProject.Characters.First(c => c.Name == selectedCharacter);
+        }
+
+        private void ShowCharacterSelection(Project currentProject)
+        {
+            if (currentProject.Characters == null || currentProject.Characters.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
+                Console.ReadKey(true);
+                return;
+            }
+
+            var character = SelectCharacter(currentProject, "Select Character to show");
+            if (character == null)
+                return;
+
+            Console.Clear();
+            character.Show(); // din Character.Show()
+            Console.WriteLine();
+            AnsiConsole.MarkupLine("[grey]Press any key to continue...[/]");
+            Console.ReadKey(true);
+            Console.Clear();
         }
     }
 }

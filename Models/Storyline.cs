@@ -1,7 +1,11 @@
 ﻿using _404_not_founders.Services;               // UserService, ProjectService, DungeonMasterAI
-using _404_not_founders.UI;                     // ConsoleHelpers, ShowInfoCard
+using _404_not_founders.UI;                     // ConsoleHelpers, ShowInfoCard, AiHelper
 using Spectre.Console;                          // Meny, markeringar och prompts
 using Microsoft.Extensions.Configuration;       // För API-nyckel och config
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace _404_not_founders.Models
 {
@@ -19,42 +23,39 @@ namespace _404_not_founders.Models
         public List<Character> chracters;
         public DateTime dateOfLastEdit;
 
-
-
         public void Add()
         {
             Console.WriteLine("Coming soon");
         }
+
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
+
         public void Change()
         {
             Console.WriteLine("Coming soon");
         }
+
         public void DeleteStoryline(Project project, UserService userService)
         {
             Console.Clear();
 
-            // Ask for confirmation
             var confirm = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"Are you sure you want to delete '[orange1]{this.Title}[/]'?")
+                    .Title($"Are you sure you want to delete '[orange1]{Markup.Escape(this.Title)}[/]'?")
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices("Yes", "No"));
 
             if (confirm == "Yes")
             {
-                // Remove the world from the project's worlds list
                 if (project.Storylines.Contains(this))
                 {
                     project.Storylines.Remove(this);
-
-                    // Save changes
                     userService.SaveUserService();
 
-                    AnsiConsole.MarkupLine($"The storyline '[orange1]{this.Title}[/]' has been deleted!");
+                    AnsiConsole.MarkupLine($"The storyline '[orange1]{Markup.Escape(this.Title)}[/]' has been deleted!");
                     Thread.Sleep(1200);
                     Console.Clear();
                 }
@@ -76,89 +77,107 @@ namespace _404_not_founders.Models
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
-            string googleApiKey = config["GoogleAI:ApiKey"];
-            var aiHelper = new GeminiAIService(googleApiKey);
+            var googleApiKey = config["GoogleAI:ApiKey"];
+            var aiService = new GeminiAIService(googleApiKey);
 
-            Console.WriteLine("Describe your Storyline or press [Enter] for a fantasy default:");
-            var input = Console.ReadLine();
-
-            // Förbättrad prompt!
-            string prompt = string.IsNullOrWhiteSpace(input)
-            ? $@"Create an unpredictable and unique fantasy Storyline for a text-based RPG project.
-                Never repeat plot, theme, motif, or title from previous generations.
-                You must always echo every field header below—never omit any field, even if blank!
-                Base your entire Storyline on this Project description: '{currentProject.description}'
-
-                Format (NO markdown or asterisks, only plain text!):
-                Title: ...
-                Synopsis: ...
-                Theme: ...
-                Genre: ...
-                Story: ...
-                IdeaNotes: ...
-                OtherInfo: ...
-
-                Example:
-                Title: The Aetheric Loom
-                Synopsis: [your text here]
-                Theme: [your text here]
-                Genre: [your text here]
-                Story: [your text here]
-                IdeaNotes: [your text here]
-                OtherInfo: [your text here]"
-            : input + "\n\nFormat as above. Always include all headers, even if empty. Base your content on the current Project description.";
-
-
-            Console.WriteLine("Generating Storyline with Gemini...");
-            string result = await aiHelper.GenerateAsync(prompt);
-
-            int nextOrder = (currentProject.Storylines?.Count ?? 0) + 1;
-
-            if (!string.IsNullOrWhiteSpace(result))
+            while (true)
             {
-                Console.WriteLine("\nYour Gemini-generated Storyline:\n" + result);
-                var newStoryline = ParseAITextToStoryline(result, nextOrder);
-                if (newStoryline != null)
+                // Samma UX som Character: optional user context via AiHelper
+                string userContext = AiHelper.AskOptionalUserContext("Generate Storyline with AI");
+                if (userContext == "E")
+                    return null;
+
+                string basePrompt = $@"
+You are a creative Storyline generator for a text-based Dungeons & Dragons RPG project.
+
+PROJECT CONTEXT:
+{currentProject.description}
+
+TASK:
+Create a unique, unpredictable fantasy Storyline for this project.
+Never repeat plot, theme, motif, or title from previous generations.
+
+RULES:
+- You MUST output ALL headers exactly once: Title, Synopsis, Theme, Genre, Story, IdeaNotes, OtherInfo.
+- Each field MUST have non-empty content (at least a full sentence for Story, and meaningful text for IdeaNotes and OtherInfo).
+- Do NOT skip or rename any header.
+- Return ONLY the formatted text below. No explanations, no markdown, no asterisks.
+
+FORMAT (NO markdown or asterisks, only plain text!):
+Title: ...
+Synopsis: ...
+Theme: ...
+Genre: ...
+Story: ...
+IdeaNotes: ...
+OtherInfo: ...";
+
+                string prompt = string.IsNullOrWhiteSpace(userContext)
+                    ? basePrompt
+                    : basePrompt + $@"
+
+USER REQUEST:
+{userContext}
+
+Adapt the Storyline to the user request, but keep the exact same headers and format.";
+
+                AiHelper.ShowGeneratingText("Storyline");
+
+                var result = await aiService.GenerateAsync(prompt);
+
+                int nextOrder = (currentProject.Storylines?.Count ?? 0) + 1;
+
+                if (!string.IsNullOrWhiteSpace(result))
                 {
-                    currentProject.Storylines.Add(newStoryline);
-                    userService.SaveUserService();
-                    ConsoleHelpers.Info($"Storyline '{newStoryline.Title}' created!");
-                    Console.Clear();
-                    ShowInfoCard.ShowObject(newStoryline);
-
-                    var postChoice = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("[#FFA500]Done viewing your new Storyline![/]")
-                            .HighlightStyle(Color.Orange1)
-                            .AddChoices("Back"));
-
-                    if (postChoice == "Back")
+                    var newStoryline = ParseAITextToStoryline(result, nextOrder);
+                    if (newStoryline != null)
                     {
                         Console.Clear();
-                        return newStoryline;
+                        ConsoleHelpers.Info("Generated Storyline:");
+                        Console.WriteLine();
+                        AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{Markup.Escape(newStoryline.Title)}[/]");
+                        AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {Markup.Escape(newStoryline.Synopsis)}");
+                        AnsiConsole.MarkupLine($"[grey]Theme:[/] {Markup.Escape(newStoryline.Theme)}");
+                        AnsiConsole.MarkupLine($"[grey]Genre:[/] {Markup.Escape(newStoryline.Genre)}");
+                        AnsiConsole.MarkupLine($"[grey]Story:[/] {Markup.Escape(newStoryline.Story)}");
+                        AnsiConsole.MarkupLine($"[grey]IdeaNotes:[/] {Markup.Escape(newStoryline.IdeaNotes)}");
+                        AnsiConsole.MarkupLine($"[grey]OtherInfo:[/] {Markup.Escape(newStoryline.OtherInfo)}");
+                        Console.WriteLine();
+
+                        var choice = AiHelper.RetryMenu();
+
+                        if (choice == "Keep")
+                        {
+                            newStoryline.dateOfLastEdit = DateTime.Now;
+                            currentProject.Storylines.Add(newStoryline);
+                            userService.SaveUserService();
+                            AiHelper.ShowSaved("Storyline", newStoryline.Title);
+                            return newStoryline;
+                        }
+                        else if (choice == "Cancel")
+                        {
+                            AiHelper.ShowCancelled();
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        AiHelper.ShowError("Unable to parse generated Storyline. Retrying...");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Unable to parse generated Storyline. Check the format.");
-                    Console.ReadKey(true);
-                    return null;
+                    AiHelper.ShowError("Unable to generate AI-Storyline with Gemini. Retrying...");
                 }
             }
-            else
-            {
-                Console.WriteLine("Unable to generate AI-Storyline with Gemini.");
-                Thread.Sleep(1200);
-                return null;
-            }
-            return null;
         }
 
         // Robust parser: alltid alla fält!
         public static Storyline? ParseAITextToStoryline(string input, int nextOrderInProject)
         {
             var storyline = new Storyline();
-            var lines = input.Split('\n');
+            var lines = input.Replace("\r\n", "\n").Split('\n');
+
             foreach (var line in lines)
             {
                 var cleanLine = line.Trim();
@@ -184,7 +203,6 @@ namespace _404_not_founders.Models
                 }
             }
 
-            // Sätt default till tom sträng om saknas
             storyline.Title ??= "";
             storyline.Synopsis ??= "";
             storyline.Theme ??= "";
@@ -193,12 +211,20 @@ namespace _404_not_founders.Models
             storyline.IdeaNotes ??= "";
             storyline.OtherInfo ??= "";
 
-            // Sätt orderInProject till nästa om den är 0 eller saknas
-            storyline.orderInProject = storyline.orderInProject > 0 ? storyline.orderInProject : nextOrderInProject;
+            // Fallback om AI ändå lämnar tomt
+            if (string.IsNullOrWhiteSpace(storyline.Story))
+                storyline.Story = $"Short story based on synopsis: {storyline.Synopsis}";
+            if (string.IsNullOrWhiteSpace(storyline.IdeaNotes))
+                storyline.IdeaNotes = "Extra ideas for encounters, NPCs, and twists related to the main plot.";
+            if (string.IsNullOrWhiteSpace(storyline.OtherInfo))
+                storyline.OtherInfo = "Notes for pacing, tone, and possible future hooks.";
 
-            // Grundkrav: minst titel och synopsis
+            storyline.orderInProject = storyline.orderInProject > 0 ? storyline.orderInProject : nextOrderInProject;
+            storyline.dateOfLastEdit = DateTime.Now;
+
             if (string.IsNullOrWhiteSpace(storyline.Title) || string.IsNullOrWhiteSpace(storyline.Synopsis))
                 return null;
+
             return storyline;
         }
     }

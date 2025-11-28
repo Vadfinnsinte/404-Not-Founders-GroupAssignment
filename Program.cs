@@ -10,17 +10,8 @@ namespace _404_not_founders
         static async Task Main(string[] args)
         {
             // 1. Hämta API-nyckeln (säkrare än att skriva den direkt i koden)
-            // Alternativ A: Från Environment Variable (bäst för säkerhet)
+            // Från Environment Variable (bäst för säkerhet)
             var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY");
-
-            // Alternativ B: Hårdkodad (OK för test, men ladda INTE upp på GitHub!)
-            // string apiKey = "DIN_AI_NYCKEL_HÄR";
-
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                Console.WriteLine("VARNING: Ingen API-nyckel hittades.");
-                // Du kan välja att avsluta eller fortsätta utan AI här
-            }
 
             // 2. Initiera AI-tjänsten
             var aiService = new GeminiAIService(apiKey);

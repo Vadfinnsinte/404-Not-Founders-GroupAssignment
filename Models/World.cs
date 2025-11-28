@@ -1,8 +1,13 @@
-﻿using _404_not_founders.Menus;              // MenuChoises
-using _404_not_founders.Services;           // UserService, ProjectService, DungeonMasterAI
-using _404_not_founders.UI;                 // ConsoleHelpers, ShowInfoCard, AskStepInput
-using Spectre.Console;                      // Meny, markeringar och prompts
-using Microsoft.Extensions.Configuration;   // För API-nyckel och config
+﻿using _404_not_founders.Menus;
+using _404_not_founders.Services;
+using _404_not_founders.UI;
+using Spectre.Console;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace _404_not_founders.Models
 {
@@ -14,30 +19,26 @@ namespace _404_not_founders.Models
         public string Enemies { get; set; }
         public string Factions { get; set; }
         public string OtherInfo { get; set; }
-
-
+        public int orderInProject { get; set; }
 
         public void Add(User user, Project project, UserService userService)
         {
-            // Initiating variables to store user input
             string name = "", climate = "", regions = "", enemies = "", factions = "", otherInfo = "";
             int step = 0;
 
             while (true)
             {
                 Console.Clear();
-                AnsiConsole.MarkupLine($"[underline #FFA500]Create New World[/]");
+                AnsiConsole.MarkupLine("[underline #FFA500]Create New World[/]");
                 AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
                 Console.WriteLine();
 
-                // Show current progress
-                if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Name:[/] {name}");
-                if (step >= 2) AnsiConsole.MarkupLine($"[#FFA500]Climate:[/] {climate}");
-                if (step >= 3) AnsiConsole.MarkupLine($"[#FFA500]Regions:[/] {regions}");
-                if (step >= 4) AnsiConsole.MarkupLine($"[#FFA500]Enemies:[/] {enemies}");
-                if (step >= 5) AnsiConsole.MarkupLine($"[#FFA500]Factions:[/] {factions}");
+                if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Name:[/] {Markup.Escape(name)}");
+                if (step >= 2) AnsiConsole.MarkupLine($"[#FFA500]Climate:[/] {Markup.Escape(climate)}");
+                if (step >= 3) AnsiConsole.MarkupLine($"[#FFA500]Regions:[/] {Markup.Escape(regions)}");
+                if (step >= 4) AnsiConsole.MarkupLine($"[#FFA500]Enemies:[/] {Markup.Escape(enemies)}");
+                if (step >= 5) AnsiConsole.MarkupLine($"[#FFA500]Factions:[/] {Markup.Escape(factions)}");
 
-                // Step prompt
                 string prompt = step switch
                 {
                     0 => "World Name:",
@@ -49,51 +50,45 @@ namespace _404_not_founders.Models
                     _ => ""
                 };
 
-                // Confirmation step
                 if (step == 6)
                 {
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Are you happy with this world?[/]")
                             .HighlightStyle(new Style(Color.Orange1))
-                            .AddChoices("Yes", "No (Start over)", "Exit")
-                    );
+                            .AddChoices("Yes", "No (Start over)", "Exit"));
 
                     if (confirm == "Exit") return;
                     if (confirm == "No (Start over)") { step = 0; continue; }
 
                     if (confirm == "Yes")
                     {
-                        // Save values
-                        this.Name = name;
-                        this.Climate = climate;
-                        this.Regions = regions;
-                        this.Enemies = enemies;
-                        this.Factions = factions;
-                        this.OtherInfo = otherInfo;
+                        Name = name;
+                        Climate = climate;
+                        Regions = regions;
+                        Enemies = enemies;
+                        Factions = factions;
+                        OtherInfo = otherInfo;
+                        orderInProject = (project.Worlds?.Count ?? 0) + 1;
 
                         project.Worlds.Add(this);
                         userService.SaveUserService();
 
-                        AnsiConsole.MarkupLine($"[orange1]World '{this.Name}' has been saved![/]");
+                        AnsiConsole.MarkupLine($"[orange1]World '{Markup.Escape(Name)}' has been saved![/]");
                         Thread.Sleep(1200);
                         return;
                     }
                 }
 
-                // Use generic AskStepInputs
                 string input = AskStepInput.AskStepInputs(prompt);
 
-                if (input == "E")
-                    return;
-
+                if (input == "E") return;
                 if (input == "B")
                 {
                     if (step > 0) step--;
                     continue;
                 }
 
-                // Store input
                 switch (step)
                 {
                     case 0: name = input; break;
@@ -107,9 +102,9 @@ namespace _404_not_founders.Models
                 step++;
             }
         }
+
         public void EditWorld(UserService userService)
         {
-
             var temp = new World
             {
                 Name = this.Name,
@@ -123,45 +118,34 @@ namespace _404_not_founders.Models
             while (true)
             {
                 Console.Clear();
-                ConsoleHelpers.Info($"Edit world: [#FFA500]{temp.Name}[/]");
+                ConsoleHelpers.Info($"Edit world: [#FFA500]{Markup.Escape(temp.Name)}[/]");
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("What do you want to change?")
                         .HighlightStyle(new Style(Color.Orange1))
-                        .AddChoices(
-                            "Name",
-                            "Climate",
-                            "Regions",
-                            "Enemies",
-                            "Factions",
-                            "Other info",
-                            "Done"));
-
+                        .AddChoices("Name", "Climate", "Regions", "Enemies", "Factions", "Other info", "Done"));
 
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
                     {
                         var value = AnsiConsole.Ask<string>(prompt);
-                        if (!string.IsNullOrWhiteSpace(value))
-                            return value;
-
+                        if (!string.IsNullOrWhiteSpace(value)) return value;
                         AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
                     }
                 }
 
                 if (choice == "Done")
                 {
-
                     Console.Clear();
                     ConsoleHelpers.Info("World summary:");
-                    AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{temp.Name}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Climate:[/]   {temp.Climate}");
-                    AnsiConsole.MarkupLine($"[grey]Regions:[/]   {temp.Regions}");
-                    AnsiConsole.MarkupLine($"[grey]Enemies:[/]   {temp.Enemies}");
-                    AnsiConsole.MarkupLine($"[grey]Factions:[/]  {temp.Factions}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+                    AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{Markup.Escape(temp.Name)}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Climate:[/]   {Markup.Escape(temp.Climate)}");
+                    AnsiConsole.MarkupLine($"[grey]Regions:[/]   {Markup.Escape(temp.Regions)}");
+                    AnsiConsole.MarkupLine($"[grey]Enemies:[/]   {Markup.Escape(temp.Enemies)}");
+                    AnsiConsole.MarkupLine($"[grey]Factions:[/]  {Markup.Escape(temp.Factions)}");
+                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {Markup.Escape(temp.OtherInfo)}");
 
                     Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
@@ -172,15 +156,14 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Exit")
                     {
-
                         Thread.Sleep(800);
                         Console.Clear();
                         return;
                     }
 
                     if (confirm == "No (Start over)")
-                    {
 
+                    {
                         temp.Name = this.Name;
                         temp.Climate = this.Climate;
                         temp.Regions = this.Regions;
@@ -192,7 +175,6 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Yes")
                     {
-
                         this.Name = temp.Name;
                         this.Climate = temp.Climate;
                         this.Regions = temp.Regions;
@@ -208,30 +190,18 @@ namespace _404_not_founders.Models
                     }
                 }
 
-
                 switch (choice)
                 {
-                    case "Name":
-                        temp.Name = PromptNonEmpty("[#FFA500]New name:[/]");
-                        break;
-                    case "Climate":
-                        temp.Climate = PromptNonEmpty("[#FFA500]New climate:[/]");
-                        break;
-                    case "Regions":
-                        temp.Regions = PromptNonEmpty("[#FFA500]New regions:[/]");
-                        break;
-                    case "Enemies":
-                        temp.Enemies = PromptNonEmpty("[#FFA500]New enemies:[/]");
-                        break;
-                    case "Factions":
-                        temp.Factions = PromptNonEmpty("[#FFA500]New factions:[/]");
-                        break;
-                    case "Other info":
-                        temp.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
-                        break;
+                    case "Name": temp.Name = PromptNonEmpty("[#FFA500]New name:[/]"); break;
+                    case "Climate": temp.Climate = PromptNonEmpty("[#FFA500]New climate:[/]"); break;
+                    case "Regions": temp.Regions = PromptNonEmpty("[#FFA500]New regions:[/]"); break;
+                    case "Enemies": temp.Enemies = PromptNonEmpty("[#FFA500]New enemies:[/]"); break;
+                    case "Factions": temp.Factions = PromptNonEmpty("[#FFA500]New factions:[/]"); break;
+                    case "Other info": temp.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]"); break;
                 }
             }
         }
+
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
@@ -241,24 +211,19 @@ namespace _404_not_founders.Models
         {
             Console.Clear();
 
-            // Ask for confirmation
             var confirm = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"Are you sure you want to delete '[orange1]{this.Name}[/]'?")
+                    .Title($"Are you sure you want to delete '[orange1]{Markup.Escape(this.Name)}[/]'?")
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices("Yes", "No"));
 
             if (confirm == "Yes")
             {
-                // Remove the world from the project's worlds list
                 if (project.Worlds.Contains(this))
                 {
                     project.Worlds.Remove(this);
-
-                    // Save changes
                     userService.SaveUserService();
-
-                    AnsiConsole.MarkupLine($"World '[orange1]{this.Name}[/]' has been deleted!");
+                    AnsiConsole.MarkupLine($"World '[orange1]{Markup.Escape(this.Name)}[/]' has been deleted!");
                     Thread.Sleep(1200);
                 }
                 else
@@ -279,89 +244,128 @@ namespace _404_not_founders.Models
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
-            string googleApiKey = config["GoogleAI:ApiKey"];
-            var aiHelper = new GeminiAIService(googleApiKey);
+            var googleApiKey = config["GoogleAI:ApiKey"];
+            var aiService = new GeminiAIService(googleApiKey);
 
-            Console.WriteLine("Describe your World, or press [Enter] for a fantasy default:");
-            var input = Console.ReadLine();
-
-            // Förbättrad prompt, alltid ALLA rubriker, projektbaserad:
-            string prompt = string.IsNullOrWhiteSpace(input)
-            ? $@"Generate a one-of-a-kind, highly randomized fantasy World for a Dungeons & Dragons campaign.
-            Base all details on this Project description: '{currentProject.description}'.
-
-            NEVER omit any section below. Always include EVERY header below, even if blank, even if unknown. 
-            If you can't invent something, write the header and leave it empty. Format, NO markdown or asterisks:
-
-            Name: ...
-            Climate: ...
-            Regions: ...
-            Enemies: ...
-            Factions: ...
-            OtherInfo: ...
-
-            Example:
-            Name: Aetherium
-            Climate: [your text]
-            Regions: [your text]
-            Enemies: [your text]
-            Factions: [your text]
-            OtherInfo: [your text]
-            "
-            : input + "\n\nFormat as above. Always include all headers, even if empty. Base your content on the current Project description.";
-
-            Console.WriteLine("Generating World with Gemini...");
-            string result = await aiHelper.GenerateAsync(prompt);
-
-            if (!string.IsNullOrWhiteSpace(result))
+            while (true)
             {
-                Console.WriteLine("\nYour Gemini-generated World:\n" + result);
+                string userContext = AiHelper.AskOptionalUserContext("Generate World with AI");
 
-                var newWorld = ParseAITextToWorld(result);
-                if (newWorld != null)
+                if (userContext == "E")
+                    return null;
+
+                var existingWorldNames = currentProject.Worlds != null && currentProject.Worlds.Any()
+                    ? string.Join(", ", currentProject.Worlds.Select(w => w.Name))
+                    : "None";
+
+                string prompt = string.IsNullOrWhiteSpace(userContext)
+                    ? $@"You are a fantasy world-building assistant for a Dungeons & Dragons campaign.
+
+PROJECT CONTEXT:
+{currentProject.description}
+
+EXISTING WORLD NAMES (do NOT reuse or be too similar to these): {existingWorldNames}
+
+TASK:
+Generate a unique, immersive fantasy World that fits this project.
+
+RULES:
+- The world name MUST be completely new and not similar to any existing world name.
+- All fields MUST be filled. No empty values allowed.
+- Use unique, creative names. Do NOT reuse common fantasy names.
+- Return ONLY the formatted text below. No explanations, no markdown, no asterisks.
+- BEFORE returning, self-check: Are ALL fields filled and is the name unique?
+
+FORMAT:
+Name: [unique world name]
+Climate: [climate description]
+Regions: [list key regions]
+Enemies: [common enemies/threats]
+Factions: [political/social factions]
+OtherInfo: [any extra world details]"
+                    : $@"You are a fantasy world-building assistant for a Dungeons & Dragons campaign.
+
+PROJECT CONTEXT:
+{currentProject.description}
+
+EXISTING WORLD NAMES (do NOT reuse or be too similar to these): {existingWorldNames}
+
+USER REQUEST:
+{userContext}
+
+TASK:
+Generate a unique, immersive fantasy World based on the user's request and project context.
+
+RULES:
+- The world name MUST be completely new and not similar to any existing world name.
+- All fields MUST be filled. No empty values allowed.
+- Use unique, creative names. Do NOT reuse common fantasy names.
+- Return ONLY the formatted text below. No explanations, no markdown, no asterisks.
+- BEFORE returning, self-check: Are ALL fields filled and is the name unique?
+
+FORMAT:
+Name: [unique world name]
+Climate: [climate description]
+Regions: [list key regions]
+Enemies: [common enemies/threats]
+Factions: [political/social factions]
+OtherInfo: [any extra world details]";
+
+                AiHelper.ShowGeneratingText("World");
+
+                string result = await aiService.GenerateAsync(prompt);
+
+                if (!string.IsNullOrWhiteSpace(result))
                 {
-                    currentProject.Worlds.Add(newWorld);
-                    userService.SaveUserService();
-                    ConsoleHelpers.Info($"World '{newWorld.Name}' created!");
-                    Console.Clear();
+                    int nextOrder = (currentProject.Worlds?.Count ?? 0) + 1;
+                    var newWorld = ParseAITextToWorld(result, nextOrder);
 
-                    // Visningskod - alltid ALLA rubriker:
-                    AnsiConsole.MarkupLine("[bold orange1]World summary:[/]");
-                    AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{newWorld.Name}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Climate:[/] {ShowValue(newWorld.Climate)}");
-                    AnsiConsole.MarkupLine($"[grey]Regions:[/] {ShowValue(newWorld.Regions)}");
-                    AnsiConsole.MarkupLine($"[grey]Enemies:[/] {ShowValue(newWorld.Enemies)}");
-                    AnsiConsole.MarkupLine($"[grey]Factions:[/] {ShowValue(newWorld.Factions)}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {ShowValue(newWorld.OtherInfo)}");
-                    Console.WriteLine("\nPress any key to continue...");
-                    Console.ReadKey(true);
-                    Console.Clear();
+                    if (newWorld != null)
+                    {
+                        Console.Clear();
+                        ConsoleHelpers.Info("Generated World:");
+                        Console.WriteLine();
+                        AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{Markup.Escape(newWorld.Name)}[/]");
+                        AnsiConsole.MarkupLine($"[grey]Climate:[/] {Markup.Escape(newWorld.Climate)}");
+                        AnsiConsole.MarkupLine($"[grey]Regions:[/] {Markup.Escape(newWorld.Regions)}");
+                        AnsiConsole.MarkupLine($"[grey]Enemies:[/] {Markup.Escape(newWorld.Enemies)}");
+                        AnsiConsole.MarkupLine($"[grey]Factions:[/] {Markup.Escape(newWorld.Factions)}");
+                        AnsiConsole.MarkupLine($"[grey]Other info:[/] {Markup.Escape(newWorld.OtherInfo)}");
+                        Console.WriteLine();
 
-                    return newWorld;
+                        var choice = AiHelper.RetryMenu();
+
+                        if (choice == "Keep")
+                        {
+                            currentProject.Worlds.Add(newWorld);
+                            userService.SaveUserService();
+                            AiHelper.ShowSaved("World", newWorld.Name);
+                            AnsiClearHelper.WaitForKeyAndClear();
+                            return newWorld;
+                        }
+                        else if (choice == "Cancel")
+                        {
+                            AiHelper.ShowCancelled();
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        AiHelper.ShowError("Failed to parse AI response. Retrying...");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Unable to parse generated World, check the format.");
-                    Console.ReadKey(true);
-                    return null;
+                    AiHelper.ShowError("AI returned empty response. Retrying...");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Unable to generate AI-World with Gemini.");
-                Thread.Sleep(1200);
-                return null;
             }
         }
 
-        private static string ShowValue(string value) => string.IsNullOrWhiteSpace(value) ? "[grey]N/A[/]" : value;
-
-        public static World? ParseAITextToWorld(string input)
+        public static World? ParseAITextToWorld(string input, int nextOrderInProject)
         {
             var world = new World();
-
-            // Splitta på radbrytning, hantera både \n och \r\n
             var lines = input.Replace("\r\n", "\n").Split('\n');
+
             foreach (var line in lines)
             {
                 var cleanLine = line.Trim();
@@ -379,15 +383,15 @@ namespace _404_not_founders.Models
                     world.OtherInfo = cleanLine.Substring(10).Trim();
             }
 
-            // Sätt alltid default till tom sträng om saknas
-            world.Name = world.Name ?? "";
-            world.Climate = world.Climate ?? "";
-            world.Regions = world.Regions ?? "";
-            world.Enemies = world.Enemies ?? "";
-            world.Factions = world.Factions ?? "";
-            world.OtherInfo = world.OtherInfo ?? "";
+            world.Name ??= "";
+            world.Climate ??= "";
+            world.Regions ??= "";
+            world.Enemies ??= "";
+            world.Factions ??= "";
+            world.OtherInfo ??= "";
 
-            // Minsta krav: Namn och klimat måste finnas!
+            world.orderInProject = nextOrderInProject;
+
             if (string.IsNullOrWhiteSpace(world.Name) || string.IsNullOrWhiteSpace(world.Climate))
                 return null;
 

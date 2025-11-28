@@ -3,23 +3,30 @@ using System.Collections.Generic;           // List<T>
 using System.Linq;                          // LINQ
 using _404_not_founders.Menus;              // MenuChoises
 using _404_not_founders.Services;           // UserService, DungeonMasterAI
-using _404_not_founders.UI;                 // BigHeader, AnsiClearHelper, AskStepInput
+using _404_not_founders.UI;                 // BigHeader, AnsiClearHelper, AskStepInput, AiHelper, ShowInfoCard
 using Spectre.Console;                      // AnsiConsole, Markup, Table, Panel, Color, BoxBorder, SelectionPrompt
-using Microsoft.Extensions.Configuration;   // ConfigurationBuilder
+using Microsoft.Extensions.Configuration;   // ConfigurationBuilder;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace _404_not_founders.Models
 {
     public class Project
     {
-        public string title { get; set; }
-        public string description { get; set; }
+        public string title { get; set; } = string.Empty;
+        public string description { get; set; } = string.Empty;
         public DateTime DateOfCreation { get; set; } = DateTime.Now;
         public Guid Id { get; set; } = Guid.NewGuid();
-     
-        public List<World> Worlds { get; set; } = new List<World>();
-        public List<Storyline> Storylines { get; set; } = new();
 
-        public List<Character> Characters { get; set; } = new List<Character>();
+        // AI-genererade fält
+        public string highConcept { get; set; } = string.Empty;
+        public string campaignGoal { get; set; } = string.Empty;
+        public string themes { get; set; } = string.Empty;
+        public int orderInProject { get; set; }
+
+        public List<World> Worlds { get; set; } = new();
+        public List<Storyline> Storylines { get; set; } = new();
+        public List<Character> Characters { get; set; } = new();
 
         public async Task<Project> Add(User currentUser, UserService userService)
         {
@@ -32,8 +39,8 @@ namespace _404_not_founders.Models
                         .Title("How do you want to create your project?")
                         .HighlightStyle(Color.Orange1)
                         .AddChoices(
-                            "Manually",
                             "Generate with AI",
+                            "Manually",
                             "Exit"
                         ));
 
@@ -55,8 +62,8 @@ namespace _404_not_founders.Models
                         AnsiConsole.MarkupLine("[underline #FFA500]Create New Project[/]");
                         AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
 
-                        if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Title:[/] {title}");
-                        if (step >= 2) AnsiConsole.MarkupLine($"[#FFA500]Description:[/] {description}");
+                        if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Title:[/] {Markup.Escape(title)}");
+                        if (step >= 2) AnsiConsole.MarkupLine($"[#FFA500]Description:[/] {Markup.Escape(description)}");
 
                         string prompt = step switch
                         {
@@ -84,7 +91,9 @@ namespace _404_not_founders.Models
                                     description = description,
                                     DateOfCreation = DateTime.Now,
                                     Storylines = new List<Storyline>(),
-                                    Characters = new List<Character>()
+                                    Characters = new List<Character>(),
+                                    Worlds = new List<World>(),
+                                    orderInProject = (currentUser.Projects?.Count ?? 0) + 1
                                 };
                                 currentUser.Projects.Add(newProject);
                                 userService.SaveUserService();
@@ -114,53 +123,7 @@ namespace _404_not_founders.Models
 
                 if (mode == "Generate with AI")
                 {
-                    var config = new ConfigurationBuilder()
-                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                        .Build();
-                    string googleApiKey = config["GoogleAI:ApiKey"];
-                    var aiHelper = new GeminiAIService(googleApiKey);
-
-                    Console.WriteLine("Describe your Project/Campaign, or press [Enter] for a fantasy default:");
-                    var input = Console.ReadLine();
-                    string prompt = string.IsNullOrWhiteSpace(input)
-                        ? "Create a new RPG campaign Project concept. Include a campaign title, description, story hook, and themes."
-                        : input;
-
-                    Console.WriteLine("Generating with Gemini...");
-                    string result = await aiHelper.GenerateAsync(prompt);
-
-                    if (!string.IsNullOrWhiteSpace(result))
-                    {
-                        Console.WriteLine("\nYour Gemini-generated Project:\n" + result);
-
-                        Console.WriteLine("Enter a title for your Project (or copy paste from above):");
-                        string aiTitle = Console.ReadLine();
-                        Console.WriteLine("Enter a description for your Project (or copy paste from above):");
-                        string aiDesc = Console.ReadLine();
-
-                        var newProject = new Project
-                        {
-                            title = aiTitle,
-                            description = aiDesc,
-                            DateOfCreation = DateTime.Now,
-                            Storylines = new List<Storyline>(),
-                            Characters = new List<Character>()
-                        };
-
-                        currentUser.Projects.Add(newProject);
-                        userService.SaveUserService();
-                        AnsiConsole.MarkupLine("[green]Project created from Gemini AI![/]");
-                        Thread.Sleep(1200);
-                        return newProject;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Unable to generate AI-Answer.");
-                        Thread.Sleep(1200);
-                        Console.WriteLine($"ApiKey: {googleApiKey}");
-                        Console.WriteLine($"Prompt: {prompt}");
-                        continue;
-                    }
+                    return await GenerateProjectWithGeminiAI(currentUser, userService);
                 }
             }
         }
@@ -170,22 +133,24 @@ namespace _404_not_founders.Models
             if (character == null) throw new ArgumentNullException(nameof(character));
 
             Characters ??= new List<Character>();
-     
+            character.orderInProject = (Characters?.Count ?? 0) + 1;
             Characters.Add(character);
 
-            // Persist entire userstore (caller is expected to supply the same UserService instance used by the app)
             userService?.SaveUserService();
         }
-
 
         public void Show()
         {
             var worldNames = Worlds != null && Worlds.Any()
-                ? string.Join(", ", Worlds.Select(w => w.Name))
+                ? string.Join(", ", Worlds.Select(w => Markup.Escape(w.Name)))
                 : "None";
 
             var allTitles = Storylines != null && Storylines.Any()
-                ? string.Join(", ", Storylines.Select(s => s.Title))
+                ? string.Join(", ", Storylines.Select(s => Markup.Escape(s.Title)))
+                : "None";
+
+            var characterNames = Characters != null && Characters.Any()
+                ? string.Join(", ", Characters.Select(c => Markup.Escape(c.Name)))
                 : "None";
 
             var table = new Table()
@@ -195,10 +160,20 @@ namespace _404_not_founders.Models
                 .AddColumn(new TableColumn($"[bold orange1]{Markup.Escape(title)}[/]").LeftAligned());
 
             table.AddRow("Description:", Markup.Escape(description));
+
+            if (!string.IsNullOrWhiteSpace(highConcept))
+            {
+                table.AddRow("High Concept:", Markup.Escape(highConcept));
+                table.AddRow("Campaign Goal:", Markup.Escape(campaignGoal));
+                table.AddRow("Themes:", Markup.Escape(themes));
+            }
+
             table.AddEmptyRow();
             table.AddRow("Storylines:", Markup.Escape(allTitles));
             table.AddEmptyRow();
             table.AddRow("Worlds:", Markup.Escape(worldNames));
+            table.AddEmptyRow();
+            table.AddRow("Characters:", Markup.Escape(characterNames));
 
             var panel = new Panel(table)
             {
@@ -207,38 +182,40 @@ namespace _404_not_founders.Models
 
             AnsiConsole.Write(panel);
         }
+
         public void ShowAll(Project project)
         {
             ShowSection("Project", () => Show());
             ShowAllStorylines(project);
             ShowAllWorlds();
             ShowAllCharacters();
-            // Ingen prompt här – navigation styrs i menysystemet!
         }
-
 
         private void ShowSection(string header, Action action)
         {
             BigHeader.Show(header);
             action();
         }
+
         public void ShowAllStorylines(Project project)
         {
             while (true)
             {
-                var choices = project.Storylines.Select(s => string.IsNullOrWhiteSpace(s.Title) ? "(untitled)" : s.Title).ToList();
+                var choices = project.Storylines
+                .Select(s => string.IsNullOrWhiteSpace(s.Title) ? "(untitled)" : s.Title)
+                .ToList();
                 choices.Add("Back");
 
                 var selected = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[#FFA500]Select storyline to show[/]")
-                        .HighlightStyle(new Style(Color.Orange1))
-                        .PageSize(10)
-                        .AddChoices(choices));
+                new SelectionPrompt<string>()
+               .Title("[#FFA500]Select storyline to show[/]")
+               .HighlightStyle(new Style(Color.Orange1))
+               .PageSize(10)
+               .AddChoices(choices));
 
                 if (selected == "Back")
                 {
-                    Console.Clear();
+                    Console.Clear();   // OK: rensa och lämna tillbaka till ShowAll
                     break;
                 }
 
@@ -248,9 +225,10 @@ namespace _404_not_founders.Models
                 Console.WriteLine();
                 AnsiConsole.MarkupLine("[grey]Press any key to continue...[/]");
                 Console.ReadKey(true);
-                Console.Clear();
+                Console.Clear();       // rensa och gå tillbaka till samma while (Select storyline to show)
             }
         }
+
         public void ShowAllWorlds()
         {
             ShowSection("Worlds", () =>
@@ -259,8 +237,8 @@ namespace _404_not_founders.Models
                 {
                     foreach (var world in Worlds)
                     {
-                        world.Show();                                // Visar info för varje world
-                        Console.WriteLine();                         // Extra radbrytning mellan worlds
+                        world.Show();
+                        Console.WriteLine();
                     }
                 }
                 else
@@ -269,102 +247,135 @@ namespace _404_not_founders.Models
                 }
             });
         }
+
         public void ShowAllCharacters()
         {
             ShowSection("Characters", () =>
             {
                 if (Characters != null && Characters.Any())
+                {
                     foreach (var character in Characters)
                         character.Show();
+                }
                 else
+                {
                     AnsiConsole.MarkupLine("[grey]No Characters found.[/]");
+                }
             });
         }
 
-        public async Task<Project?> GenerateProjectWithGeminiAI(Project project, User currentUser, UserService userService)
+        public async Task<Project?> GenerateProjectWithGeminiAI(User currentUser, UserService userService)
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
-            string googleApiKey = config["GoogleAI:ApiKey"];
-            var aiHelper = new GeminiAIService(googleApiKey);
+            var googleApiKey = config["GoogleAI:ApiKey"];
+            var aiService = new GeminiAIService(googleApiKey);
 
-            Console.WriteLine("Describe your Project/Campaign, or press [Enter] for a fantasy default:");
-            var input = Console.ReadLine();
-
-            string prompt = string.IsNullOrWhiteSpace(input)
-                ? "Invent a brand-new, wildly original RPG Project concept for a campaign. Never reuse names, overarching plots, or quest ideas from previous answers. Surprise me with new campaign titles, hooks, and themes! Format(Without asterisks or markdown): Title: ..., Description: ..."
-                : input;
-
-            Console.WriteLine("Generating AI Project...");
-            var result = await aiHelper.GenerateAsync(prompt);
-
-            if (!string.IsNullOrWhiteSpace(result))
+            while (true)
             {
-                Console.WriteLine("\nYour AI-generated Project:\n");
-                Console.WriteLine(result);
+                string userContext = AiHelper.AskOptionalUserContext("Generate Project with AI");
+                if (userContext == "E") return null;
 
-                // PARSA direkt och skapa projekt
-                var newProject = Project.ParseAITextToProject(result);
-                if (newProject != null)
+                string prompt = string.IsNullOrWhiteSpace(userContext)
+                    ? @"You are a D&D campaign designer. Create a complete campaign project.
+
+TASK: Generate a unique RPG campaign that fits a text-based D&D game.
+RULES: All fields MUST be filled. Use unique names. No explanations, no markdown.
+
+FORMAT:
+Title: [campaign title]
+Description: [short campaign description]
+High Concept: [1-sentence elevator pitch]
+Campaign Goal: [main campaign objective]
+Themes: [themes separated by |]"
+                    : $@"You are a D&D campaign designer. Create a complete campaign project based on this request:
+
+{userContext}
+
+FORMAT:
+Title: [campaign title]
+Description: [short campaign description]
+High Concept: [1-sentence elevator pitch]
+Campaign Goal: [main campaign objective]
+Themes: [themes separated by |]";
+
+                AiHelper.ShowGeneratingText("Project");
+
+                var result = await aiService.GenerateAsync(prompt);
+
+                if (!string.IsNullOrWhiteSpace(result))
                 {
-                    newProject.DateOfCreation = DateTime.Now;
-                    newProject.Storylines = new List<Storyline>();
-                    newProject.Characters = new List<Character>();
+                    int nextOrder = (currentUser.Projects?.Count ?? 0) + 1;
+                    var newProject = ParseAITextToProject(result, nextOrder);
 
-                    currentUser.Projects.Add(newProject);
-                    userService.SaveUserService();
-                    ConsoleHelpers.Info($"Project '{newProject.title}' created!");
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey(true);
-                    Console.Clear();
-
-                    while (true)
+                    if (newProject != null)
                     {
-                        var choice = AnsiConsole.Prompt(
-                            new SelectionPrompt<string>()
-                                .Title("[#FFA500]What do you want to do next?[/]")
-                                .HighlightStyle(Color.Orange1)
-                                .AddChoices("Show Project", "Back"));
+                        Console.Clear();
+                        ConsoleHelpers.Info("Generated Project:");
+                        Console.WriteLine();
+                        AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{Markup.Escape(newProject.title)}[/]");
+                        AnsiConsole.MarkupLine($"[grey]Description:[/] {Markup.Escape(newProject.description)}");
+                        AnsiConsole.MarkupLine($"[grey]High Concept:[/] {Markup.Escape(newProject.highConcept)}");
+                        AnsiConsole.MarkupLine($"[grey]Campaign Goal:[/] {Markup.Escape(newProject.campaignGoal)}");
+                        AnsiConsole.MarkupLine($"[grey]Themes:[/] {Markup.Escape(newProject.themes)}");
+                        Console.WriteLine();
 
-                        if (choice == "Show Project")
-                            newProject.ShowAll(project);
-                        else if (choice == "Back")
-                            break;
+                        var choice = AiHelper.RetryMenu();
+
+                        if (choice == "Keep")
+                        {
+                            currentUser.Projects.Add(newProject);
+                            userService.SaveUserService();
+                            AiHelper.ShowSaved("Project", newProject.title);
+                            return newProject;
+                        }
+                        else if (choice == "Cancel")
+                        {
+                            AiHelper.ShowCancelled();
+                            return null;
+                        }
                     }
-                    return newProject;
+                    else
+                    {
+                        AiHelper.ShowError("Failed to parse AI response. Retrying...");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Could not parse AI Project result. Please check the output format.");
-                    Console.ReadKey();
-                    return null;
+                    AiHelper.ShowError("AI returned empty response. Retrying...");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Kunde inte generera AI-svar.");
-                Console.ReadKey();
-                return null;
             }
         }
 
-        public static Project? ParseAITextToProject(string input)
+        public static Project? ParseAITextToProject(string input, int nextOrderInProject)
         {
             var project = new Project();
-            var lines = input.Split('\n');
+            var lines = input.Replace("\r\n", "\n").Split('\n'); // robust newline-hantering [web:50][web:56]
+
             foreach (var line in lines)
             {
-                if (line.StartsWith("Title:", StringComparison.OrdinalIgnoreCase))
-                    project.title = line.Substring(6).Trim();
-                else if (line.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
-                    project.description = line.Substring(12).Trim();
-                // Lägg till fler fält om din AI-output innehåller t.ex. Storylines, Worlds, etc (parsa dem separat)
+                var cleanLine = line.Trim();
+                if (cleanLine.StartsWith("Title:", StringComparison.OrdinalIgnoreCase))
+                    project.title = cleanLine.Substring(6).Trim();
+                else if (cleanLine.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
+                    project.description = cleanLine.Substring(12).Trim();
+                else if (cleanLine.StartsWith("High Concept:", StringComparison.OrdinalIgnoreCase))
+                    project.highConcept = cleanLine.Substring(12).Trim();
+                else if (cleanLine.StartsWith("Campaign Goal:", StringComparison.OrdinalIgnoreCase))
+                    project.campaignGoal = cleanLine.Substring(14).Trim();
+                else if (cleanLine.StartsWith("Themes:", StringComparison.OrdinalIgnoreCase))
+                    project.themes = cleanLine.Substring(7).Trim();
             }
-            // Kontroll: måste ha titel och beskrivning
-            if (string.IsNullOrWhiteSpace(project.title) || string.IsNullOrWhiteSpace(project.description))
-                return null;
-            return project;
+
+            project.orderInProject = nextOrderInProject;
+            project.DateOfCreation = DateTime.Now;
+            project.Storylines = new List<Storyline>();
+            project.Characters = new List<Character>();
+            project.Worlds = new List<World>();
+
+            return string.IsNullOrWhiteSpace(project.title) || string.IsNullOrWhiteSpace(project.description)
+                ? null : project;
         }
 
         public void Change()
@@ -383,6 +394,5 @@ namespace _404_not_founders.Models
         {
             Console.WriteLine("Coming soon");
         }
-
     }
 }
