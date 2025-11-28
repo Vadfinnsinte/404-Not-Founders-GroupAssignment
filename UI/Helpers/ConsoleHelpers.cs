@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-namespace _404_not_founders.UI
+namespace _404_not_founders.UI.Helpers
 {
     public class ConsoleHelpers
     {

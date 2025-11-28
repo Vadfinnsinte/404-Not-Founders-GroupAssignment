@@ -1,8 +1,9 @@
 ﻿using _404_not_founders.Models;
+using _404_not_founders.UI.Helpers;
 using Spectre.Console;
 using System.Reflection.Metadata.Ecma335;
 
-namespace _404_not_founders.UI
+namespace _404_not_founders.UI.CRUD
 {
     public class CreateStoryline
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace _404_not_founders.UI
+namespace _404_not_founders.UI.Display
 {
     public class MenuChoises
     {

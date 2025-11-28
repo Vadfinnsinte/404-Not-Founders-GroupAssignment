@@ -1,7 +1,7 @@
 ﻿
 
 using _404_not_founders.Services;
-using _404_not_founders.UI;
+using _404_not_founders.UI.Display;
 using Spectre.Console;
 
 namespace _404_not_founders.Models
