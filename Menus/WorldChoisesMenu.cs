@@ -52,7 +52,7 @@ namespace _404_not_founders.Menus
                     "Add World",
                     "Show Worlds",
                     "Edit World",
-                    "Remove World",
+                    "Delete World",
                     "Back");
 
                 switch (choice)
