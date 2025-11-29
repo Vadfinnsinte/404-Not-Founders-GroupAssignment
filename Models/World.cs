@@ -1,4 +1,5 @@
-﻿using _404_not_founders.Menus;
+﻿using System.Text;
+using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
@@ -122,13 +123,23 @@ namespace _404_not_founders.Models
 
             void ShowSummary(World w)
             {
-                ConsoleHelpers.Info("World summary:");
-                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.Name) ? "(unnamed)" : w.Name)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Climate:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Climate) ? "-" : w.Climate)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Regions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Regions) ? "-" : w.Regions)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Enemies:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Enemies) ? "-" : w.Enemies)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Factions:[/]  [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : w.Factions)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : w.OtherInfo)}[/]");
+                // Build a multiline markup string for the panel so the summary is visible above the prompt
+                var sb = new StringBuilder();
+                sb.AppendLine("[underline #FFA500]World summary:[/]");
+                sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(w.Name) ? "(unnamed)" : w.Name)}[/]");
+                sb.AppendLine($"[grey]Climate:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Climate) ? "-" : w.Climate)}[/]");
+                sb.AppendLine($"[grey]Regions:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Regions) ? "-" : w.Regions)}[/]");
+                sb.AppendLine($"[grey]Enemies:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Enemies) ? "-" : w.Enemies)}[/]");
+                sb.AppendLine($"[grey]Factions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : w.Factions)}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : w.OtherInfo)}[/]");
+
+                var panel = new Panel(new Markup(sb.ToString()))
+                {
+                    Border = BoxBorder.Rounded,
+                    Padding = new Padding(1, 0, 1, 0),
+                };
+
+                AnsiConsole.Write(panel);
                 Console.WriteLine();
             }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using Spectre.Console;
@@ -269,21 +270,36 @@ namespace _404_not_founders.Models
                 OtherInfo = original.OtherInfo
             };
 
+            void ShowSummary(Character c)
+            {
+                // Build a multiline markup string for the panel so the summary is visible above the prompt
+                var sb = new StringBuilder();
+                sb.AppendLine("[underline #FFA500]Character summary:[/]");
+                sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)}[/]");
+                sb.AppendLine($"[grey]Race:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Race) ? "-" : c.Race)}[/]");
+                sb.AppendLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(c.Description) ? "-" : c.Description)}[/]");
+                sb.AppendLine($"[grey]Gender:[/]     [#FFA500]{(string.IsNullOrWhiteSpace(c.Gender) ? "-" : c.Gender)}[/]");
+                sb.AppendLine($"[grey]Age:[/]        [#FFA500]{c.Age}[/]");
+                sb.AppendLine($"[grey]Level:[/]      [#FFA500]{c.Level}[/]");
+                sb.AppendLine($"[grey]Class:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(c.Class) ? "-" : c.Class)}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(c.OtherInfo) ? "-" : c.OtherInfo)}[/]");
+
+                var panel = new Panel(new Markup(sb.ToString()))
+                {
+                    Border = BoxBorder.Rounded,
+                    Padding = new Padding(1, 0, 1, 0),
+                };
+
+                AnsiConsole.Write(panel);
+                Console.WriteLine();
+            }
+
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
 
-                // Show current temp values above the choice so edits are visible while picking fields
-                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Name) ? "(unnamed)" : temp.Name)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Race) ? "-" : temp.Race)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Description) ? "-" : temp.Description)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Gender) ? "-" : temp.Gender)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{temp.Age}[/]");
-                AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{temp.Level}[/]");
-                AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Class) ? "-" : temp.Class)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.OtherInfo) ? "-" : temp.OtherInfo)}[/]");
-                Console.WriteLine();
+                ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -329,16 +345,8 @@ namespace _404_not_founders.Models
                 {
                     Console.Clear();
                     ConsoleHelpers.Info("Character summary:");
-                    AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{temp.Name}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Race:[/] {temp.Race}");
-                    AnsiConsole.MarkupLine($"[grey]Description:[/] {temp.Description}");
-                    AnsiConsole.MarkupLine($"[grey]Gender:[/] {temp.Gender}");
-                    AnsiConsole.MarkupLine($"[grey]Age:[/] {temp.Age}");
-                    AnsiConsole.MarkupLine($"[grey]Level:[/] {temp.Level}");
-                    AnsiConsole.MarkupLine($"[grey]Class:[/] {temp.Class}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+                    ShowSummary(temp);
 
-                    Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Are you happy with these changes?[/]")

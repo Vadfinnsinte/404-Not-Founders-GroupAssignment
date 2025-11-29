@@ -3,6 +3,7 @@ using _404_not_founders.Menus;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using _404_not_founders.UI.Helpers;
 using _404_not_founders.UI.Display;
 
@@ -112,12 +113,28 @@ namespace _404_not_founders.Models
                 ConsoleHelpers.Info($"Redigera konto");
                 ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
 
+                // Local helper to render a boxed summary panel (consistent with other Edit* summaries)
+                void ShowSummary(User u)
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine("[underline #FFA500]Account summary:[/]");
+                    sb.AppendLine($"[grey]E-mail:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(u.Email) ? "-" : u.Email)}[/]");
+                    sb.AppendLine($"[grey]Username:[/] [#FFA500]{(string.IsNullOrWhiteSpace(u.Username) ? "-" : u.Username)}[/]");
+                    var masked = string.IsNullOrEmpty(u.Password) ? "-" : new string('*', Math.Min(8, u.Password.Length));
+                    sb.AppendLine($"[grey]Password:[/] [#FFA500]{masked}[/]");
+
+                    var panel = new Panel(new Markup(sb.ToString()))
+                    {
+                        Border = BoxBorder.Rounded,
+                        Padding = new Padding(1, 0, 1, 0),
+                    };
+
+                    AnsiConsole.Write(panel);
+                    Console.WriteLine();
+                }
+
                 // Show live preview of current values above the choice menu
-                var masked = string.IsNullOrEmpty(Password) ? "-" : new string('*', Math.Min(8, Password.Length));
-                AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{(string.IsNullOrWhiteSpace(Email) ? "-" : Email)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{(string.IsNullOrWhiteSpace(Username) ? "-" : Username)}[/]");
-                AnsiConsole.MarkupLine($"[grey]Password:[/] [#FFA500]{masked}[/]");
-                Console.WriteLine();
+                ShowSummary(this);
 
                 var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
                 switch (choice)
