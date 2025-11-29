@@ -175,7 +175,7 @@ namespace _404_not_founders.Menus
     }
 }
 
-            var selected = AnsiConsole.Prompt(
+            {var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Project>()
                     .Title($"[bold]{title}[/]")
                     .PageSize(10)
