@@ -37,7 +37,7 @@ namespace _404_not_founders.Menus
                     case "Add Character":
 
                         newCharacter.Add(currentUser, _projectService, _userService);
-                       
+
                         break;
                     case "Show Character":
                         // Show characters from the actual project

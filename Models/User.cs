@@ -81,7 +81,7 @@ namespace _404_not_founders.Models
                 if (step == 3)
                 {
                     var confirm = MenuChoises.Menu("Do you want to register this user?", "Yes", "No");
-             
+
                     if (confirm == "No") { step = 0; continue; }
                     if (confirm == "Yes")
                     {
@@ -111,6 +111,13 @@ namespace _404_not_founders.Models
                 Console.Clear();
                 ConsoleHelpers.Info($"Redigera konto");
                 ConsoleHelpers.Info("[grey italic]Press E to go back or B to return to the previous step[/]");
+
+                // Show live preview of current values above the choice menu
+                var masked = string.IsNullOrEmpty(Password) ? "-" : new string('*', Math.Min(8, Password.Length));
+                AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{(string.IsNullOrWhiteSpace(Email) ? "-" : Email)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{(string.IsNullOrWhiteSpace(Username) ? "-" : Username)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Password:[/] [#FFA500]{masked}[/]");
+                Console.WriteLine();
 
                 var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
                 switch (choice)

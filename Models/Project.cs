@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using _404_not_founders.Menus;
@@ -107,12 +107,7 @@ namespace _404_not_founders.Models
             if (character == null) throw new ArgumentNullException(nameof(character));
 
             Characters ??= new List<Character>();
-
-            if (Characters.Any(c => string.Equals(c.Names, character.Names, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidOperationException($"A character with the name '{character.Names}' already exists in project '{title}'.");
-            }
-
+     
             Characters.Add(character);
 
             // Persist entire userstore (caller is expected to supply the same UserService instance used by the app)
@@ -200,7 +195,7 @@ namespace _404_not_founders.Models
             {
                 if (Characters != null && Characters.Any())
                     foreach (var character in Characters)
-                        character.ShowCharacters(this);
+                        character.Show();
                 else
                     AnsiConsole.MarkupLine("[grey]No characters found.[/]");
             });

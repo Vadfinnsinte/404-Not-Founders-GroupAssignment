@@ -1,6 +1,4 @@
-﻿
-
-using _404_not_founders.Menus;
+﻿using _404_not_founders.Menus;
 using _404_not_founders.Services;
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
@@ -122,10 +120,25 @@ namespace _404_not_founders.Models
                 OtherInfo = this.OtherInfo
             };
 
+            void ShowSummary(World w)
+            {
+                ConsoleHelpers.Info("World summary:");
+                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.Name) ? "(unnamed)" : w.Name)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Climate:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Climate) ? "-" : w.Climate)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Regions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Regions) ? "-" : w.Regions)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Enemies:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Enemies) ? "-" : w.Enemies)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Factions:[/]  [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : w.Factions)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : w.OtherInfo)}[/]");
+                Console.WriteLine();
+            }
+
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit world: [#FFA500]{temp.Name}[/]");
+
+                // Show live summary before presenting choices
+                ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -155,17 +168,10 @@ namespace _404_not_founders.Models
 
                 if (choice == "Done")
                 {
-                    
                     Console.Clear();
-                    ConsoleHelpers.Info("World summary:");
-                    AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{temp.Name}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Climate:[/]   {temp.Climate}");
-                    AnsiConsole.MarkupLine($"[grey]Regions:[/]   {temp.Regions}");
-                    AnsiConsole.MarkupLine($"[grey]Enemies:[/]   {temp.Enemies}");
-                    AnsiConsole.MarkupLine($"[grey]Factions:[/]  {temp.Factions}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+                    // Re-show summary for final confirmation (consistent with live preview)
+                    ShowSummary(temp);
 
-                    Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Are you happy with this world?[/]")
@@ -174,7 +180,6 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Exit")
                     {
-                        
                         Thread.Sleep(800);
                         Console.Clear();
                         return;
@@ -182,7 +187,6 @@ namespace _404_not_founders.Models
 
                     if (confirm == "No (Start over)")
                     {
-                        
                         temp.Name = this.Name;
                         temp.Climate = this.Climate;
                         temp.Regions = this.Regions;
@@ -194,7 +198,6 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Yes")
                     {
-                        
                         this.Name = temp.Name;
                         this.Climate = temp.Climate;
                         this.Regions = temp.Regions;

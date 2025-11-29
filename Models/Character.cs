@@ -11,7 +11,7 @@ namespace _404_not_founders.Models
 {
     public class Character
     {
-        public string Names { get; set; }
+        public string Name { get; set; }
         public string Race { get; set; }
         public string Description { get; set; }
         public string Gender { get; set; }
@@ -21,61 +21,15 @@ namespace _404_not_founders.Models
         public string OtherInfo { get; set; }
 
 
-        public string ChracterMenu1(string title, params string[] choices) =>
-            AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title($"[#{MainTitleColor}]{title}[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices(choices)
-                    .UseConverter(choice => $"[white]{choice}[/]")
-            );
-
-
-        public void ChracterMenu2(UserService userService, ProjectService projectService, MenuHelper menuHelper, Project currentProject)
-        {
-
-            User? currentUser = menuHelper.CurrentUser;
-            var choice = ChracterMenu1("Character Menu", "Add Character", "Show Character", "Change Character", "Delete Character", "Back to Main Menu");
-            switch (choice)
-            {
-                case "Add Character":
-                    Add(currentUser, projectService, userService, menuHelper);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Show Character":
-                    // Show characters from the actual project
-                    ShowCharacters(currentProject);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Change Character":
-                    Change(currentUser, projectService, userService, menuHelper, currentProject);
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Delete Character":
-                    Delete();
-                    ChracterMenu2(userService, projectService, menuHelper, currentProject);
-                    break;
-                case "Back to Main Menu":
-                    bool loggedIn = true;
-                    bool running = true;
-                    string username = currentUser?.Username;
-                    menuHelper.ShowLoggedInMenu(ref loggedIn, ref username, ref running);
-                    if (currentUser != null) currentUser.Username = username;
-                    break;
-            }
-        }
-
-
-
-        public void Add(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper)
+        public void Add(User currentUser, ProjectService projectService, UserService userService)
         {
             // Lokala variabler för fältet som byggs upp stegvis
             string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
             int age = 0, level = 0;
             // step styr vilken input som efterfrågas; 0..8 där 8 = bekräftelse
             int step = 0;
-
-            while (true)
+            bool addingCharacter = true;
+            while (addingCharacter)
             {
                 Console.Clear();
                 ConsoleHelpers.Info("Create New Character");
@@ -125,7 +79,7 @@ namespace _404_not_founders.Models
                             if (!int.TryParse(input.Trim(), out age))
                             {
                                 Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                     
+
                                 continue;
                             }
                         }
@@ -140,7 +94,7 @@ namespace _404_not_founders.Models
                             if (!int.TryParse(input.Trim(), out level))
                             {
                                 Console.WriteLine("Invalid number — please enter an integer or leave empty.");
-                         ;
+                                ;
                                 continue;
                             }
                         }
@@ -158,7 +112,7 @@ namespace _404_not_founders.Models
                     case 8:
                         // Bekräftelsesteg: ja/nej/avsluta
                         Project project = null;
-                        var confirm = ChracterMenu1("Confirm character creation", "Yes", "No");
+                        var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }  // Börjar om från början
                         if (confirm == "Yes")
                         {
@@ -187,7 +141,7 @@ namespace _404_not_founders.Models
                             // Bygg ny Character-instans
                             var newCharacter = new Character
                             {
-                                Names = name,
+                                Name = name,
                                 Race = race,
                                 Description = description,
                                 Gender = gender,
@@ -214,8 +168,8 @@ namespace _404_not_founders.Models
 
                             Console.WriteLine();
                             Console.WriteLine($"Character '{name}' created.");
-                            Console.WriteLine("Press any key to continue...");
-                            MenuHelper.DelayAndClear();
+
+                            ConsoleHelpers.DelayAndClear();
 
                             return; // Klart
                         }
@@ -229,8 +183,9 @@ namespace _404_not_founders.Models
                 if (input == "E")
                 {
                     // HÄR: Anropar menymetod och skickar null som currentProject — se till att metoden accepterar null
+                    addingCharacter = false;
                     Console.Clear();
-                    ChracterMenu2(userService, projectService, menuHelper, null);
+                    return;
                 }
 
                 if (input == "B")
@@ -264,7 +219,7 @@ namespace _404_not_founders.Models
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
@@ -272,17 +227,17 @@ namespace _404_not_founders.Models
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
-                MenuHelper.DelayAndClear();
+                ConsoleHelpers.DelayAndClear();
                 return;
             }
 
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
-                    .Title($"[#{MainTitleColor}]Select character to show[/]")
+                    .Title($"[#FFA500]Select character to show[/]")
                     .HighlightStyle(new Style(Color.Orange1))
                     .PageSize(10)
                     .AddChoices(project.Characters)
-                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Names) ? "(unnamed)" : c.Names)
+                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)
             );
 
             Console.Clear();
@@ -290,156 +245,228 @@ namespace _404_not_founders.Models
             Console.WriteLine();
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
-            MenuHelper.DelayAndClear();
+            ConsoleHelpers.DelayAndClear();
+        }
+        public void Show()
+        {
+            ShowInfoCard.ShowObject(this);
         }
 
-
-        public void Change(User currentUser, ProjectService projectService, UserService userService, MenuHelper menuHelper, Project currentProject)
+        public void EditCharacter(Project project, UserService userService)
         {
-            // Determine target project
-            Project project = currentProject;
-            if (project == null && currentUser != null)
-            {
-                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
-                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
-                if (project == null && currentUser?.Projects != null)
-                    project = currentUser.Projects.FirstOrDefault();
-            }
+            var original = SelectCharacter(project, "Choose character to edit");
+            if (original == null) return;
 
-            if (project == null)
+            var temp = new Character
             {
-                AnsiConsole.MarkupLine("[red]No project selected. Select or create a project before editing characters.[/]");
-                MenuHelper.DelayAndClear();
-                return;
-            }
-
-            if (project.Characters == null || project.Characters.Count == 0)
-            {
-                AnsiConsole.MarkupLine("[yellow]No characters in this project to change.[/]");
-                MenuHelper.DelayAndClear();
-                return;
-            }
-
-            var toEdit = AnsiConsole.Prompt(
-                new SelectionPrompt<Character>()
-                    .Title($"[#{MainTitleColor}]Select character to change[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .PageSize(10)
-                    .AddChoices(project.Characters)
-                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Names) ? "(unnamed)" : c.Names)
-            );
-
-            if (toEdit == null)
-            {
-                MenuHelper.DelayAndClear();
-                return;
-            }
+                Name = original.Name,
+                Race = original.Race,
+                Description = original.Description,
+                Gender = original.Gender,
+                Age = original.Age,
+                Level = original.Level,
+                Class = original.Class,
+                OtherInfo = original.OtherInfo
+            };
 
             while (true)
             {
                 Console.Clear();
-                MenuHelper.Info($"Editing: {(string.IsNullOrWhiteSpace(toEdit.Names) ? "(unnamed)" : toEdit.Names)}");
-                MenuHelper.InputInstruction(true);
+                ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
 
-                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{toEdit.Names}[/]");
-                AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{toEdit.Race}[/]");
-                AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{toEdit.Description}[/]");
-                AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{toEdit.Gender}[/]");
-                AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{toEdit.Age}[/]");
-                AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{toEdit.Level}[/]");
-                AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{toEdit.Class}[/]");
-                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{toEdit.OtherInfo}[/]");
+                // Show current temp values above the choice so edits are visible while picking fields
+                AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Name) ? "(unnamed)" : temp.Name)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Race) ? "-" : temp.Race)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Description) ? "-" : temp.Description)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Gender) ? "-" : temp.Gender)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{temp.Age}[/]");
+                AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{temp.Level}[/]");
+                AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.Class) ? "-" : temp.Class)}[/]");
+                AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(temp.OtherInfo) ? "-" : temp.OtherInfo)}[/]");
                 Console.WriteLine();
 
-                var field = ChracterMenu1("Choose field to edit",
-                    "Name", "Race", "Description", "Gender", "Age", "Level", "Class", "Other info", "Save and Exit", "Cancel");
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("What do you want to change?")
+                        .HighlightStyle(new Style(Color.Orange1))
+                        .AddChoices(
+                            "Name",
+                            "Race",
+                            "Description",
+                            "Gender",
+                            "Age",
+                            "Level",
+                            "Class",
+                            "Other info",
+                            "Done")
+                        .HighlightStyle(Color.Orange1));
 
-                if (field == "Cancel")
+                string PromptNonEmpty(string prompt)
                 {
-                    MenuHelper.DelayAndClear();
-                    return;
+                    while (true)
+                    {
+                        var value = AnsiConsole.Ask<string>(prompt);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            return value;
+
+                        AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
+                    }
                 }
 
-                if (field == "Save and Exit")
+                int PromptInt(string prompt)
                 {
-                    // Persist changes - assume UserService handles saving users/projects
-                    try
+                    while (true)
                     {
+                        var value = AnsiConsole.Ask<string>(prompt);
+                        if (int.TryParse(value, out int number))
+                            return number;
+
+                        AnsiConsole.MarkupLine("[red]You must enter a number.[/]");
+                    }
+                }
+
+                if (choice == "Done")
+                {
+                    Console.Clear();
+                    ConsoleHelpers.Info("Character summary:");
+                    AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{temp.Name}[/]");
+                    AnsiConsole.MarkupLine($"[grey]Race:[/] {temp.Race}");
+                    AnsiConsole.MarkupLine($"[grey]Description:[/] {temp.Description}");
+                    AnsiConsole.MarkupLine($"[grey]Gender:[/] {temp.Gender}");
+                    AnsiConsole.MarkupLine($"[grey]Age:[/] {temp.Age}");
+                    AnsiConsole.MarkupLine($"[grey]Level:[/] {temp.Level}");
+                    AnsiConsole.MarkupLine($"[grey]Class:[/] {temp.Class}");
+                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
+
+                    Console.WriteLine();
+                    var confirm = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[#FFA500]Are you happy with these changes?[/]")
+                            .HighlightStyle(new Style(Color.Orange1))
+                            .AddChoices("Yes", "No (Start over)", "Exit"));
+
+                    if (confirm == "Exit")
+                    {
+                        ConsoleHelpers.DelayAndClear();
+                        return;
+                    }
+
+                    if (confirm == "No (Start over)")
+                    {
+                        temp.Name = original.Name;
+                        temp.Race = original.Race;
+                        temp.Description = original.Description;
+                        temp.Gender = original.Gender;
+                        temp.Age = original.Age;
+                        temp.Level = original.Level;
+                        temp.Class = original.Class;
+                        temp.OtherInfo = original.OtherInfo;
+                        continue;
+                    }
+
+                    if (confirm == "Yes")
+                    {
+                        original.Name = temp.Name;
+                        original.Race = temp.Race;
+                        original.Description = temp.Description;
+                        original.Gender = temp.Gender;
+                        original.Age = temp.Age;
+                        original.Level = temp.Level;
+                        original.Class = temp.Class;
+                        original.OtherInfo = temp.OtherInfo;
+
                         userService.SaveUserService();
-                        AnsiConsole.MarkupLine("[green]Changes saved.[/]");
+                        ConsoleHelpers.Info("Character updated!");
+                        ConsoleHelpers.DelayAndClear();
+                        return;
                     }
-                    catch
-                    {
-                        AnsiConsole.MarkupLine("[red]Failed to save changes to disk.[/]");
-                    }
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey(true);
-                    MenuHelper.DelayAndClear();
-                    return;
                 }
 
-                Console.Write($"{field}: ");
-                var input = MenuHelper.ReadBackOrExit();
-
-                if (input == "E")
-                {
-                    // exit to menu
-                    MenuHelper.DelayAndClear();
-                    return;
-                }
-                if (input == "B")
-                {
-                    // go back to field selection
-                    continue;
-                }
-
-                // Apply change with validation for ints
-                switch (field)
+                switch (choice)
                 {
                     case "Name":
-                        toEdit.Names = input?.Trim() ?? "";
+                        temp.Name = PromptNonEmpty("[#FFA500]New name:[/]");
                         break;
                     case "Race":
-                        toEdit.Race = input?.Trim() ?? "";
+                        temp.Race = PromptNonEmpty("[#FFA500]New race:[/]");
                         break;
                     case "Description":
-                        toEdit.Description = input?.Trim() ?? "";
+                        temp.Description = PromptNonEmpty("[#FFA500]New description:[/]");
                         break;
                     case "Gender":
-                        toEdit.Gender = input?.Trim() ?? "";
+                        temp.Gender = PromptNonEmpty("[#FFA500]New gender:[/]");
                         break;
                     case "Age":
-                        if (string.IsNullOrWhiteSpace(input)) toEdit.Age = 0;
-                        else if (int.TryParse(input.Trim(), out int a)) toEdit.Age = a;
-                        else
-                        {
-                            Console.WriteLine("Invalid number — press any key to continue...");
-                            Console.ReadKey(true);
-                        }
+                        temp.Age = PromptInt("[#FFA500]New age:[/]");
                         break;
                     case "Level":
-                        if (string.IsNullOrWhiteSpace(input)) toEdit.Level = 0;
-                        else if (int.TryParse(input.Trim(), out int l)) toEdit.Level = l;
-                        else
-                        {
-                            Console.WriteLine("Invalid number — press any key to continue...");
-                            Console.ReadKey(true);
-                        }
+                        temp.Level = PromptInt("[#FFA500]New level:[/]");
                         break;
                     case "Class":
-                        toEdit.Class = input?.Trim() ?? "";
+                        temp.Class = PromptNonEmpty("[#FFA500]New class:[/]");
                         break;
                     case "Other info":
-                        toEdit.OtherInfo = input?.Trim() ?? "";
+                        temp.OtherInfo = PromptNonEmpty("[#FFA500]New other info:[/]");
                         break;
                 }
             }
         }
 
 
-        public void Delete()
+        private Character? SelectCharacter(Project project, string title)
         {
-            Console.WriteLine("Coming soon");
+            if (project.Characters == null || project.Characters.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No characters yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<Character>()
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(project.Characters)
+                    .UseConverter(c => $"{c.Name} ({c.Race})"));
+        }
+
+
+        public void DeleteCharacter(Project project, UserService userService)
+        {
+            Console.Clear();
+
+            // Ask for confirmation
+            var confirm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"Are you sure you want to delete '[orange1]{this.Name}[/]'?")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices("Yes", "No"));
+
+            if (confirm == "Yes")
+            {
+                // Remove the character from the project's character list
+                if (project.Characters.Contains(this))
+                {
+                    project.Characters.Remove(this);
+
+                    // Save changes
+                    userService.SaveUserService();
+
+                    AnsiConsole.MarkupLine($"The character '[orange1]{this.Name}[/]' has been deleted!");
+                    Thread.Sleep(1200);
+                    Console.Clear();
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[grey]Error: Character not found.[/]");
+                    Thread.Sleep(1200);
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[grey]Deletion cancelled.[/]");
+                Thread.Sleep(1200);
+            }
         }
 
 
