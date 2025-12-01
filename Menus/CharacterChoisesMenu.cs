@@ -1,6 +1,7 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.Services;
-using _404_not_founders.UI;
+using _404_not_founders.UI.Display;
+using _404_not_founders.UI.Helpers;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace _404_not_founders.Menus
                     case "Add Character":
                         // Call method to add a new character
                         newCharacter.Add(currentUser, _projectService, _userService);
-                       
+
                         break;
                     case "Show Character":
                         // Show characters from the actual project
