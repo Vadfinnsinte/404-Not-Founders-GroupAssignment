@@ -10,6 +10,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
         // Handles promts and input to user when adding a storyline to the project.
         public static void Create(Project project)
         {
+            // Main loop to allow restarting the creation process
             while (true)
             {
 
@@ -19,6 +20,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 string title = "", synopsis = "", theme = "", genre = "", story = "", ideaNotes = "", otherInfo = "";
                 int step = 0;
 
+                // Loop that goes through each step of the storyline creation
                 while (true)
                 {
                     Console.Clear();
@@ -52,6 +54,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
 
                     string input = AskStepInput.AskStepInputs(prompt);
 
+                    // Handle special commands
                     if (input == "E")
                     {
                         Console.Clear();
@@ -83,6 +86,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 int maxOrder = project.Storylines.Count + 1;
                 int orderInProject = 1;
 
+                // Ask for order only if more than 1 storyline exists
                 if (maxOrder == 1)
                 {
                     orderInProject = 1;
@@ -132,6 +136,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 foreach (var sl in project.Storylines.Where(sl => sl.orderInProject >= orderInProject))
                     sl.orderInProject++;
 
+                // Create and add storyline to project
                 var s = new Storyline
                 {
                     Title = title,

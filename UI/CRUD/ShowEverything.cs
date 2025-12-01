@@ -36,6 +36,7 @@ namespace _404_not_founders.UI.CRUD
             BigHeader.Show(header);
             action();
         }
+        // Shows all storylines in the project, or a message if none are found.
         public void ShowAllStorylines()
         {
             ShowSection("Storylines", () =>

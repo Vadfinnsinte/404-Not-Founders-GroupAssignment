@@ -11,7 +11,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
     {
         public static void Edit(Project project, Storyline original, UserService userService)
         {
-
+            // Create a temporary copy of the original storyline to edit
             var temp = new Storyline
             {
                 Title = original.Title,
@@ -39,6 +39,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.OtherInfo) ? "-" : s.OtherInfo)}[/]");
                 sb.AppendLine($"[grey]Order in project:[/] [#FFA500]{s.orderInProject}[/]");
 
+                // Create and render the panel
                 var panel = new Panel(new Markup(sb.ToString()))
                 {
                     Border = BoxBorder.Rounded,
@@ -49,6 +50,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 Console.WriteLine();
             }
 
+            // Loop until the user is done editing
             while (true)
             {
                 Console.Clear();
@@ -74,6 +76,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         .HighlightStyle(Color.Orange1));
 
 
+                // Local function to ensure non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -89,7 +92,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    // Re-show summary for final confirmation
+                    // Re-show summary for final confirmation and ask for confirmation
                     ShowSummary(temp);
 
                     var confirm = AnsiConsole.Prompt(
@@ -104,6 +107,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         return;
                     }
 
+                    // Reset temp to original if starting over
                     if (confirm == "No (Start over)")
                     {
                         temp.Title = original.Title;
@@ -117,6 +121,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         continue;
                     }
 
+                    // Apply changes to the original storyline
                     if (confirm == "Yes")
                     {
                         original.Title = temp.Title;
@@ -131,6 +136,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         int oldOrder = original.orderInProject;
                         int newOrder = temp.orderInProject;
 
+                        // Adjust orders of other storylines if the order has changed
                         if (newOrder != oldOrder)
                         {
                             if (newOrder < oldOrder)
@@ -164,7 +170,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                     }
                 }
 
-
+                // Handle individual field edits
                 switch (choice)
                 {
                     case "Title":
@@ -190,6 +196,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         break;
                     case "Order in project":
                         int maxOrder = project.Storylines.Count;
+                        // Prompt for new order with validation
                         while (true)
                         {
                             var input = AnsiConsole.Ask<string>(

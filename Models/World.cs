@@ -61,6 +61,7 @@ namespace _404_not_founders.Models
                             .AddChoices("Yes", "No (Start over)", "Exit")
                     );
 
+                    // Handle confirmation choices
                     if (confirm == "Exit") return;
                     if (confirm == "No (Start over)") { step = 0; continue; }
 
@@ -74,6 +75,7 @@ namespace _404_not_founders.Models
                         this.Factions = factions;
                         this.OtherInfo = otherInfo;
 
+                        // Add world to project and save
                         project.Worlds.Add(this);
                         userService.SaveUserService();
 
@@ -111,7 +113,7 @@ namespace _404_not_founders.Models
         }
         public void EditWorld(UserService userService)
         {
-            
+            // Create a temporary copy of the world to edit
             var temp = new World
             {
                 Name = this.Name,
@@ -134,6 +136,7 @@ namespace _404_not_founders.Models
                 sb.AppendLine($"[grey]Factions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : w.Factions)}[/]");
                 sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : w.OtherInfo)}[/]");
 
+                // Create and fix the panel
                 var panel = new Panel(new Markup(sb.ToString()))
                 {
                     Border = BoxBorder.Rounded,
@@ -144,6 +147,7 @@ namespace _404_not_founders.Models
                 Console.WriteLine();
             }
 
+            // Loop until user is done editing
             while (true)
             {
                 Console.Clear();
@@ -165,7 +169,7 @@ namespace _404_not_founders.Models
                             "Other info",
                             "Done"));
 
-                
+                // Helper function to prompt for non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -181,7 +185,7 @@ namespace _404_not_founders.Models
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    // Re-show summary for final confirmation (consistent with live preview)
+                    // Re-show summary for final confirmation (consistent with live preview) and ask for confirmation
                     ShowSummary(temp);
 
                     var confirm = AnsiConsole.Prompt(
@@ -197,6 +201,7 @@ namespace _404_not_founders.Models
                         return;
                     }
 
+                    // Restart editing from the beginning
                     if (confirm == "No (Start over)")
                     {
                         temp.Name = this.Name;
@@ -208,6 +213,7 @@ namespace _404_not_founders.Models
                         continue;
                     }
 
+                    // Save changes to the original world
                     if (confirm == "Yes")
                     {
                         this.Name = temp.Name;
@@ -225,7 +231,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
-                
+                // Handle individual field edits
                 switch (choice)
                 {
                     case "Name":
