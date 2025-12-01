@@ -2,11 +2,7 @@
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace _404_not_founders.UI.CRUD
 {
@@ -20,7 +16,7 @@ namespace _404_not_founders.UI.CRUD
         }
         public void ShowAll()
         {
-            //AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
+
             ShowSection("Project", () => _project.Show());
 
             ShowAllStorylines();
@@ -31,12 +27,11 @@ namespace _404_not_founders.UI.CRUD
 
             AnsiClearHelper.WaitForKeyAndClear();
 
-
-
             return;
         }
 
-        private void ShowSection(string header, Action action)
+        // Shows the section header using BigHeader, then runs the provided action for that section.
+        private void ShowSection(string header, Action action) 
         {
             BigHeader.Show(header);
             action();

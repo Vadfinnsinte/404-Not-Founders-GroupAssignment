@@ -4,11 +4,6 @@ using _404_not_founders.UI.CRUD;
 using _404_not_founders.UI.CRUD.Storylines;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
