@@ -13,22 +13,22 @@ namespace _404_not_founders.Menus
 {
     public class CharacterChoisesMenu
     {
-        private readonly User _currentUser;
-        private readonly ProjectService _projectService;
-        private readonly UserService _userService;
+        private readonly User _currentUser; // Aktuell användare
+        private readonly ProjectService _projectService; // Projekttjänst
+        private readonly UserService _userService; // Användartjänst
 
-        public CharacterChoisesMenu(User currentUser, ProjectService projectService, UserService userService)
+        public CharacterChoisesMenu(User currentUser, ProjectService projectService, UserService userService) // Konstruktör
         {
-            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
-            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser)); // Kontrollera null
+            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService)); // Kontrollera null
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService)); // Kontrollera null
         }
 
-        public async Task ChracterMenu(Project currentProject, UserService userService)
+        public async Task ChracterMenu(Project currentProject, UserService userService) // Huvudmeny för karaktärer
         {
-            bool runCharacterMenu = true;
+            bool runCharacterMenu = true; // Loop-kontroll
 
-            while (runCharacterMenu)
+            while (runCharacterMenu) // Huvudloop
             {
                 var choice = MenuChoises.Menu("Character Menu",
                     "Generate Character with AI",
@@ -43,35 +43,35 @@ namespace _404_not_founders.Menus
                 {
                     case "Generate Character with AI":
                         {
-                            var newChar = new Character();
-                            await newChar.GenerateCharacterWithGeminiAI(currentProject, userService);
+                            var newChar = new Character(); // Skapar ny karaktär
+                            await newChar.GenerateCharacterWithGeminiAI(currentProject, userService); // Genererar med AI
                             break;
                         }
 
                     case "Add Character":
                         {
-                            var newChar = new Character();
+                            var newChar = new Character(); // Skapar ny karaktär
                             // Skapar och sparar karaktären (Add sköter saved-meddelande)
-                            newChar.Add(_currentUser, currentProject, _userService);
+                            newChar.Add(_currentUser, currentProject, _userService); // Lägg till karaktär
                             break;
                         }
                     case "Show Character":
                         {
-                            ShowCharacterSelection(currentProject);
+                            ShowCharacterSelection(currentProject); // Visar karaktärsval
                             break;
                         }
 
                     case "Edit Character":
                         {
-                            if (currentProject.Characters == null || currentProject.Characters.Count == 0)
+                            if (currentProject.Characters == null || currentProject.Characters.Count == 0) // Kollar om det finns karaktärer
                             {
                                 AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
                                 Console.ReadKey(true);
                                 break;
                             }
 
-                            var character = SelectCharacter(currentProject, "Select Character to edit");
-                            if (character != null)
+                            var character = SelectCharacter(currentProject, "Select Character to edit"); // Väljer karaktär att redigera
+                            if (character != null) // Om en karaktär valdes
                             {
                                 character.EditCharacter(_userService); // bara UserService, 1 argument
                             }
