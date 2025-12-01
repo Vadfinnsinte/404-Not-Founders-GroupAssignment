@@ -1,7 +1,7 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
-using System.Reflection.Metadata.Ecma335;
+
 
 namespace _404_not_founders.UI.CRUD.Storylines
 {
@@ -125,7 +125,6 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 }
                 if (confirm == "No (Start over)")
                 {
-                    //AddStorylineToProject(project); // Restart
                     continue;
                 }
 

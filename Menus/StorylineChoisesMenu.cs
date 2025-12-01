@@ -1,13 +1,9 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.Services;
+using _404_not_founders.UI.CRUD;
 using _404_not_founders.UI.CRUD.Storylines;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
@@ -38,7 +34,8 @@ namespace _404_not_founders.Menus
                         AddStorylineToProject(project);
                         break;
                     case "Show Storylines":
-                        project.ShowAllStorylines();
+                        ShowEverything show = new ShowEverything(project);
+                        show.ShowAllStorylines();
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
 

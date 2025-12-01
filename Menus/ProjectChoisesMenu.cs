@@ -1,13 +1,9 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.Services;
+using _404_not_founders.UI.CRUD;
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace _404_not_founders.Menus
 {
@@ -157,7 +153,8 @@ namespace _404_not_founders.Menus
                         break;
                     case "Show Everything":
                         Console.Clear();
-                        project.ShowAll();
+                        ShowEverything show = new ShowEverything(project);
+                        show.ShowAll();
                         break;
                     case "Back to main menu":
                         Console.Clear();
