@@ -21,9 +21,9 @@ namespace _404_not_founders.Models
         public string Class { get; set; }
         public string OtherInfo { get; set; }
 
-        /// Interactive step-by-step process to create a new character.
-        /// Allows user to go back (B) or exit (E) at any step.
-        public void Add(User user, Project project, UserService userService)
+        /// Interactive step-by-step process to create a new character
+        /// for a given project. Project must be provided by the caller.
+        public void Add(Project currentProject, UserService userService)
         {
             string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
             int age = 0, level = 0;
@@ -37,41 +37,38 @@ namespace _404_not_founders.Models
                 AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
                 Console.WriteLine();
 
-                // Display already filled fields
-                if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
-                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{race}[/]");
-                if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{description}[/]");
-                if (step >= 4) AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{gender}[/]");
+                if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{Markup.Escape(name)}[/]");
+                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{Markup.Escape(race)}[/]");
+                if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{Markup.Escape(description)}[/]");
+                if (step >= 4) AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{Markup.Escape(gender)}[/]");
                 if (step >= 5) AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{age}[/]");
                 if (step >= 6) AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{level}[/]");
-                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{characterClass}[/]");
-                if (step >= 8) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{otherInfo}[/]");
+                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{Markup.Escape(characterClass)}[/]");
+                if (step >= 8) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{Markup.Escape(otherInfo)}[/]");
 
                 string input;
 
-                // Handle each step of character creation
                 switch (step)
                 {
-                    case 0: // Name
+                    case 0:
                         Console.Write("Name: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 1: // Race
+                    case 1:
                         Console.Write("Race: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 2: // Description
+                    case 2:
                         Console.Write("Description: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 3: // Gender
+                    case 3:
                         Console.Write("Gender: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 4: // Age (optional, defaults to 0)
+                    case 4:
                         Console.Write("Age (leave empty for 0): ");
                         input = ConsoleHelpers.ReadBackOrExit();
-
                         if (input != "E" && input != "B")
                         {
                             if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
@@ -82,7 +79,7 @@ namespace _404_not_founders.Models
                             }
                         }
                         break;
-                    case 5: // Level (optional, defaults to 0)
+                    case 5:
                         Console.Write("Level (leave empty for 0): ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
@@ -95,22 +92,22 @@ namespace _404_not_founders.Models
                             }
                         }
                         break;
-                    case 6: // Class
+                    case 6:
                         Console.Write("Class: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 7: // Other info
+                    case 7:
                         Console.Write("Other info: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 8: // Confirmation step
+                    case 8:
                         var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }
                         if (confirm == "Yes")
                         {
-                            if (project == null)
+                            if (currentProject == null)
                             {
-                                Console.WriteLine("No project found. Create or select a project before adding characters.");
+                                Console.WriteLine("Error: Project not provided.");
                                 Console.WriteLine("Press any key to continue...");
                                 Console.ReadKey(true);
                                 return;
@@ -130,7 +127,7 @@ namespace _404_not_founders.Models
 
                             try
                             {
-                                project.AddCharacter(newCharacter, userService);
+                                currentProject.AddCharacter(newCharacter, userService);
                             }
                             catch (InvalidOperationException ex)
                             {
@@ -151,7 +148,6 @@ namespace _404_not_founders.Models
                         return;
                 }
 
-                // Handle exit command
                 if (input == "E")
                 {
                     addingCharacter = false;
@@ -159,14 +155,12 @@ namespace _404_not_founders.Models
                     return;
                 }
 
-                // Handle back command
                 if (input == "B")
                 {
                     if (step > 0) step--;
                     continue;
                 }
 
-                // Store input
                 switch (step)
                 {
                     case 0: name = input; break;
@@ -384,7 +378,7 @@ namespace _404_not_founders.Models
                     return null;
 
                 string prompt = string.IsNullOrWhiteSpace(userContext)
-     ? $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
+                    ? $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
 
 PROJECT CONTEXT:
 {currentProject.description}
@@ -415,7 +409,7 @@ Age: [character age between 20 and 30]
 Level: [always 1]
 Class: [character class]
 OtherInfo: [additional details about background, personality, equipment, etc.]"
-     : $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
+                    : $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
 
 PROJECT CONTEXT:
 {currentProject.description}
@@ -464,7 +458,6 @@ OtherInfo: [additional details about background, personality, equipment, etc.]";
                         ConsoleHelpers.Info("Generated Character:");
                         Console.WriteLine();
 
-                        // Use the same formatted card as in normal Show()
                         newCharacter.Show();
 
                         Console.WriteLine();
@@ -508,39 +501,30 @@ OtherInfo: [additional details about background, personality, equipment, etc.]";
             foreach (var line in lines)
             {
                 var cleanLine = line.Trim();
-
                 if (cleanLine.StartsWith("Name:", StringComparison.OrdinalIgnoreCase))
                     character.Name = cleanLine.Substring(5).Trim();
-
                 else if (cleanLine.StartsWith("Race:", StringComparison.OrdinalIgnoreCase))
                     character.Race = cleanLine.Substring(5).Trim();
-
                 else if (cleanLine.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
                     character.Description = cleanLine.Substring(12).Trim();
-
                 else if (cleanLine.StartsWith("Gender:", StringComparison.OrdinalIgnoreCase))
                     character.Gender = cleanLine.Substring(7).Trim();
-
                 else if (cleanLine.StartsWith("Age:", StringComparison.OrdinalIgnoreCase))
                 {
                     if (int.TryParse(cleanLine.Substring(4).Trim(), out int age))
                         character.Age = age;
                 }
-
                 else if (cleanLine.StartsWith("Level:", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Ignore whatever the model sent – always use Level 1
+                    // Ignore AI's value and always use level 1
                     character.Level = 1;
                 }
-
                 else if (cleanLine.StartsWith("Class:", StringComparison.OrdinalIgnoreCase))
                     character.Class = cleanLine.Substring(6).Trim();
-
                 else if (cleanLine.StartsWith("OtherInfo:", StringComparison.OrdinalIgnoreCase))
                     character.OtherInfo = cleanLine.Substring(10).Trim();
             }
 
-            // Ensure non-null strings
             character.Name ??= "";
             character.Race ??= "";
             character.Description ??= "";
@@ -548,17 +532,13 @@ OtherInfo: [additional details about background, personality, equipment, etc.]";
             character.Class ??= "";
             character.OtherInfo ??= "";
 
-            // Force Level to 1 if somehow still 0
             if (character.Level <= 0)
                 character.Level = 1;
 
-            // Clamp Age into 20–30 if it ended up outside range or unset (0)
             if (character.Age < 20 || character.Age > 30)
                 character.Age = 25;
 
-            // Validate required fields
-            if (string.IsNullOrWhiteSpace(character.Name) ||
-                string.IsNullOrWhiteSpace(character.Race))
+            if (string.IsNullOrWhiteSpace(character.Name) || string.IsNullOrWhiteSpace(character.Race))
                 return null;
 
             return character;
