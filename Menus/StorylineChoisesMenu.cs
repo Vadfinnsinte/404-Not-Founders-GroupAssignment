@@ -8,52 +8,71 @@ using Spectre.Console;
 
 namespace _404_not_founders.Menus
 {
+    /// Menu for managing Storylines inside a selected Project.
+    /// Handles AI generation, manual add, show, edit and delete operations.
     public class StorylineChoisesMenu
     {
         private readonly UserService _userService;
 
+        /// Constructor with dependency injection for UserService.
         public StorylineChoisesMenu(UserService userService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
+        /// Main storyline menu loop for a specific project.
+        /// Lets the user generate, add, show, edit and delete storylines.
         public async Task StorylineMenu(Project project, UserService userService)
         {
             bool runStoryline = true;
+
             while (runStoryline)
             {
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
-                        .AddChoices("Generate Storyline with AI", "Add Storyline", "Show Storylines", "Edit Storyline", "Delete Storyline", "Back")
+                        .AddChoices(
+                            "Generate Storyline with AI",
+                            "Add Storyline",
+                            "Show Storylines",
+                            "Edit Storyline",
+                            "Delete Storyline",
+                            "Back")
                         .HighlightStyle(Color.Orange1));
 
                 switch (choice)
                 {
                     case "Generate Storyline with AI":
                         {
+                            // Generate a new Storyline using Gemini AI for this project
                             var storylineForAi = new Storyline();
                             await storylineForAi.GenerateStorylineWithGeminiAI(project, userService);
+                            break;
                         }
-                        break;
 
                     case "Add Storyline":
+                        // Manual, step-by-step storyline creation (with orderInProject handling)
                         CreateStoryline.Create(project, _userService);
                         break;
 
                     case "Show Storylines":
-                        ShowEverything show = new ShowEverything(project);
+                        // Show all storylines for the current project
+                        var show = new ShowEverything(project);
                         show.ShowAllStorylines();
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
 
                     case "Edit Storyline":
+                        // Let user pick which storyline to edit (ordered by orderInProject)
                         var original = SelectStoryline(project, "Choose storyline to edit");
-                        if (original == null) break;
+                        if (original == null)
+                            break;
+
                         EditStoryline.Edit(project, original, _userService);
                         break;
 
                     case "Delete Storyline":
+                        // Guard: no storylines to delete
                         if (project.Storylines == null || project.Storylines.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
@@ -61,10 +80,12 @@ namespace _404_not_founders.Menus
                             break;
                         }
 
+                        // Build selection list "1. Title", "2. Title", ...
                         var storylineChoices = project.Storylines
                             .OrderBy(s => s.orderInProject)
                             .Select(s => $"{s.orderInProject}. {s.Title}")
                             .ToList();
+
                         storylineChoices.Add("Back to Menu");
 
                         var selectedStoryline = AnsiConsole.Prompt(
@@ -73,23 +94,33 @@ namespace _404_not_founders.Menus
                                 .HighlightStyle(new Style(Color.Orange1))
                                 .AddChoices(storylineChoices));
 
+                        // User chose to go back
                         if (selectedStoryline == "Back to Menu")
                         {
                             break;
                         }
 
-                        var titleOnly = selectedStoryline.Substring(selectedStoryline.IndexOf(". ") + 2);
-                        var storylineToDelete = project.Storylines.First(w => w.Title == titleOnly);
+                        // Extract the title part after "N. "
+                        var separatorIndex = selectedStoryline.IndexOf(". ");
+                        var titleOnly = separatorIndex >= 0
+                            ? selectedStoryline[(separatorIndex + 2)..]
+                            : selectedStoryline;
+
+                        // Find and delete the selected storyline
+                        var storylineToDelete = project.Storylines.First(s => s.Title == titleOnly);
                         storylineToDelete.DeleteStoryline(project, _userService);
                         break;
 
                     case "Back":
+                        // Exit storyline menu
                         runStoryline = false;
                         break;
                 }
             }
         }
 
+        /// Lets the user select a storyline from the project, ordered by orderInProject.
+        /// Returns null if there are no storylines.
         private Storyline? SelectStoryline(Project project, string title)
         {
             if (project.Storylines == null || project.Storylines.Count == 0)

@@ -5,8 +5,13 @@ using Spectre.Console;
 
 namespace _404_not_founders.UI.CRUD.Storylines
 {
+    /// Handles the creation of new storylines with step-by-step user input
+    /// Supports back navigation and order positioning within the project
     public class CreateStoryline
     {
+        /// Interactive storyline creation process
+        /// Allows user to specify order position among existing storylines
+        /// Automatically adjusts order of other storylines when inserting
         public static void Create(Project project, UserService userService)
         {
             while (true)
@@ -17,12 +22,14 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 string title = "", synopsis = "", theme = "", genre = "", story = "", ideaNotes = "", otherInfo = "";
                 int step = 0;
 
+                // Step-by-step input loop
                 while (true)
                 {
                     Console.Clear();
                     ConsoleHelpers.Info("Create new storyline");
                     AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]\n");
 
+                    // Display filled fields
                     if (step >= 1) AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
                     if (step >= 2) AnsiConsole.MarkupLine($"[grey]Synopsis:[/] [#FFA500]{synopsis}[/]");
                     if (step >= 3) AnsiConsole.MarkupLine($"[grey]Theme:[/] [#FFA500]{theme}[/]");
@@ -31,6 +38,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                     if (step >= 6) AnsiConsole.MarkupLine($"[grey]Idea notes:[/] [#FFA500]{ideaNotes}[/]");
                     if (step >= 7) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{otherInfo}[/]");
 
+                    // Determine current prompt
                     string prompt = step switch
                     {
                         0 => "Title:",
@@ -43,22 +51,27 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         _ => ""
                     };
 
+                    // Break after collecting all basic fields
                     if (step > 6)
                         break;
 
                     string input = AskStepInput.AskStepInputs(prompt);
 
+                    // Handle exit command
                     if (input == "E")
                     {
                         Console.Clear();
                         return;
                     }
+
+                    // Handle back navigation
                     if (input == "B")
                     {
                         if (step > 0) step--;
                         continue;
                     }
 
+                    // Store input
                     switch (step)
                     {
                         case 0: title = input; break;
@@ -73,17 +86,19 @@ namespace _404_not_founders.UI.CRUD.Storylines
                     step++;
                 }
 
-                // Ask for order in project
+                // Ask for order position in project
                 project.Storylines ??= new List<Storyline>();
                 int maxOrder = project.Storylines.Count + 1;
                 int orderInProject = 1;
 
+                // If first storyline, automatically set to 1
                 if (maxOrder == 1)
                 {
                     orderInProject = 1;
                 }
                 else
                 {
+                    // Ask user to choose position (1 to maxOrder)
                     while (true)
                     {
                         Console.WriteLine();
@@ -96,10 +111,11 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         }
                         if (input == "B")
                         {
-                            step = 6;
+                            step = 6;  // Go back to last field
                             break;
                         }
 
+                        // Validate numeric input within range
                         if (int.TryParse(input, out int val) && val >= 1 && val <= maxOrder)
                         {
                             orderInProject = val;
@@ -109,10 +125,12 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         AnsiConsole.MarkupLine($"[red]Enter a number between 1 and {maxOrder}[/]");
                     }
 
+                    // If user went back, restart the entire process
                     if (step == 6)
                         continue;
                 }
 
+                // Display summary for confirmation
                 Console.Clear();
                 ConsoleHelpers.Info("Storyline summary:");
                 AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{title}[/]");
@@ -138,15 +156,16 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 }
                 if (confirm == "No (Start over)")
                 {
-                    continue;
+                    continue;  // Restart entire creation process
                 }
 
-                // Adjust order of existing storylines
+                // Adjust order of existing storylines (shift up to make room)
                 foreach (var sl in project.Storylines.Where(sl => sl.orderInProject >= orderInProject))
                 {
                     sl.orderInProject++;
                 }
 
+                // Create and add new storyline
                 var s = new Storyline
                 {
                     Title = title,

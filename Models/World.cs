@@ -1,14 +1,17 @@
-﻿using _404_not_founders.Services;
+﻿using System.Text;
+using _404_not_founders.Services;
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
-using Microsoft.Extensions.Configuration;
 using Spectre.Console;
-using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace _404_not_founders.Models
 {
+    /// Represents a fantasy world in the D&D project
+    /// Contains climate, regions, enemies, factions and other world-building details
     public class World
     {
+        // World properties
         public string Name { get; set; }
         public string Climate { get; set; }
         public string Regions { get; set; }
@@ -16,6 +19,9 @@ namespace _404_not_founders.Models
         public string Factions { get; set; }
         public string OtherInfo { get; set; }
 
+        /// Interactive step-by-step world creation process
+        /// Allows user to go back (B) or exit (E) at any step
+        /// Validates and saves the world to the project
         public void Add(User user, Project project, UserService userService)
         {
             string name = "", climate = "", regions = "", enemies = "", factions = "", otherInfo = "";
@@ -28,12 +34,14 @@ namespace _404_not_founders.Models
                 AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
                 Console.WriteLine();
 
+                // Display filled fields
                 if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Name:[/] {Markup.Escape(name)}");
                 if (step >= 2) AnsiConsole.MarkupLine($"[#FFA500]Climate:[/] {Markup.Escape(climate)}");
                 if (step >= 3) AnsiConsole.MarkupLine($"[#FFA500]Regions:[/] {Markup.Escape(regions)}");
                 if (step >= 4) AnsiConsole.MarkupLine($"[#FFA500]Enemies:[/] {Markup.Escape(enemies)}");
                 if (step >= 5) AnsiConsole.MarkupLine($"[#FFA500]Factions:[/] {Markup.Escape(factions)}");
 
+                // Determine current prompt
                 string prompt = step switch
                 {
                     0 => "World Name:",
@@ -45,6 +53,7 @@ namespace _404_not_founders.Models
                     _ => ""
                 };
 
+                // Confirmation step
                 if (step == 6)
                 {
                     var confirm = AnsiConsole.Prompt(
@@ -58,6 +67,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Yes")
                     {
+                        // Apply values to this world object
                         Name = name;
                         Climate = climate;
                         Regions = regions;
@@ -65,6 +75,7 @@ namespace _404_not_founders.Models
                         Factions = factions;
                         OtherInfo = otherInfo;
 
+                        // Save to project
                         project.Worlds.Add(this);
                         userService.SaveUserService();
 
@@ -74,15 +85,20 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Get user input for current step
                 string input = AskStepInput.AskStepInputs(prompt);
 
+                // Handle exit
                 if (input == "E") return;
+
+                // Handle back navigation
                 if (input == "B")
                 {
                     if (step > 0) step--;
                     continue;
                 }
 
+                // Store input
                 switch (step)
                 {
                     case 0: name = input; break;
@@ -97,8 +113,11 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Interactive edit menu for modifying world properties
+        /// Shows live preview of changes and allows starting over
         public void EditWorld(UserService userService)
         {
+            // Create temporary copy for editing
             var temp = new World
             {
                 Name = this.Name,
@@ -109,6 +128,7 @@ namespace _404_not_founders.Models
                 OtherInfo = this.OtherInfo
             };
 
+            // Local function to display world summary
             void ShowSummary(World w)
             {
                 var sb = new StringBuilder();
@@ -130,19 +150,23 @@ namespace _404_not_founders.Models
                 Console.WriteLine();
             }
 
+            // Main edit loop
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit world: [#FFA500]{Markup.Escape(temp.Name)}[/]");
 
+                // Show live preview
                 ShowSummary(temp);
 
+                // Present edit options
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("What do you want to change?")
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Name", "Climate", "Regions", "Enemies", "Factions", "Other info", "Done"));
 
+                // Helper to ensure non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -153,6 +177,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Handle "Done" - final confirmation
                 if (choice == "Done")
                 {
                     Console.Clear();
@@ -171,6 +196,7 @@ namespace _404_not_founders.Models
                         return;
                     }
 
+                    // Reset to original values
                     if (confirm == "No (Start over)")
                     {
                         temp.Name = this.Name;
@@ -182,6 +208,7 @@ namespace _404_not_founders.Models
                         continue;
                     }
 
+                    // Apply changes to original world
                     if (confirm == "Yes")
                     {
                         this.Name = temp.Name;
@@ -199,6 +226,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Handle individual field edits
                 switch (choice)
                 {
                     case "Name": temp.Name = PromptNonEmpty("[#FFA500]New name:[/]"); break;
@@ -211,11 +239,13 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Displays the world information in a formatted card
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
 
+        /// Deletes this world from the project after user confirmation
         public void DeleteWorld(Project project, UserService userService)
         {
             Console.Clear();
@@ -248,8 +278,11 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Generates a world using Google Gemini AI with Retry/Keep/Cancel workflow
+        /// Ensures generated names are unique and not similar to existing worlds
         public async Task<World?> GenerateWorldWithGeminiAI(Project currentProject, UserService userService)
         {
+            // Load AI configuration
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
@@ -258,15 +291,18 @@ namespace _404_not_founders.Models
 
             while (true)
             {
+                // Get optional user customization
                 string userContext = AiHelper.AskOptionalUserContext("Generate World with AI");
 
                 if (userContext == "E")
                     return null;
 
+                // Get existing world names to avoid duplicates
                 var existingWorldNames = currentProject.Worlds != null && currentProject.Worlds.Any()
                     ? string.Join(", ", currentProject.Worlds.Select(w => w.Name))
                     : "None";
 
+                // Build AI prompt based on whether user provided context
                 string prompt = string.IsNullOrWhiteSpace(userContext)
                     ? $@"You are a fantasy world-building assistant for a Dungeons & Dragons campaign.
 
@@ -322,6 +358,7 @@ OtherInfo: [any extra world details]";
 
                 AiHelper.ShowGeneratingText("World");
 
+                // Call AI service
                 string result = await aiService.GenerateAsync(prompt);
 
                 if (!string.IsNullOrWhiteSpace(result))
@@ -330,17 +367,17 @@ OtherInfo: [any extra world details]";
 
                     if (newWorld != null)
                     {
+                        // Display generated result
                         Console.Clear();
                         ConsoleHelpers.Info("Generated World:");
                         Console.WriteLine();
-                        AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{Markup.Escape(newWorld.Name)}[/]");
-                        AnsiConsole.MarkupLine($"[grey]Climate:[/] {Markup.Escape(newWorld.Climate)}");
-                        AnsiConsole.MarkupLine($"[grey]Regions:[/] {Markup.Escape(newWorld.Regions)}");
-                        AnsiConsole.MarkupLine($"[grey]Enemies:[/] {Markup.Escape(newWorld.Enemies)}");
-                        AnsiConsole.MarkupLine($"[grey]Factions:[/] {Markup.Escape(newWorld.Factions)}");
-                        AnsiConsole.MarkupLine($"[grey]Other info:[/] {Markup.Escape(newWorld.OtherInfo)}");
+
+                        // Use the same formatted view as world.Show()
+                        newWorld.Show();
+
                         Console.WriteLine();
 
+                        // Retry/Keep/Cancel menu
                         var choice = AiHelper.RetryMenu();
 
                         if (choice == "Keep")
@@ -356,6 +393,7 @@ OtherInfo: [any extra world details]";
                             AiHelper.ShowCancelled();
                             return null;
                         }
+                        // If "Retry", loop continues
                     }
                     else
                     {
@@ -369,11 +407,16 @@ OtherInfo: [any extra world details]";
             }
         }
 
+
+        /// Parses AI-generated text into a World object
+        /// Expects format: "Name: ...\nClimate: ...\nRegions: ..." etc.
+        /// Returns null if required fields (Name, Climate) are missing
         public static World? ParseAITextToWorld(string input)
         {
             var world = new World();
             var lines = input.Replace("\r\n", "\n").Split('\n');
 
+            // Parse each line
             foreach (var line in lines)
             {
                 var cleanLine = line.Trim();
@@ -391,6 +434,7 @@ OtherInfo: [any extra world details]";
                     world.OtherInfo = cleanLine.Substring(10).Trim();
             }
 
+            // Ensure non-null values
             world.Name ??= "";
             world.Climate ??= "";
             world.Regions ??= "";
@@ -398,6 +442,7 @@ OtherInfo: [any extra world details]";
             world.Factions ??= "";
             world.OtherInfo ??= "";
 
+            // Validate required fields
             if (string.IsNullOrWhiteSpace(world.Name) || string.IsNullOrWhiteSpace(world.Climate))
                 return null;
 

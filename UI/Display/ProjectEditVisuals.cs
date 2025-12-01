@@ -13,7 +13,7 @@ namespace _404_not_founders.UI.Display
             ? project.description.Substring(0, 25) + "..."
             : project.description;
 
-            AnsiConsole.MarkupLine(""); // to create some air
+            AnsiConsole.MarkupLine(""); // To create some air
             AnsiConsole.MarkupLine("[bold #FFA500]Title: [/]" + $"{project.title}");
             AnsiConsole.MarkupLine("[bold #FFA500]Description: [/]" + $"{shortDesc}");
             var choises = AnsiConsole.Prompt(

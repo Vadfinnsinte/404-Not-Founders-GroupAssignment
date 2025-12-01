@@ -6,8 +6,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace _404_not_founders.Models
 {
+    /// Represents a campaign storyline/plot arc in the D&D project
+    /// Includes narrative elements and maintains order within the project
     public class Storyline
     {
+        // Storyline properties
         public string Title { get; set; }
         public string Synopsis { get; set; }
         public string Theme { get; set; }
@@ -15,13 +18,16 @@ namespace _404_not_founders.Models
         public string Story { get; set; }
         public string IdeaNotes { get; set; }
         public string OtherInfo { get; set; }
-        public int orderInProject { get; set; }
+        public int orderInProject { get; set; }  // Position in storyline sequence
 
+        /// Displays the storyline information in a formatted card
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
 
+        /// Deletes this storyline from the project after user confirmation
+        /// Automatically adjusts the order of remaining storylines
         public void DeleteStoryline(Project project, UserService userService)
         {
             Console.Clear();
@@ -39,7 +45,7 @@ namespace _404_not_founders.Models
                     int deletedOrder = this.orderInProject;
                     project.Storylines.Remove(this);
 
-                    // Adjust order of remaining storylines
+                    // Adjust order of remaining storylines (shift down)
                     foreach (var sl in project.Storylines.Where(s => s.orderInProject > deletedOrder))
                     {
                         sl.orderInProject--;
@@ -64,8 +70,12 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Generates a storyline using Google Gemini AI with Retry/Keep/Cancel workflow
+        /// Creates unique, unpredictable storylines that fit the project context
+        /// Includes optional user customization
         public async Task<Storyline?> GenerateStorylineWithGeminiAI(Project currentProject, UserService userService)
         {
+            // Load AI configuration
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
@@ -74,10 +84,12 @@ namespace _404_not_founders.Models
 
             while (true)
             {
+                // Get optional user customization
                 string userContext = AiHelper.AskOptionalUserContext("Generate Storyline with AI");
                 if (userContext == "E")
                     return null;
 
+                // Base AI prompt with strict formatting requirements
                 string basePrompt = $@"You are a creative Storyline generator for a text-based Dungeons & Dragons RPG project.
 
 PROJECT CONTEXT:
@@ -102,6 +114,7 @@ Story: [detailed story description]
 IdeaNotes: [ideas for encounters, NPCs, twists]
 OtherInfo: [pacing, tone, future hooks]";
 
+                // Add user context if provided
                 string prompt = string.IsNullOrWhiteSpace(userContext)
                     ? basePrompt
                     : basePrompt + $@"
@@ -113,27 +126,28 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
 
                 AiHelper.ShowGeneratingText("Storyline");
 
+                // Call AI service
                 var result = await aiService.GenerateAsync(prompt);
 
                 if (!string.IsNullOrWhiteSpace(result))
                 {
+                    // Calculate next order position
                     int nextOrder = (currentProject.Storylines?.Count ?? 0) + 1;
                     var newStoryline = ParseAITextToStoryline(result, nextOrder);
 
                     if (newStoryline != null)
                     {
+                        // Display generated result
                         Console.Clear();
                         ConsoleHelpers.Info("Generated Storyline:");
                         Console.WriteLine();
-                        AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{Markup.Escape(newStoryline.Title)}[/]");
-                        AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {Markup.Escape(newStoryline.Synopsis)}");
-                        AnsiConsole.MarkupLine($"[grey]Theme:[/] {Markup.Escape(newStoryline.Theme)}");
-                        AnsiConsole.MarkupLine($"[grey]Genre:[/] {Markup.Escape(newStoryline.Genre)}");
-                        AnsiConsole.MarkupLine($"[grey]Story:[/] {Markup.Escape(newStoryline.Story)}");
-                        AnsiConsole.MarkupLine($"[grey]IdeaNotes:[/] {Markup.Escape(newStoryline.IdeaNotes)}");
-                        AnsiConsole.MarkupLine($"[grey]OtherInfo:[/] {Markup.Escape(newStoryline.OtherInfo)}");
+
+                        // Use the same formatted view as storyline.Show()
+                        newStoryline.Show();
+
                         Console.WriteLine();
 
+                        // Retry/Keep/Cancel menu
                         var choice = AiHelper.RetryMenu();
 
                         if (choice == "Keep")
@@ -149,6 +163,7 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
                             AiHelper.ShowCancelled();
                             return null;
                         }
+                        // If "Retry", loop continues
                     }
                     else
                     {
@@ -162,11 +177,16 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
             }
         }
 
+        /// Parses AI-generated text into a Storyline object
+        /// Expects format: "Title: ...\nSynopsis: ...\nTheme: ..." etc.
+        /// Provides fallback content if AI leaves certain fields empty
+        /// Returns null if required fields (Title, Synopsis) are missing
         public static Storyline? ParseAITextToStoryline(string input, int nextOrderInProject)
         {
             var storyline = new Storyline();
             var lines = input.Replace("\r\n", "\n").Split('\n');
 
+            // Parse each line
             foreach (var line in lines)
             {
                 var cleanLine = line.Trim();
@@ -186,6 +206,7 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
                     storyline.OtherInfo = cleanLine.Substring(10).Trim();
             }
 
+            // Ensure non-null values
             storyline.Title ??= "";
             storyline.Synopsis ??= "";
             storyline.Theme ??= "";
@@ -194,7 +215,7 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
             storyline.IdeaNotes ??= "";
             storyline.OtherInfo ??= "";
 
-            // Fallback om AI ändå lämnar tomt
+            // Provide fallback content if AI left fields empty
             if (string.IsNullOrWhiteSpace(storyline.Story))
                 storyline.Story = $"Short story based on synopsis: {storyline.Synopsis}";
             if (string.IsNullOrWhiteSpace(storyline.IdeaNotes))
@@ -202,8 +223,10 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
             if (string.IsNullOrWhiteSpace(storyline.OtherInfo))
                 storyline.OtherInfo = "Notes for pacing, tone, and possible future hooks.";
 
+            // Set order position
             storyline.orderInProject = nextOrderInProject;
 
+            // Validate required fields
             if (string.IsNullOrWhiteSpace(storyline.Title) || string.IsNullOrWhiteSpace(storyline.Synopsis))
                 return null;
 

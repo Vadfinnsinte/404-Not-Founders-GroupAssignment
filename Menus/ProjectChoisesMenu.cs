@@ -7,29 +7,33 @@ using Spectre.Console;
 
 namespace _404_not_founders.Menus
 {
+    /// Menu for listing, searching and editing Projects for the current user.
     public class ProjectChoisesMenu
     {
-        private readonly User _currentUser;
-        private readonly UserService _userService;
-        private readonly ProjectService _projectService;
+        private readonly User _currentUser;        // The currently logged-in user
+        private readonly UserService _userService; // Service for user-related operations
+        private readonly ProjectService _projectService; // Service for project-related operations
 
+        /// Constructor with dependency injection for user, project and user services.
         public ProjectChoisesMenu(User currentUser, ProjectService projectService, UserService userService)
         {
-            _currentUser = currentUser;
-            _userService = userService;
-            _projectService = projectService;
+            _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
         }
 
+        /// Shows the main project menu (Show all, Search, Back) for the current user.
+        /// Lets the user select a project and then opens the project edit menu.
         public async Task ShowProjectMenu()
         {
             if (_currentUser == null)
             {
                 AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
-                await Task.CompletedTask;
                 return;
             }
 
             bool runProjectMenu = true;
+
             while (runProjectMenu)
             {
                 var choice = AnsiConsole.Prompt(
@@ -49,6 +53,7 @@ namespace _404_not_founders.Menus
 
                 if (choice == "Show all projects")
                 {
+                    // Get all projects for the current user
                     var list = _projectService.GetAll(_currentUser);
 
                     if (list == null || list.Count == 0)
@@ -58,6 +63,7 @@ namespace _404_not_founders.Menus
                         continue;
                     }
 
+                    // Let user choose a project from the full list
                     var selected = SelectFromList(list, "Select a project");
                     if (selected == null)
                         continue;
@@ -67,7 +73,16 @@ namespace _404_not_founders.Menus
                 }
                 else if (choice == "Search projects")
                 {
+                    // Ask for search term (matches title or description)
                     var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
+                    if (string.IsNullOrWhiteSpace(term))
+                    {
+                        AnsiConsole.MarkupLine("[grey]Search term was empty.[/]");
+                        AnsiClearHelper.WaitForKeyAndClear();
+                        continue;
+                    }
+
+                    // Search in current user's projects
                     var hits = _projectService.Search(_currentUser, term);
 
                     if (hits == null || hits.Count == 0)
@@ -77,6 +92,7 @@ namespace _404_not_founders.Menus
                         continue;
                     }
 
+                    // Let user choose one of the search hits
                     var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
                     if (selected == null)
                         continue;
@@ -86,15 +102,19 @@ namespace _404_not_founders.Menus
                     await ProjectEditMenu(selected);
                 }
             }
-            await Task.CompletedTask;
         }
 
+        /// Helper prompt to select a Project from a given list.
+        /// Returns null if user selects Back or list is empty.
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
         {
             if (projects == null || projects.Count == 0)
                 return null;
 
+            // Show newest projects first
             var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
+
+            // We display titles, and add a "Back" entry
             var displayList = sorted.Select(p => p.title).ToList();
             displayList.Add("Back");
 
@@ -111,11 +131,14 @@ namespace _404_not_founders.Menus
                 return null;
             }
 
+            // Find the project that matches the selected title
             var selectedProject = sorted.First(p => p.title == selectedTitle);
             AnsiConsole.Clear();
             return selectedProject;
         }
 
+        /// Edit menu for a specific Project.
+        /// From here the user can manage characters, worlds, storylines or show everything.
         public async Task ProjectEditMenu(Project project)
         {
             bool runEdit = true;
@@ -124,21 +147,24 @@ namespace _404_not_founders.Menus
             {
                 Console.Clear();
 
+                // Show edit menu UI and get user choice
                 var choice = ProjectEditVisuals.ShowEditMenu(project);
 
                 switch (choice)
                 {
                     case "Edit/Add Characters":
                         {
+                            // Navigate to character choices menu
                             var characterChoisesMenu = new CharacterChoisesMenu(_currentUser, _projectService, _userService);
                             await characterChoisesMenu.ChracterMenu(project, _userService);
+                            break;
                         }
-                        break;
 
                     case "Edit/Add worlds":
                         if (_currentUser != null)
                         {
-                            WorldChoisesMenu worldChoisesMenu = new WorldChoisesMenu(_userService);
+                            // Navigate to world choices menu
+                            var worldChoisesMenu = new WorldChoisesMenu(_userService);
                             await worldChoisesMenu.WorldMenu(_currentUser, project);
                         }
                         else
@@ -150,19 +176,21 @@ namespace _404_not_founders.Menus
 
                     case "Edit/Add Storylines":
                         {
+                            // Navigate to storyline choices menu
                             var storylineMenu = new StorylineChoisesMenu(_userService);
                             await storylineMenu.StorylineMenu(project, _userService);
+                            break;
                         }
-                        break;
 
                     case "Show Everything":
+                        // Show all details of the selected project
                         Console.Clear();
-                        ShowEverything show = new ShowEverything(project);
+                        var show = new ShowEverything(project);
                         show.ShowAll();
-                        AnsiClearHelper.WaitForKeyAndClear();
                         break;
 
                     case "Back to main menu":
+                        // Exit project edit menu
                         Console.Clear();
                         runEdit = false;
                         break;
@@ -171,18 +199,19 @@ namespace _404_not_founders.Menus
                         {
                             Console.WriteLine("Something went wrong... going back to menu");
                             Thread.Sleep(1000);
+                            break;
                         }
-                        break;
                 }
             }
-            await Task.CompletedTask;
         }
 
+        /// Shows the last selected Project for the given user and offers to open it.
         public async Task ShowLastProjectMenu(User currentUser)
         {
             Console.Clear();
             ConsoleHelpers.Info("Last selected Project");
 
+            // Retrieve the last selected project for this user
             var last = _projectService.GetLastSelected(currentUser);
 
             if (last == null)
@@ -190,13 +219,13 @@ namespace _404_not_founders.Menus
                 AnsiConsole.MarkupLine("[grey]You have no last selected Project yet.[/]");
                 AnsiConsole.MarkupLine("[grey]Open a Project from \"Show Projects\" first.[/]");
                 Console.ReadKey(true);
-                await Task.CompletedTask;
                 return;
             }
 
+            // Basic summary of the last selected project
             AnsiConsole.MarkupLine("");
-            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
-            AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
+            AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{Markup.Escape(last.title)}[/]");
+            AnsiConsole.MarkupLine($"[grey]Description:[/] {Markup.Escape(last.description)}");
             AnsiConsole.MarkupLine($"[grey]Created:[/] {last.DateOfCreation:yyyy-MM-dd}");
             AnsiConsole.MarkupLine("");
 

@@ -7,8 +7,11 @@ using System.Text;
 
 namespace _404_not_founders.Models
 {
+    /// Represents a character in the D&D game project.
+    /// Contains all character properties and methods for CRUD operations and AI generation.
     public class Character
     {
+        // Character properties
         public string Name { get; set; }
         public string Race { get; set; }
         public string Description { get; set; }
@@ -18,21 +21,23 @@ namespace _404_not_founders.Models
         public string Class { get; set; }
         public string OtherInfo { get; set; }
 
+        /// Interactive step-by-step process to create a new character.
+        /// Allows user to go back (B) or exit (E) at any step.
         public void Add(User user, Project project, UserService userService)
         {
             string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
             int age = 0, level = 0;
-
             int step = 0;
             bool addingCharacter = true;
 
             while (addingCharacter)
             {
                 Console.Clear();
-                AnsiConsole.MarkupLine($"[underline #FFA500]Create New Character[/]");
+                AnsiConsole.MarkupLine("[underline #FFA500]Create New Character[/]");
                 AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
                 Console.WriteLine();
 
+                // Display already filled fields
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
                 if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{race}[/]");
                 if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{description}[/]");
@@ -44,25 +49,26 @@ namespace _404_not_founders.Models
 
                 string input;
 
+                // Handle each step of character creation
                 switch (step)
                 {
-                    case 0:
+                    case 0: // Name
                         Console.Write("Name: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 1:
+                    case 1: // Race
                         Console.Write("Race: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 2:
+                    case 2: // Description
                         Console.Write("Description: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 3:
+                    case 3: // Gender
                         Console.Write("Gender: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 4:
+                    case 4: // Age (optional, defaults to 0)
                         Console.Write("Age (leave empty for 0): ");
                         input = ConsoleHelpers.ReadBackOrExit();
 
@@ -76,7 +82,7 @@ namespace _404_not_founders.Models
                             }
                         }
                         break;
-                    case 5:
+                    case 5: // Level (optional, defaults to 0)
                         Console.Write("Level (leave empty for 0): ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
@@ -89,15 +95,15 @@ namespace _404_not_founders.Models
                             }
                         }
                         break;
-                    case 6:
+                    case 6: // Class
                         Console.Write("Class: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 7:
+                    case 7: // Other info
                         Console.Write("Other info: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
-                    case 8:
+                    case 8: // Confirmation step
                         var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }
                         if (confirm == "Yes")
@@ -145,6 +151,7 @@ namespace _404_not_founders.Models
                         return;
                 }
 
+                // Handle exit command
                 if (input == "E")
                 {
                     addingCharacter = false;
@@ -152,12 +159,14 @@ namespace _404_not_founders.Models
                     return;
                 }
 
+                // Handle back command
                 if (input == "B")
                 {
                     if (step > 0) step--;
                     continue;
                 }
 
+                // Store input
                 switch (step)
                 {
                     case 0: name = input; break;
@@ -172,11 +181,14 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Displays the character information in a formatted card.
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
 
+        /// Interactive menu to edit all character properties.
+        /// Shows live summary of changes before confirming.
         public void EditCharacter(Project project, UserService userService)
         {
             var temp = new Character
@@ -195,14 +207,14 @@ namespace _404_not_founders.Models
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("[underline #FFA500]Character summary:[/]");
-                sb.AppendLine($"[grey]Name:[/]        [#FFA500]{(string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)}[/]");
-                sb.AppendLine($"[grey]Race:[/]        [#FFA500]{(string.IsNullOrWhiteSpace(c.Race) ? "-" : c.Race)}[/]");
-                sb.AppendLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(c.Description) ? "-" : c.Description)}[/]");
-                sb.AppendLine($"[grey]Gender:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(c.Gender) ? "-" : c.Gender)}[/]");
+                sb.AppendLine($"[grey]Name:[/]        [#FFA500]{(string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : Markup.Escape(c.Name))}[/]");
+                sb.AppendLine($"[grey]Race:[/]        [#FFA500]{(string.IsNullOrWhiteSpace(c.Race) ? "-" : Markup.Escape(c.Race))}[/]");
+                sb.AppendLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(c.Description) ? "-" : Markup.Escape(c.Description))}[/]");
+                sb.AppendLine($"[grey]Gender:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(c.Gender) ? "-" : Markup.Escape(c.Gender))}[/]");
                 sb.AppendLine($"[grey]Age:[/]         [#FFA500]{c.Age}[/]");
                 sb.AppendLine($"[grey]Level:[/]       [#FFA500]{c.Level}[/]");
-                sb.AppendLine($"[grey]Class:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Class) ? "-" : c.Class)}[/]");
-                sb.AppendLine($"[grey]Other info:[/]  [#FFA500]{(string.IsNullOrWhiteSpace(c.OtherInfo) ? "-" : c.OtherInfo)}[/]");
+                sb.AppendLine($"[grey]Class:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Class) ? "-" : Markup.Escape(c.Class))}[/]");
+                sb.AppendLine($"[grey]Other info:[/]  [#FFA500]{(string.IsNullOrWhiteSpace(c.OtherInfo) ? "-" : Markup.Escape(c.OtherInfo))}[/]");
 
                 var panel = new Panel(new Markup(sb.ToString()))
                 {
@@ -214,10 +226,32 @@ namespace _404_not_founders.Models
                 Console.WriteLine();
             }
 
+            string PromptNonEmpty(string prompt)
+            {
+                while (true)
+                {
+                    var value = AnsiConsole.Ask<string>(prompt);
+                    if (!string.IsNullOrWhiteSpace(value))
+                        return value;
+                    AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
+                }
+            }
+
+            int PromptInt(string prompt)
+            {
+                while (true)
+                {
+                    var value = AnsiConsole.Ask<string>(prompt);
+                    if (int.TryParse(value, out var number))
+                        return number;
+                    AnsiConsole.MarkupLine("[red]Please enter a valid number.[/]");
+                }
+            }
+
             while (true)
             {
                 Console.Clear();
-                ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
+                ConsoleHelpers.Info($"Edit character: [#FFA500]{Markup.Escape(temp.Name)}[/]");
 
                 ShowSummary(temp);
 
@@ -227,30 +261,9 @@ namespace _404_not_founders.Models
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Name", "Race", "Description", "Gender", "Age", "Level", "Class", "Other Info", "Done"));
 
-                string PromptNonEmpty(string prompt)
-                {
-                    while (true)
-                    {
-                        var value = AnsiConsole.Ask<string>(prompt);
-                        if (!string.IsNullOrWhiteSpace(value)) return value;
-                        AnsiConsole.MarkupLine("[red]Value cannot be empty.[/]");
-                    }
-                }
-
-                int PromptInt(string prompt)
-                {
-                    while (true)
-                    {
-                        var value = AnsiConsole.Ask<string>(prompt);
-                        if (int.TryParse(value, out int result)) return result;
-                        AnsiConsole.MarkupLine("[red]Please enter a valid number.[/]");
-                    }
-                }
-
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    ConsoleHelpers.Info("Character summary:");
                     ShowSummary(temp);
 
                     var confirm = AnsiConsole.Prompt(
@@ -261,6 +274,7 @@ namespace _404_not_founders.Models
 
                     if (confirm == "Exit")
                     {
+                        Thread.Sleep(800);
                         Console.Clear();
                         return;
                     }
@@ -311,13 +325,14 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Deletes this character from the given project after user confirmation.
         public void DeleteCharacter(Project project, UserService userService)
         {
             Console.Clear();
 
             var confirm = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"Are you sure you want to delete '[orange1]{this.Name}[/]'?")
+                    .Title($"Are you sure you want to delete '[orange1]{Markup.Escape(this.Name)}[/]'?")
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices("Yes", "No"));
 
@@ -327,7 +342,7 @@ namespace _404_not_founders.Models
                 {
                     project.Characters.Remove(this);
                     userService.SaveUserService();
-                    AnsiConsole.MarkupLine($"Character '[orange1]{this.Name}[/]' has been deleted!");
+                    AnsiConsole.MarkupLine($"Character '[orange1]{Markup.Escape(this.Name)}[/]' has been deleted!");
                     Thread.Sleep(1200);
                 }
                 else
@@ -343,6 +358,8 @@ namespace _404_not_founders.Models
             }
         }
 
+        /// Generates a character using Google Gemini AI with Retry/Keep/Cancel workflow.
+        /// Uses project/world/storyline context. Ensures Level is at least 1.
         public async Task<Character?> GenerateCharacterWithGeminiAI(Project currentProject, UserService userService)
         {
             var config = new ConfigurationBuilder()
@@ -367,7 +384,7 @@ namespace _404_not_founders.Models
                     return null;
 
                 string prompt = string.IsNullOrWhiteSpace(userContext)
-                    ? $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
+     ? $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
 
 PROJECT CONTEXT:
 {currentProject.description}
@@ -384,19 +401,21 @@ Generate a unique character that fits this campaign.
 RULES:
 - All fields MUST be filled. No empty values allowed.
 - Use a unique, memorable name. Avoid common fantasy names like 'Aragorn' or 'Gandalf'.
+- Age MUST be between 20 and 30 years old (inclusive).
+- Level MUST ALWAYS be exactly 1 (do not use any other level).
 - Return ONLY the formatted text below. No explanations, no markdown, no asterisks.
-- BEFORE returning, self-check: Are ALL fields filled?
+- BEFORE returning, self-check: Are ALL fields filled and do Age/Level follow the rules?
 
 FORMAT:
 Name: [unique character name]
 Race: [fantasy race]
 Description: [physical description and appearance]
 Gender: [character gender]
-Age: [character age]
-Level: [character level]
+Age: [character age between 20 and 30]
+Level: [always 1]
 Class: [character class]
 OtherInfo: [additional details about background, personality, equipment, etc.]"
-                    : $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
+     : $@"You are a fantasy character creator for a Dungeons & Dragons campaign.
 
 PROJECT CONTEXT:
 {currentProject.description}
@@ -416,16 +435,18 @@ Generate a unique character based on the user's request and campaign context.
 RULES:
 - All fields MUST be filled. No empty values allowed.
 - Use a unique, memorable name.
+- Age MUST be between 20 and 30 years old (inclusive).
+- Level MUST ALWAYS be exactly 1 (do not use any other level).
 - Return ONLY the formatted text below. No explanations, no markdown, no asterisks.
-- BEFORE returning, self-check: Are ALL fields filled?
+- BEFORE returning, self-check: Are ALL fields filled and do Age/Level follow the rules?
 
 FORMAT:
 Name: [unique character name]
 Race: [fantasy race]
 Description: [physical description and appearance]
 Gender: [character gender]
-Age: [character age]
-Level: [character level]
+Age: [character age between 20 and 30]
+Level: [always 1]
 Class: [character class]
 OtherInfo: [additional details about background, personality, equipment, etc.]";
 
@@ -442,14 +463,10 @@ OtherInfo: [additional details about background, personality, equipment, etc.]";
                         Console.Clear();
                         ConsoleHelpers.Info("Generated Character:");
                         Console.WriteLine();
-                        AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{Markup.Escape(newCharacter.Name)}[/]");
-                        AnsiConsole.MarkupLine($"[grey]Race:[/] {Markup.Escape(newCharacter.Race)}");
-                        AnsiConsole.MarkupLine($"[grey]Description:[/] {Markup.Escape(newCharacter.Description)}");
-                        AnsiConsole.MarkupLine($"[grey]Gender:[/] {Markup.Escape(newCharacter.Gender)}");
-                        AnsiConsole.MarkupLine($"[grey]Age:[/] {newCharacter.Age}");
-                        AnsiConsole.MarkupLine($"[grey]Level:[/] {newCharacter.Level}");
-                        AnsiConsole.MarkupLine($"[grey]Class:[/] {Markup.Escape(newCharacter.Class)}");
-                        AnsiConsole.MarkupLine($"[grey]Other Info:[/] {Markup.Escape(newCharacter.OtherInfo)}");
+
+                        // Use the same formatted card as in normal Show()
+                        newCharacter.Show();
+
                         Console.WriteLine();
 
                         var choice = AiHelper.RetryMenu();
@@ -480,6 +497,9 @@ OtherInfo: [additional details about background, personality, equipment, etc.]";
             }
         }
 
+        /// Parses AI-generated plain text into a Character.
+        /// Forces Level to 1 and clamps Age to a reasonable range (20–30).
+        /// Returns null if required fields (Name, Race) are missing.
         public static Character? ParseAITextToCharacter(string input)
         {
             var character = new Character();
@@ -488,41 +508,57 @@ OtherInfo: [additional details about background, personality, equipment, etc.]";
             foreach (var line in lines)
             {
                 var cleanLine = line.Trim();
+
                 if (cleanLine.StartsWith("Name:", StringComparison.OrdinalIgnoreCase))
                     character.Name = cleanLine.Substring(5).Trim();
+
                 else if (cleanLine.StartsWith("Race:", StringComparison.OrdinalIgnoreCase))
                     character.Race = cleanLine.Substring(5).Trim();
+
                 else if (cleanLine.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
                     character.Description = cleanLine.Substring(12).Trim();
+
                 else if (cleanLine.StartsWith("Gender:", StringComparison.OrdinalIgnoreCase))
                     character.Gender = cleanLine.Substring(7).Trim();
+
                 else if (cleanLine.StartsWith("Age:", StringComparison.OrdinalIgnoreCase))
                 {
                     if (int.TryParse(cleanLine.Substring(4).Trim(), out int age))
                         character.Age = age;
                 }
+
                 else if (cleanLine.StartsWith("Level:", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (int.TryParse(cleanLine.Substring(6).Trim(), out int lvl))
-                        character.Level = lvl;
-                    else
-                        character.Level = 1;
+                    // Ignore whatever the model sent – always use Level 1
+                    character.Level = 1;
                 }
+
                 else if (cleanLine.StartsWith("Class:", StringComparison.OrdinalIgnoreCase))
                     character.Class = cleanLine.Substring(6).Trim();
+
                 else if (cleanLine.StartsWith("OtherInfo:", StringComparison.OrdinalIgnoreCase))
                     character.OtherInfo = cleanLine.Substring(10).Trim();
             }
 
+            // Ensure non-null strings
             character.Name ??= "";
             character.Race ??= "";
             character.Description ??= "";
             character.Gender ??= "";
             character.Class ??= "";
             character.OtherInfo ??= "";
-            if (character.Level == 0) character.Level = 1;
 
-            if (string.IsNullOrWhiteSpace(character.Name) || string.IsNullOrWhiteSpace(character.Race))
+            // Force Level to 1 if somehow still 0
+            if (character.Level <= 0)
+                character.Level = 1;
+
+            // Clamp Age into 20–30 if it ended up outside range or unset (0)
+            if (character.Age < 20 || character.Age > 30)
+                character.Age = 25;
+
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(character.Name) ||
+                string.IsNullOrWhiteSpace(character.Race))
                 return null;
 
             return character;

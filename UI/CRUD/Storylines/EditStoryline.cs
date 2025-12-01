@@ -6,10 +6,16 @@ using System.Text;
 
 namespace _404_not_founders.UI.CRUD.Storylines
 {
+    /// Handles editing of existing storylines
+    /// Shows live preview of changes and supports order repositioning
     public class EditStoryline
     {
+        /// Interactive edit menu for modifying all storyline properties
+        /// Allows changing order position with automatic adjustment of other storylines
+        /// Shows live summary before each change and at confirmation
         public static void Edit(Project project, Storyline original, UserService userService)
         {
+            // Create temporary copy for editing
             var temp = new Storyline
             {
                 Title = original.Title,
@@ -22,6 +28,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 orderInProject = original.orderInProject
             };
 
+            // Local function to display storyline summary
             void ShowSummary(Storyline s)
             {
                 var sb = new StringBuilder();
@@ -45,13 +52,16 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 Console.WriteLine();
             }
 
+            // Main edit loop
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit storyline: [#FFA500]{Markup.Escape(temp.Title)}[/]");
 
+                // Show live preview of current state
                 ShowSummary(temp);
 
+                // Present edit options
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("What do you want to change?")
@@ -67,6 +77,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                             "Order in project",
                             "Done"));
 
+                // Helper to ensure non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -79,6 +90,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                     }
                 }
 
+                // Handle "Done" - final confirmation
                 if (choice == "Done")
                 {
                     Console.Clear();
@@ -96,6 +108,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         return;
                     }
 
+                    // Reset to original values
                     if (confirm == "No (Start over)")
                     {
                         temp.Title = original.Title;
@@ -109,6 +122,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         continue;
                     }
 
+                    // Apply changes to original storyline
                     if (confirm == "Yes")
                     {
                         original.Title = temp.Title;
@@ -122,10 +136,13 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         int oldOrder = original.orderInProject;
                         int newOrder = temp.orderInProject;
 
+                        // Adjust order of other storylines if position changed
                         if (newOrder != oldOrder)
                         {
+                            // Moving forward in order (higher number)
                             if (newOrder < oldOrder)
                             {
+                                // Shift storylines between newOrder and oldOrder up by 1
                                 foreach (var sl in project.Storylines.Where(s =>
                                              s != original &&
                                              s.orderInProject >= newOrder &&
@@ -134,8 +151,10 @@ namespace _404_not_founders.UI.CRUD.Storylines
                                     sl.orderInProject++;
                                 }
                             }
+                            // Moving backward in order (lower number)
                             else
                             {
+                                // Shift storylines between oldOrder and newOrder down by 1
                                 foreach (var sl in project.Storylines.Where(s =>
                                              s != original &&
                                              s.orderInProject <= newOrder &&
@@ -155,6 +174,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                     }
                 }
 
+                // Handle individual field edits
                 switch (choice)
                 {
                     case "Title":
@@ -180,6 +200,7 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         break;
                     case "Order in project":
                         int maxOrder = project.Storylines.Count;
+                        // Prompt for new order with validation
                         while (true)
                         {
                             var input = AnsiConsole.Ask<string>(

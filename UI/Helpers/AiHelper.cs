@@ -6,14 +6,14 @@ using System.Threading;
 
 namespace _404_not_founders.UI.Helpers
 {
+    /// Helper utilities for AI-driven workflows (Gemini).
+    /// Handles optional user context, Retry/Keep/Cancel flow and basic status messages.
     public static class AiHelper
     {
         private const string MainTitleColor = "#FFA500";
 
-        /// <summary>
-        /// Frågar användaren om valfri beskrivning för AI-generering.
-        /// Tryck Enter = AI genererar själv, annars tas input med i prompt.
-        /// </summary>
+        /// Asks the user for an optional custom description to guide AI generation.
+        /// Enter = no extra context, 'E' = cancel and go back.
         public static string AskOptionalUserContext(string header)
         {
             Console.Clear();
@@ -22,6 +22,7 @@ namespace _404_not_founders.UI.Helpers
             AnsiConsole.MarkupLine("[grey italic]Type 'E' to cancel and go back.[/]");
             Console.WriteLine();
             Console.Write("> ");
+
             var input = Console.ReadLine()?.Trim() ?? "";
 
             if (input.Equals("E", StringComparison.OrdinalIgnoreCase))
@@ -30,9 +31,8 @@ namespace _404_not_founders.UI.Helpers
             return input;
         }
 
-        /// <summary>
-        /// Visar Retry/Keep/Cancel-meny efter lyckad AI-generering.
-        /// </summary>
+        /// Shows the standard Retry/Keep/Cancel menu after a successful AI generation.
+        /// Returns the selected choice as string.
         public static string RetryMenu()
         {
             return AnsiConsole.Prompt(
@@ -43,9 +43,8 @@ namespace _404_not_founders.UI.Helpers
                     .UseConverter(choice => $"[white]{choice}[/]"));
         }
 
-        /// <summary>
-        /// Visar AI-genererat resultat i en snygg summary.
-        /// </summary>
+        /// Displays a simple summary of AI-generated fields for any entity type.
+        /// Expects a dictionary where Key = label, Value = text.
         public static void ShowGeneratedSummary(string title, Dictionary<string, string> fields)
         {
             Console.Clear();
@@ -56,17 +55,17 @@ namespace _404_not_founders.UI.Helpers
             {
                 var value = string.IsNullOrWhiteSpace(field.Value) ? "[grey]N/A[/]" : field.Value;
 
+                // First field is usually the main title/name, so it gets highlight color
                 if (field.Key == fields.Keys.First())
                     AnsiConsole.MarkupLine($"[grey]{field.Key}:[/] [{MainTitleColor}]{Markup.Escape(value)}[/]");
                 else
                     AnsiConsole.MarkupLine($"[grey]{field.Key}:[/] {Markup.Escape(value)}");
             }
+
             Console.WriteLine();
         }
 
-        /// <summary>
-        /// Visar laddningstext under AI-generering.
-        /// </summary>
+        /// Shows a short "Generating..." message while AI is working.
         public static void ShowGeneratingText(string entityType)
         {
             Console.Clear();
@@ -74,27 +73,21 @@ namespace _404_not_founders.UI.Helpers
             Console.WriteLine();
         }
 
-        /// <summary>
-        /// Visar felmeddelande vid misslyckad AI-generering.
-        /// </summary>
+        /// Shows an error message when AI generation fails.
         public static void ShowError(string message)
         {
             AnsiConsole.MarkupLine($"[red]{message}[/]");
             Thread.Sleep(1500);
         }
 
-        /// <summary>
-        /// Visar bekräftelse när något sparats.
-        /// </summary>
+        /// Shows a success message when an AI-generated entity has been saved.
         public static void ShowSaved(string entityType, string name)
         {
-            ConsoleHelpers.Result(true, $"{entityType} '{name}' saved!");
+            ConsoleHelpers.Result(true, $"{entityType} '{Markup.Escape(name)}' saved!");
             Thread.Sleep(1200);
         }
 
-        /// <summary>
-        /// Visar meddelande när generering avbryts.
-        /// </summary>
+        /// Shows a short info message when AI generation is cancelled by the user.
         public static void ShowCancelled()
         {
             AnsiConsole.MarkupLine("[grey]Generation cancelled.[/]");

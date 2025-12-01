@@ -1,5 +1,5 @@
-#### 404-Not-Founders-GroupAssignment
-# Adventurer�s Journal 
+﻿#### 404-Not-Founders-GroupAssignment
+# Adventurer’s Journal 
 
 
 An app that helps you to store all that valuable information you want for your adventures in roleplays, writing projects or any ways you see fit.
@@ -58,6 +58,19 @@ To display characters, storylines, and worlds, we use Table, with AddColumn and 
 
 <img src="https://i.imgur.com/rH39yoK.jpeg" width="800" alt="menu in white and orange" />
 
+### AI-assisted content
+This project includes optional AI-assisted tools to speed up worldbuilding and campaign prep. When creating a Project, World, Character or Storyline, you can either enter everything manually or let the app call Google Gemini (model gemini-2.5-flash) to propose titles, descriptions, and narrative ideas based on your prompt and the existing project/world context.​
+
+AI output is never applied automatically. Each generated result is shown using the same formatted console view as the normal Show() methods for that entity, after which you can:
+
+Keep it (save into your project),
+
+Regenerate (ask the AI to generate a new variant), or
+
+Cancel (discard the result and return to the menu).​
+
+For characters, the parser enforces a minimum level of 1 and clamps the age into a reasonable range even if the model suggests something else. The AI key is provided via the GOOGLE_AI_KEY environment variable or appsettings.json and is only used for these generation features.
+
 
 # Project Description
 
@@ -69,7 +82,7 @@ We wrote up tasks in GitHub Projects that our group members could assign themsel
 
 It is initialized via Program.cs (check MenuHelper to see how it is initialized/used from other files, look for _userService). In this way, we ALWAYS use the same file and data so that nothing gets overwritten. This method does not work with methods that are static.
 
-If there are things you don�t understand, ask the person who wrote the code (Linda and Benji) or have AI break it down line by line and ask questions until you understand.
+If there are things you don’t understand, ask the person who wrote the code (Linda and Benji) or have AI break it down line by line and ask questions until you understand.
 
 The file structure is:
 

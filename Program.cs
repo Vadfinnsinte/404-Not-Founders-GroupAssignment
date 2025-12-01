@@ -5,14 +5,18 @@ using Microsoft.Extensions.Configuration;
 
 namespace _404_not_founders
 {
+    /// Application entry point
+    /// Initializes services and starts the application
     internal class Program
     {
+        /// Main entry point for the application
+        /// Sets up configuration, services, and runs the app
         static async Task Main(string[] args)
         {
-            // 1. Hämta API-nyckeln (säkrare än att skriva den direkt i koden)
+            // 1. Get API key from environment variable (most secure)
             var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY");
 
-            // Om miljövariabeln inte finns, försök läsa från appsettings.json
+            // 2. If environment variable not set, try reading from appsettings.json
             if (string.IsNullOrEmpty(apiKey))
             {
                 var config = new ConfigurationBuilder()
@@ -21,19 +25,20 @@ namespace _404_not_founders
                 apiKey = config["GoogleAI:ApiKey"];
             }
 
-            // 2. Initiera AI-tjänsten
+            // 3. Initialize AI service with API key
             var aiService = new GeminiAIService(apiKey);
 
-            // 3. Initiera övriga tjänster
+            // 4. Initialize user and project services
             var userService = new UserService();
             var projectService = new ProjectService(userService);
 
+            // 5. Load existing user data from storage
             userService.LoadUserService();
 
-            // 4. Skapa och kör appen
+            // 6. Create and run the application
             var runApp = new RunApp(userService, projectService, aiService);
 
-            // Start the application's main loop (await eftersom Run() är async)
+            // Start the application's main loop (async)
             await runApp.Run();
         }
     }
