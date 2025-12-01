@@ -22,6 +22,7 @@ namespace _404_not_founders.Menus
 
         }
         public void SetCurrentUser(User? user) => _currentUser = user;
+        
         public void ShowLoggedInMenu(ref bool loggedIn, ref string currentUser)
         {
             bool running = true;

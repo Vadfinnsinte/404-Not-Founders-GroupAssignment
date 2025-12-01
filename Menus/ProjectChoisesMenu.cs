@@ -158,7 +158,7 @@ namespace _404_not_founders.Menus
                         break;
                     case "Back to main menu":
                         Console.Clear();
-                        
+
                         runEdit = false;
                         break;
                     default:

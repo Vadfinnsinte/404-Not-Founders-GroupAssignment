@@ -24,10 +24,37 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 dateOfLastEdit = original.dateOfLastEdit
             };
 
+            void ShowSummary(Storyline s)
+            {
+                // Build a multiline markup string for the panel so the summary is visible above the prompt
+                var sb = new StringBuilder();
+                sb.AppendLine("[underline #FFA500]Storyline summary:[/]");
+                sb.AppendLine($"[grey]Title:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Title) ? "(untitled)" : s.Title)}[/]");
+                sb.AppendLine($"[grey]Synopsis:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(s.Synopsis) ? "-" : s.Synopsis)}[/]");
+                sb.AppendLine($"[grey]Theme:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Theme) ? "-" : s.Theme)}[/]");
+                sb.AppendLine($"[grey]Genre:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Genre) ? "-" : s.Genre)}[/]");
+                sb.AppendLine($"[grey]Story:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Story) ? "-" : s.Story)}[/]");
+                sb.AppendLine($"[grey]Idea notes:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.IdeaNotes) ? "-" : s.IdeaNotes)}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.OtherInfo) ? "-" : s.OtherInfo)}[/]");
+                sb.AppendLine($"[grey]Order in project:[/] [#FFA500]{s.orderInProject}[/]");
+
+                var panel = new Panel(new Markup(sb.ToString()))
+                {
+                    Border = BoxBorder.Rounded,
+                    Padding = new Padding(1, 0, 1, 0),
+                };
+
+                AnsiConsole.Write(panel);
+                Console.WriteLine();
+            }
+
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
+
+                // Show live summary before presenting choices
+                ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -61,17 +88,9 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    ConsoleHelpers.Info("Storyline summary:");
-                    AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{temp.Title}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Synopsis:[/] {temp.Synopsis}");
-                    AnsiConsole.MarkupLine($"[grey]Theme:[/] {temp.Theme}");
-                    AnsiConsole.MarkupLine($"[grey]Genre:[/] {temp.Genre}");
-                    AnsiConsole.MarkupLine($"[grey]Story:[/] {temp.Story}");
-                    AnsiConsole.MarkupLine($"[grey]Idea notes:[/] {temp.IdeaNotes}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {temp.OtherInfo}");
-                    AnsiConsole.MarkupLine($"[grey]Order in project:[/] {temp.orderInProject}");
+                    // Re-show summary for final confirmation
+                    ShowSummary(temp);
 
-                    Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Are you happy with this storyline?[/]")
