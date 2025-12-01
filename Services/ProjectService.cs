@@ -11,7 +11,7 @@ namespace _404_not_founders.Services
         public List<Project> GetAll(User user)
             => user.Projects.OrderByDescending(p => p.DateOfCreation).ToList();
 
-        // söker projekt baserat på sökterm i titel eller beskrivning
+        // Search projects by term in title or description
         public List<Project> Search(User user, string term)
         {
             if (string.IsNullOrWhiteSpace(term)) return GetAll(user);
@@ -25,12 +25,13 @@ namespace _404_not_founders.Services
                 .ToList();
         }
 
-        //sätter senaste valda projekt för användaren
+        // Set the last selected project for the user
         public void SetLastSelected(User user, Guid projectId)
         {
             user.LastSelectedProjectId = projectId;
             _userService.SaveUserService();
         }
+        // Get the last selected project for the user
         public Project? GetLastSelected(User user)
         {
             if (user.LastSelectedProjectId == Guid.Empty)

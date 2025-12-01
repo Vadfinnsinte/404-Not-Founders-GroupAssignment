@@ -12,13 +12,17 @@ namespace _404_not_founders.Menus
 
         private readonly UserService _userService;
 
+        // Constructor with dependency injection
         public WorldChoisesMenu(UserService userService)
         {
 
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
+
+        // ----- SELECT WORLD -----
         private World? SelectWorld(Project project, string title)
         {
+            // Handle case where there are no worlds
             if (project.Worlds == null || project.Worlds.Count == 0)
             {
                 AnsiConsole.MarkupLine("[grey]No worlds yet.[/]");
@@ -26,6 +30,7 @@ namespace _404_not_founders.Menus
                 return null;
             }
 
+            // Sort worlds alphabetically and prompt user to select one
             var sorted = project.Worlds.ToList();
 
             return AnsiConsole.Prompt(
@@ -45,6 +50,8 @@ namespace _404_not_founders.Menus
         public void WorldMenu(User loggedInUser, Project currentProject)
         {
             bool runWorld = true;
+
+            // Main loop for the World Menu
             while (runWorld)
             {
                 Console.Clear();
@@ -56,6 +63,7 @@ namespace _404_not_founders.Menus
                     "Delete World",
                     "Back");
 
+                // Handle user choice for the World Menu and call appropriate methods
                 switch (choice)
                 {
                     case "Add World":
@@ -69,13 +77,14 @@ namespace _404_not_founders.Menus
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
                     case "Edit World":
+                        // Check if there are any worlds to edit
                         if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No worlds in this project yet.[/]");
                             Console.ReadKey(true);
                             break;
                         }
-
+                        // Let the user select a world to edit
                         var worldToEdit = SelectWorld(currentProject, "Choose world to edit");
                         if (worldToEdit != null)
                             worldToEdit.EditWorld(_userService);
@@ -108,10 +117,8 @@ namespace _404_not_founders.Menus
                             break;
                         }
 
-                        // Find the world object based on the selected name
+                        // Find and delete the selected world
                         var worldToDelete = currentProject.Worlds.First(w => w.Name == selectedWorld);
-
-                        // Delete the selected world
                         worldToDelete.DeleteWorld(currentProject, _userService);
                         break;
 

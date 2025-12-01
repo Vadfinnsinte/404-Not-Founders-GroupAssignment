@@ -20,15 +20,19 @@ namespace _404_not_founders.Models
             registeredUser = null;
             string email = "", username = "", password = "";
             int step = 0;
+
+            // Loop to handle registration steps
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info("[#FFA500]Register new user[/]");
                 ConsoleHelpers.InputInstruction(true);
 
+                // Show current progress
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]E-mail:[/] [#FFA500]{email}[/]");
                 if (step >= 2) AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
 
+                // Prompt for input based on the current step
                 var value = step switch
                 {
                     0 => ConsoleHelpers.AskInput("[#FFA500]E-mail:[/]"),
@@ -37,11 +41,11 @@ namespace _404_not_founders.Models
                     _ => null
                 };
 
-                // E = Exit/Avbryt hela registreringen (går tillbaka till login/register)
+                // Check for exit command
                 if (string.IsNullOrWhiteSpace(value) || value.Trim().Equals("E", StringComparison.OrdinalIgnoreCase))
                     return false;
 
-                // B = Backa till föregående steg (eller avbryter om möjligt)
+                // Check for back command
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
                 {
                     if (step > 0)
@@ -53,7 +57,7 @@ namespace _404_not_founders.Models
                     continue;
                 }
 
-                // Fältvalidering
+                // Validate and store input
                 if (step == 0)
                 {
                     if (users.Exists(u => u.Email.Equals(value, StringComparison.OrdinalIgnoreCase)))
@@ -75,7 +79,7 @@ namespace _404_not_founders.Models
                     password = value; step++;
                 }
 
-                // Bekräfta och skapa användaren
+                // Confirms and saves the new user
                 if (step == 3)
                 {
                     var confirm = MenuChoises.Menu("Do you want to register this user?", "Yes", "No");
@@ -104,6 +108,7 @@ namespace _404_not_founders.Models
 
         public bool EditUser(UserService userService, ref string username)
         {
+            // Loop to handle editing steps
             while (true)
             {
                 Console.Clear();
@@ -134,13 +139,19 @@ namespace _404_not_founders.Models
                 ShowSummary(this);
 
                 var choice = MenuChoises.Menu("What would you like to change?", "E-mail", "Username", "Password", "Back");
+
+                // Handles the selected choice for editing user details
                 switch (choice)
                 {
                     case "E-mail":
+                        // Prompt for new email
                         string newEmail = ConsoleHelpers.AskInput("[#FFA500]New E-mail:[/]");
+
+                        // Handle exit or back commands
                         if (string.IsNullOrWhiteSpace(newEmail) || newEmail.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newEmail.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
+                        // Confirm and apply the email change
                         var confirmEmail = MenuChoises.Menu($"Confirm change to  \"{newEmail}\"?", "Yes", "No");
                         if (confirmEmail == "Yes")
                         {
@@ -157,10 +168,14 @@ namespace _404_not_founders.Models
                         break;
 
                     case "Username":
+                        // Ask for new username
                         string newName = ConsoleHelpers.AskInput("[#FFA500]New username:[/]");
+
+                        // Handle exit or back commands
                         if (string.IsNullOrWhiteSpace(newName) || newName.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newName.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
+                        // Confirm and apply the username change
                         var confirmName = MenuChoises.Menu($"Confirm change \"{newName}\"?", "Yes", "No");
                         if (confirmName == "Yes")
                         {
@@ -178,10 +193,14 @@ namespace _404_not_founders.Models
                         break;
 
                     case "Password":
+                        // Ask for new password
                         string newPassword = ConsoleHelpers.AskInput("[#FFA500]New password:[/]", true);
+
+                        // Handle exit or back commands
                         if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Equals("E", StringComparison.OrdinalIgnoreCase)) return false;
                         if (newPassword.Equals("B", StringComparison.OrdinalIgnoreCase)) break;
 
+                        // Confirm and apply the password change
                         var confirmPass = MenuChoises.Menu("Confirm change to new password?", "Yes", "No");
                         if (confirmPass == "Yes")
                         {
@@ -193,15 +212,9 @@ namespace _404_not_founders.Models
                         break;
 
                     case "Back":
-                        return true; // Bara här visas inloggningsfeedback!
+                        return true; // Exit the edit loop and return to the previous menu
                 }
             }
-        }
-
-
-        public void Delete()
-        {
-            Console.WriteLine("Coming soon");
         }
     }
 }

@@ -43,14 +43,15 @@ namespace _404_not_founders.UI.Display
                 {
                     continue;
                 }
-
+                // Get the value of the property
                 var value = prop.GetValue(obj) ?? "[grey]null[/]";
 
-
+                // Add the property name and value to the table
                 table.AddRow($"{prop.Name}:", value.ToString());
                 table.AddEmptyRow();
             }
 
+            // Create a panel to hold the table
             var panel = new Panel(table)
             {
                 Border = BoxBorder.Rounded,

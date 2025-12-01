@@ -12,6 +12,7 @@ namespace _404_not_founders.Menus
 
         private readonly UserService _userService;
 
+        // Constructor with dependency injection
         public StorylineChoisesMenu(UserService userService)
         {
 
@@ -19,15 +20,18 @@ namespace _404_not_founders.Menus
         }
         public void StorylineMenu(Project project)
         {
+            // Storyline menu loop
             bool runStoryline = true;
             while (runStoryline)
             {
+                // Show storyline menu choices
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
                         .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Delete Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
+                // Handle storyline menu choices and call appropriate methods
                 switch (choice)
                 {
                     case "Add Storyline":
@@ -43,6 +47,7 @@ namespace _404_not_founders.Menus
                         EditStorylineMenu(project);
                         break;
                     case "Delete Storyline":
+                        // Handle if no storylines exist
                         if (project.Storylines == null || project.Storylines.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
@@ -50,23 +55,27 @@ namespace _404_not_founders.Menus
                             break;
                         }
 
+                        // Show list of storylines to delete
                         var storylineChoices = project.Storylines.Select(w => w.Title).ToList();
 
+                        // Add option to go back to menu
                         storylineChoices.Add("Back to Menu");
 
+                        // Prompt user to select storyline to delete or go back
                         var selectedStoryline = AnsiConsole.Prompt(
                             new SelectionPrompt<string>()
                                 .Title("[#FFA500]Choose storyline to Remove[/]")
                                 .HighlightStyle(new Style(Color.Orange1))
                                 .AddChoices(storylineChoices));
 
+                        // Handle going back to menu
                         if (selectedStoryline == "Back to Menu")
                         {
                             break;
                         }
 
+                        // Find and delete the selected storyline
                         var storylineToDelete = project.Storylines.First(w => w.Title == selectedStoryline);
-
                         storylineToDelete.DeleteStoryline(project, _userService);
                         break;
 
@@ -84,6 +93,7 @@ namespace _404_not_founders.Menus
         }
         private void EditStorylineMenu(Project project)
         {
+            // Select storyline to edit and create a temporary copy for editing
             var original = SelectStoryline(project, "Choose storyline to edit");
             if (original == null) return;
 
@@ -92,6 +102,7 @@ namespace _404_not_founders.Menus
         }
         private Storyline? SelectStoryline(Project project, string title)
         {
+            // Handle if no storylines exist
             if (project.Storylines == null || project.Storylines.Count == 0)
             {
                 AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
@@ -101,6 +112,7 @@ namespace _404_not_founders.Menus
                 return null;
             }
 
+            // Show sorted list of storylines to select from
             var sorted = project.Storylines
                 .OrderBy(s => s.orderInProject)
                 .ToList();

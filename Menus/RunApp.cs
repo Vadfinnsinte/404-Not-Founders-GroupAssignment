@@ -5,12 +5,13 @@ using _404_not_founders.UI.Helpers;
 
 namespace _404_not_founders.Menus
 {
-    // ----- APPENS START/HUVUDLOOP -----
+    // ----- The START/MAIN LOOP of the application -----
     public class RunApp
     {
         private readonly UserService _userService;
         private User? _currentUser;
         private readonly ProjectService _projectService;
+        // Constructor with dependency injection
         public RunApp(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -30,19 +31,21 @@ namespace _404_not_founders.Menus
 
             while (running)
             {
+                // If not logged in
                 if (!loggedIn)
                 {
-                    // Visa login/register
+                    // Show login/register menu
                     menuHelper.ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
 
                     if (loggedIn && currentUser != null)
                     {
-                        // Hämta User-objektet och sätt det i LoggedInMenu
+                        // Get the logged-in user object and set it in the logged-in menu
                         var user = users.FirstOrDefault(u => u.Username == currentUser);
                         if (user != null)
                             loggedInMenu.SetCurrentUser(user);
                     }
                 }
+                // If logged in
                 else
                 {
                     loggedInMenu.ShowLoggedInMenu(ref loggedIn, ref currentUser);

@@ -7,7 +7,8 @@ namespace _404_not_founders.UI.Display
     {
         public static string ShowEditMenu(Project project)
         {
-            
+
+            // Setting a short description if it's too long
             var shortDesc = project.description?.Length > 25
             ? project.description.Substring(0, 25) + "..."
             : project.description;

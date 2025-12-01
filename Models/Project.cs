@@ -23,6 +23,7 @@ namespace _404_not_founders.Models
             string description = "";
             int step = 0;
 
+            // Loop that handles steps for project creation
             while (true)
             {
                 Console.Clear();
@@ -30,7 +31,7 @@ namespace _404_not_founders.Models
                 AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
                 Console.WriteLine();
 
-                // Show previous inputs
+                // Display current inputs
                 if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Title:[/] {title}");
                 if (step >= 2)
                     AnsiConsole.MarkupLine($"[#FFA500]Description:[/] {description}");
@@ -41,9 +42,10 @@ namespace _404_not_founders.Models
                     _ => ""
                 };
 
+                // Handle confirmation step
                 if (step == 2)
                 {
-                    // Confirm
+
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Save this project?[/]")
@@ -98,10 +100,13 @@ namespace _404_not_founders.Models
             }
         }
 
+        // Method to add a character to the project
         public void AddCharacter(Character character, UserService userService)
         {
+            // Validate input
             if (character == null) throw new ArgumentNullException(nameof(character));
 
+            // Initialize Characters list if null
             Characters ??= new List<Character>();
      
             Characters.Add(character);
@@ -113,6 +118,7 @@ namespace _404_not_founders.Models
 
         public void Show()
         {
+            // Ensure content is not null
             var worldNames = Worlds != null && Worlds.Any()
                 ? string.Join(", ", Worlds.Select(w => w.Name))
                 : "None";
@@ -121,6 +127,7 @@ namespace _404_not_founders.Models
                 ? string.Join(", ", Storylines.Select(s => s.Title))
                 : "None";
 
+            // Create and configure the table
             var table = new Table()
                 .Border(TableBorder.Simple)
                 .BorderColor(Color.Orange1)
@@ -133,6 +140,7 @@ namespace _404_not_founders.Models
             table.AddEmptyRow();
             table.AddRow("Worlds:", Markup.Escape(worldNames));
 
+            // Create and configure the panel
             var panel = new Panel(table)
             {
                 Border = BoxBorder.Rounded,
