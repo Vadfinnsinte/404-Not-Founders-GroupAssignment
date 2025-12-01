@@ -1,11 +1,8 @@
 ﻿using _404_not_founders.Services;
-using _404_not_founders.Menus;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using _404_not_founders.UI.Helpers;
 using _404_not_founders.UI.Display;
+using System.Text;
 
 namespace _404_not_founders.Models
 {

@@ -1,10 +1,5 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
+
 namespace _404_not_founders.UI.Helpers
 {
     public class ConsoleHelpers
@@ -13,7 +8,7 @@ namespace _404_not_founders.UI.Helpers
         public static void Info(string text) => AnsiConsole.MarkupLine($"[underline {MainTitleColor}]{text}[/]");
 
 
-        /// Delay och skärmrens – anropas efter bekräftelse eller fel
+        // Delay and screen clear – called after confirmation or error
         public static void DelayAndClear(int ms = 800) { Thread.Sleep(ms); Console.Clear(); }
         public static string ReadBackOrExit()
         {
@@ -25,17 +20,16 @@ namespace _404_not_founders.UI.Helpers
             return input;
         }
 
-        /// Skriv ut orange, understruken rubrik (använd alltid för rubriker och viktig feedback)
 
 
-        /// Skriv ut instruktion till användaren om E och B
+        // Display instructions to the user about 'E' and 'B'
         public static void InputInstruction(bool back = false) =>
             AnsiConsole.MarkupLine(back
                 ? "[grey italic]Press E to go back or B to return to the previous step[/]"
                 : "[grey italic]Press E to go back[/]");
 
 
-        /// Input helpers – AskInput hanterar både secret och vanlig, och alltid "E" för exit
+        // AskInput handles both secret and regular input, and always supports "E" for exit
         public static string AskInput(string prompt, bool secret = false)
         {
             var input = secret
@@ -45,7 +39,7 @@ namespace _404_not_founders.UI.Helpers
             return input.Trim();
         }
 
-        /// Gemensam feedback – skriver ut resultat med grön/röd + orange underline
+        // displays the result with green/red text and an orange underline
         public static void Result(bool success, string text)
         {
             var color = success ? "green" : "red";

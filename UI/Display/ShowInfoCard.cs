@@ -16,13 +16,13 @@ namespace _404_not_founders.UI.Display
                 return;
             }
 
-            var type = typeof(T); // tar reda på vilken class som skickats. 
-            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);// tar bara Public attribut, Instance(tar inte statiska)
+            var type = typeof(T); // determines which class was passed.
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);// only takes public attributes, instance (does not take static ones)
 
-            var nameProperty = type.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance); // Försöker hitta värdet för "name" 
-            var titleProperty = type.GetProperty("Title", BindingFlags.Public | BindingFlags.Instance); // Försöker hitta värdet för"title" 
+            var nameProperty = type.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance); // Tries to find the value for "name"
+            var titleProperty = type.GetProperty("Title", BindingFlags.Public | BindingFlags.Instance);// Tries to find the value for "title"
 
-            //sätter värdet till name eller title. Om classen inte har dessa blir värdet classen, altså typ "CHARACHTER"
+            // Sets the value to name or title. If the class doesn't have these, the value becomes the class name itself (e.g. "CHARACTER")
             var title = nameProperty?.GetValue(obj)?.ToString()
                      ?? titleProperty?.GetValue(obj)?.ToString()
                      ?? type.Name.ToUpper();
@@ -35,9 +35,9 @@ namespace _404_not_founders.UI.Display
                 .AddColumn(new TableColumn($"[bold orange1]{title}[/]").LeftAligned());
 
 
-            foreach (var prop in properties)
+            foreach (var prop in properties) // creates table-row for each value
             {
-                // Hoppa över "Name" och "Title"
+                // Skip "Name" and "Title"
                 if (prop.Name.Equals("Name", StringComparison.OrdinalIgnoreCase) ||
                     prop.Name.Equals("Title", StringComparison.OrdinalIgnoreCase))
                 {

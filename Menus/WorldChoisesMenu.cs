@@ -1,5 +1,6 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.Services;
+using _404_not_founders.UI.CRUD;
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
@@ -71,7 +72,8 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Show Worlds":
-                        currentProject.ShowAllWorlds();
+                        ShowEverything show = new ShowEverything(currentProject);
+                        show.ShowAllWorlds();
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
                     case "Edit World":
