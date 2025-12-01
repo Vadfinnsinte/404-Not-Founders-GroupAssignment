@@ -22,19 +22,21 @@ namespace _404_not_founders.Models
 
         public void Add(User currentUser, ProjectService projectService, UserService userService)
         {
-            // Lokala variabler för fältet som byggs upp stegvis
+
             string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
             int age = 0, level = 0;
-            // step styr vilken input som efterfrågas; 0..8 där 8 = bekräftelse
+
             int step = 0;
             bool addingCharacter = true;
+
+            // Loop for adding character using step
             while (addingCharacter)
             {
                 Console.Clear();
                 ConsoleHelpers.Info("Create New Character");
                 ConsoleHelpers.InputInstruction(true);
 
-                // Visa redan ifyllda fält som kontext för användaren
+                // Show current inputs based on step
                 if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
                 if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{race}[/]");
                 if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{description}[/]");
@@ -46,32 +48,35 @@ namespace _404_not_founders.Models
 
                 string input;
 
+                // Handle each step input
                 switch (step)
                 {
                     case 0:
-                        // Namn: enkel textinput
+                        // Name: textinput
                         Console.Write("Name: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 1:
-                        // Race: enkel textinput
+                        // Race: textinput
                         Console.Write("Race: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 2:
-                        // Description: längre text, inga särskilda valideringar här
+                        // Description: long textinput
                         Console.Write("Description: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 3:
-                        // Gender: fri text; överväg enum eller valmeny om du vill begränsa alternativ
+                        // Gender: textinput
                         Console.Write("Gender: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 4:
-                        // Age: tillåter tomt = 0, validerar heltal
+                        // Age: number, empty = 0
                         Console.Write("Age (leave empty for 0): ");
                         input = ConsoleHelpers.ReadBackOrExit();
+
+                        // if not exit or back, try parse
                         if (input != "E" && input != "B")
                         {
                             if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
@@ -84,7 +89,7 @@ namespace _404_not_founders.Models
                         }
                         break;
                     case 5:
-                        // Level: samma logik som age
+                        // Level: same logic as age
                         Console.Write("Level (leave empty for 0): ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         if (input != "E" && input != "B")
@@ -99,23 +104,23 @@ namespace _404_not_founders.Models
                         }
                         break;
                     case 6:
-                        // Class: fri text, överväg att kalla detta "characterClass" för tydlighet
+                        // Class: textinput
                         Console.Write("Class: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 7:
-                        // Other info: valfri extra text
+                        // Other info: textinput
                         Console.Write("Other info: ");
                         input = ConsoleHelpers.ReadBackOrExit();
                         break;
                     case 8:
-                        // Bekräftelsesteg: ja/nej/avsluta
+                        // Confirmation step
                         Project project = null;
                         var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
-                        if (confirm == "No") { step = 0; continue; }  // Börjar om från början
+                        if (confirm == "No") { step = 0; continue; }
                         if (confirm == "Yes")
                         {
-                            // Hitta målet för karaktären: använder currentUser.LastSelectedProjectId eller första projektet
+                            // Get current project to add character to
                             if (currentUser != null)
                             {
                                 if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
@@ -128,16 +133,17 @@ namespace _404_not_founders.Models
                                 }
                             }
 
+                            // Handla null project
                             if (project == null)
                             {
-                                // HÄR: Informerar användaren om att inget projekt är valt
+
                                 Console.WriteLine("No project found. Create or select a project before adding characters.");
                                 Console.WriteLine("Press any key to continue...");
                                 Console.ReadKey(true);
                                 return;
                             }
 
-                            // Bygg ny Character-instans
+                            // Create new character object for adding
                             var newCharacter = new Character
                             {
                                 Name = name,
@@ -152,12 +158,12 @@ namespace _404_not_founders.Models
 
                             try
                             {
-                                // Central logik för att lägga till karaktär (validering/duplicering/spara hanteras i Project.AddCharacter)
+                                // Try to add character to project
                                 project.AddCharacter(newCharacter, userService);
                             }
                             catch (InvalidOperationException ex)
                             {
-                                // Visa fel från Project.AddCharacter och återställ till börja om
+                                // If error occurs, shows message and restart
                                 Console.WriteLine(ex.Message);
                                 Console.WriteLine("Press any key to try again...");
                                 Console.ReadKey(true);
@@ -170,18 +176,18 @@ namespace _404_not_founders.Models
                            
                             ConsoleHelpers.DelayAndClear();
 
-                            return; // Klart
+                            return;
                         }
-                        // Om annat resultat, fortsätt loopen
+                        // Should not reach here, but just in case
                         continue;
                     default:
                         return;
                 }
 
-                // Hantera specialkommandon "E" = Exit, "B" = Back från MenuHelper.ReadBackOrExit
+                // Handle special commands "E" and "B"
                 if (input == "E")
                 {
-                    // HÄR: Anropar menymetod och skickar null som currentProject — se till att metoden accepterar null
+                    
                     addingCharacter = false;
                     Console.Clear();
                     return;
@@ -189,12 +195,12 @@ namespace _404_not_founders.Models
 
                 if (input == "B")
                 {
-                    // Gå ett steg bakåt i formuläret (om möjligt)
+
                     if (step > 0) step--;
                     continue;
                 }
 
-                // Spara input i rätt variabel för textstegen
+                // Store input based on step
                 switch (step)
                 {
                     case 0: name = input?.Trim() ?? ""; break;
@@ -205,7 +211,7 @@ namespace _404_not_founders.Models
                     case 7: otherInfo = input?.Trim() ?? ""; break;
                 }
 
-                // Gå till nästa steg
+                // Advance to next step
                 step++;
             }
         }
@@ -214,7 +220,7 @@ namespace _404_not_founders.Models
 
         public void ShowCharacters(Project project)
         {
-            // Kontrollera att ett projekt faktiskt skickats in
+            // Check that project is not null
             if (project == null)
             {
                 AnsiConsole.MarkupLine("[red]No project provided.[/]");
@@ -222,7 +228,7 @@ namespace _404_not_founders.Models
                 return;
             }
 
-            // Säkra att projektet har en lista med karaktärer och att den inte är tom
+            // Ensure there are characters to show
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
@@ -230,6 +236,7 @@ namespace _404_not_founders.Models
                 return;
             }
 
+            // Give user a selection of characters to choose from
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
                     .Title($"[#FFA500]Select character to show[/]")
@@ -256,6 +263,7 @@ namespace _404_not_founders.Models
             var original = SelectCharacter(project, "Choose character to edit");
             if (original == null) return;
 
+            // Create a temporary copy to edit
             var temp = new Character
             {
                 Name = original.Name,
@@ -268,6 +276,7 @@ namespace _404_not_founders.Models
                 OtherInfo = original.OtherInfo
             };
 
+            // Edit loop
             while (true)
             {
                 Console.Clear();
@@ -289,6 +298,7 @@ namespace _404_not_founders.Models
                             "Done")
                         .HighlightStyle(Color.Orange1));
 
+                // Helper methods for input validation
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -301,6 +311,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Prompt for integer with validation
                 int PromptInt(string prompt)
                 {
                     while (true)
@@ -313,6 +324,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // If done, show summary and confirmation options
                 if (choice == "Done")
                 {
                     Console.Clear();
@@ -333,12 +345,14 @@ namespace _404_not_founders.Models
                             .HighlightStyle(new Style(Color.Orange1))
                             .AddChoices("Yes", "No (Start over)", "Exit"));
 
+                    // If exit, return without saving
                     if (confirm == "Exit")
                     {
                         ConsoleHelpers.DelayAndClear();
                         return;
                     }
 
+                    // If start over, reset temp to original and continue editing
                     if (confirm == "No (Start over)")
                     {
                         temp.Name = original.Name;
@@ -352,6 +366,7 @@ namespace _404_not_founders.Models
                         continue;
                     }
 
+                    // If yes, save changes to original and exit
                     if (confirm == "Yes")
                     {
                         original.Name = temp.Name;
@@ -370,6 +385,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Handle editing each field
                 switch (choice)
                 {
                     case "Name":
@@ -399,8 +415,10 @@ namespace _404_not_founders.Models
                 }
             }
         }
+        // Helper method to select a character from the project
         private Character? SelectCharacter(Project project, string title)
         {
+            // Ensure there are characters to select from
             if (project.Characters == null || project.Characters.Count == 0)
             {
                 AnsiConsole.MarkupLine("[grey]No characters yet.[/]");
@@ -408,6 +426,7 @@ namespace _404_not_founders.Models
                 return null;
             }
 
+            // Prompt user to select a character
             return AnsiConsole.Prompt(
                 new SelectionPrompt<Character>()
                     .Title($"[#FFA500]{title}[/]")
