@@ -26,7 +26,8 @@ namespace _404_not_founders
             // OBS: Du behöver uppdatera konstruktorn i RunApp.cs för att ta emot denna parameter.
             var runApp = new RunApp(userService, projectService, aiService); // Huvudmeny
 
-            await runApp.Run(); // Starta appen
+            // Start the application's main loop
+            runApp.Run();
         }
     }
 }

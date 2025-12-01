@@ -1,10 +1,9 @@
-﻿using _404_not_founders.UI;             // ConsoleHelpers, AnsiClearHelper, ShowInfoCard
-using _404_not_founders.Models;         // User, Project, Character, World, Storyline
-using _404_not_founders.Services;       // UserService, ProjectService, DungeonMasterAI
-using Spectre.Console;                  // Meny, markeringar och prompts
-using Microsoft.Extensions.Configuration; // För API-nyckel och config
-using System;                           // Console, Thread.Sleep etc
-using System.Threading.Tasks;           // async/await
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI.CRUD;
+using _404_not_founders.UI.Display;
+using _404_not_founders.UI.Helpers;
+using Spectre.Console;
 
 namespace _404_not_founders.Menus
 {
@@ -12,33 +11,58 @@ namespace _404_not_founders.Menus
     {
         private readonly UserService _userService;
 
+        // Constructor with dependency injection
         public WorldChoisesMenu(UserService userService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        // FIX: async Task
-        public async Task WorldMenu(User loggedInUser, Project currentProject, UserService userService)
+        // ----- SELECT WORLD -----
+        private World? SelectWorld(Project project, string title)
         {
-            bool runWorldMenu = true;
-            while (runWorldMenu)
+            // Handle case where there are no worlds
+            if (project.Worlds == null || project.Worlds.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No worlds yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            // Sort worlds alphabetically and prompt user to select one
+            var sorted = project.Worlds.ToList();
+
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<World>()
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(sorted)
+                    .UseConverter(w => w.Name));
+        }
+
+
+
+
+
+        // ----- WORLD MENU -----
+
+        public void WorldMenu(User loggedInUser, Project currentProject)
+        {
+            bool runWorld = true;
+
+            // Main loop for the World Menu
+            while (runWorld)
             {
                 Console.Clear();
                 ConsoleHelpers.Info("World Menu");
+                var choice = MenuChoises.Menu("",
+                    "Generate World with AI",
+                    "Add World",
+                    "Show Worlds",
+                    "Edit World",
+                    "Delete World",
+                    "Back");
 
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[#FFA500]World Menu[/]")
-                        .AddChoices(
-                            "Generate World with AI",
-                            "Add World",
-                            "Show Worlds",
-                            "Edit World",
-                            "Delete World",
-                            "Back")
-                        .HighlightStyle(Color.Orange1)
-                );
-
+                // Handle user choice for the World Menu and call appropriate methods
                 switch (choice)
                 {
                     case "Generate World with AI":
@@ -52,18 +76,21 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Show Worlds":
-                        currentProject.ShowAllWorlds();
+                        ShowEverything show = new ShowEverything(currentProject);
+                        show.ShowAllWorlds();
                         AnsiClearHelper.WaitForKeyAndClear();
                         break;
 
                     case "Edit World":
+                        // Check if there are any worlds to edit
                         if (currentProject.Worlds == null || currentProject.Worlds.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Worlds in this Project yet.[/]");
                             Console.ReadKey(true);
                             break;
                         }
-                        var worldToEdit = SelectWorld(currentProject, "Choose World to edit");
+                        // Let the user select a world to edit
+                        var worldToEdit = SelectWorld(currentProject, "Choose world to edit");
                         if (worldToEdit != null)
                             worldToEdit.EditWorld(userService);
                         break;
@@ -84,9 +111,11 @@ namespace _404_not_founders.Menus
                                 .AddChoices(worldChoices));
                         if (selectedWorld == "Back to Menu")
                             break;
-                        var worldToDelete = currentProject.Worlds.FirstOrDefault(w => w.Name == selectedWorld);
-                        if (worldToDelete != null)
-                            worldToDelete.DeleteWorld(currentProject, userService);
+                        }
+
+                        // Find and delete the selected world
+                        var worldToDelete = currentProject.Worlds.First(w => w.Name == selectedWorld);
+                        worldToDelete.DeleteWorld(currentProject, _userService);
                         break;
 
                     case "Back":

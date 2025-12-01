@@ -1,13 +1,10 @@
-﻿using _404_not_founders.UI;             // ConsoleHelpers, AnsiClearHelper, ShowInfoCard
-using _404_not_founders.Models;         // User, Project, Character, World, Storyline
-using _404_not_founders.Services;       // UserService, ProjectService, DungeonMasterAI
-using Spectre.Console;                  // Meny, markeringar och prompts
-using Microsoft.Extensions.Configuration; // För API-nyckel och config
-using System;                           // Console, Thread.Sleep etc
-using System.Threading.Tasks;           // async/await
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI.CRUD;
+using _404_not_founders.UI.Display;
+using _404_not_founders.UI.Helpers;
+using Spectre.Console;
+
 
 namespace _404_not_founders.Menus
 {
@@ -17,7 +14,8 @@ namespace _404_not_founders.Menus
         private readonly ProjectService _projectService; // Projekttjänst
         private readonly UserService _userService; // Användartjänst
 
-        public CharacterChoisesMenu(User currentUser, ProjectService projectService, UserService userService) // Konstruktör
+        // Constructor to initialize services and current user
+        public CharacterChoisesMenu(User currentUser, ProjectService projectService, UserService userService)
         {
             _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser)); // Kontrollera null
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService)); // Kontrollera null
@@ -26,9 +24,11 @@ namespace _404_not_founders.Menus
 
         public async Task ChracterMenu(Project currentProject, UserService userService) // Huvudmeny för karaktärer
         {
-            bool runCharacterMenu = true; // Loop-kontroll
-
-            while (runCharacterMenu) // Huvudloop
+            Character newCharacter = new Character();
+            User? currentUser = _currentUser;
+            bool runCharacterMenu = true;
+            // Loop to display the character menu until the user chooses to go back
+            while (runCharacterMenu)
             {
                 var choice = MenuChoises.Menu("Character Menu",
                     "Generate Character with AI",
@@ -39,6 +39,7 @@ namespace _404_not_founders.Menus
                     "Back"
                 );
 
+                // Switch case to handle user choices
                 switch (choice)
                 {
                     case "Generate Character with AI":
@@ -49,86 +50,67 @@ namespace _404_not_founders.Menus
                         }
 
                     case "Add Character":
-                        {
-                            var newChar = new Character(); // Skapar ny karaktär
-                            // Skapar och sparar karaktären (Add sköter saved-meddelande)
-                            newChar.Add(_currentUser, currentProject, _userService); // Lägg till karaktär
-                            break;
-                        }
+                        // Call method to add a new character
+                        newCharacter.Add(currentUser, _projectService, _userService);
                     case "Show Character":
-                        {
-                            ShowCharacterSelection(currentProject); // Visar karaktärsval
-                            break;
-                        }
+                        // Show characters from the actual project
+                        //newCharacter.ShowCharacters(currentProject);
+                        ShowEverything show = new ShowEverything(currentProject);
+                        show.ShowAllCharacters();
+                        AnsiClearHelper.WaitForKeyAndClear();
 
+                        break;
                     case "Edit Character":
+                        // Check if there are characters to edit
+                        if (currentProject.Characters == null || currentProject.Characters.Count == 0)
                         {
-                            if (currentProject.Characters == null || currentProject.Characters.Count == 0) // Kollar om det finns karaktärer
-                            {
-                                AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
-                                Console.ReadKey(true);
-                                break;
-                            }
-
-                            var character = SelectCharacter(currentProject, "Select Character to edit"); // Väljer karaktär att redigera
-                            if (character != null) // Om en karaktär valdes
-                            {
-                                character.EditCharacter(_userService); // bara UserService, 1 argument
-                            }
+                            AnsiConsole.MarkupLine("[grey]No characters in this project yet.[/]");
+                            Console.ReadKey(true);
                             break;
                         }
+                        // Call method to edit a character
+                        newCharacter.EditCharacter(currentProject, _userService);
 
+                        break;
                     case "Delete Character":
+                        // Check if there are characters to remove
+                        if (currentProject.Characters == null || currentProject.Characters.Count == 0)
                         {
-                            if (currentProject.Characters == null || currentProject.Characters.Count == 0)
-                            {
-                                AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
-                                ConsoleHelpers.DelayAndClear();
-                                break;
-                            }
+                            AnsiConsole.MarkupLine("[grey]No Characters to remove.[/]");
+                            ConsoleHelpers.DelayAndClear();
+                            break;
+                        }
+                        // create a list of character names for selection
+                        var characterChoices = currentProject.Characters.Select(w => w.Name).ToList();
 
-                            var character = SelectCharacter(currentProject, "Choose Character to remove");
-                            if (character != null)
-                            {
-                                character.DeleteCharacter(currentProject, _userService);
-                            }
+                        characterChoices.Add("Back"); // Add back option to the list
+
+                        // Show selection prompt to choose character to remove
+                        var selectedCharacter = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("[#FFA500]Choose character to remove[/]")
+                                .HighlightStyle(new Style(Color.Orange1))
+                                .AddChoices(characterChoices));
+
+                        // Goes back to the previous menu if "Back" is selected
+                        if (selectedCharacter == "Back")
+                        {
                             break;
                         }
 
+                        // Find selected character and call delete method
+                        var characterToDelete = currentProject.Characters.First(w => w.Name == selectedCharacter);
+                        characterToDelete.DeleteCharacter(currentProject, _userService);
+
+                        break;
                     case "Back":
+                        // Sets the boolean to false to exit the loop and go back to the previous menu
                         runCharacterMenu = false;
+
                         break;
                 }
             }
-
-            await Task.CompletedTask;
         }
-
-        private Character? SelectCharacter(Project currentProject, string title)
-        {
-            var characterChoices = currentProject.Characters.Select(c => c.Name).ToList();
-            characterChoices.Add("Back");
-
-            var selectedCharacter = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title($"[#FFA500]{title}[/]")
-                    .HighlightStyle(new Style(Color.Orange1))
-                    .AddChoices(characterChoices));
-
-            if (selectedCharacter == "Back")
-                return null;
-
-            return currentProject.Characters.First(c => c.Name == selectedCharacter);
-        }
-
-        private void ShowCharacterSelection(Project currentProject)
-        {
-            if (currentProject.Characters == null || currentProject.Characters.Count == 0)
-            {
-                AnsiConsole.MarkupLine("[grey]No Characters in this project yet.[/]");
-                Console.ReadKey(true);
-                return;
-            }
 
             var character = SelectCharacter(currentProject, "Select Character to show");
             if (character == null)

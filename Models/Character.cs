@@ -1,14 +1,11 @@
-﻿using _404_not_founders.Menus;
+﻿
 using _404_not_founders.Services;
-using _404_not_founders.UI;
-using Microsoft.Extensions.Configuration;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
+using _404_not_founders.UI.Helpers;
+using _404_not_founders.UI.Display;
+
+using System.Text;
+
 
 namespace _404_not_founders.Models
 {
@@ -31,84 +28,176 @@ namespace _404_not_founders.Models
 
         public void Add(User user, Project project, UserService userService)
         {
-            string name = "", race = "", charClass = "", backstory = "", personality = "", equipment = "";
-            int level = 1, str = 10, dex = 10, con = 10, intel = 10, wis = 10, cha = 10;
-            int step = 0;
 
-            while (true)
+            string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
+            int age = 0, level = 0;
+
+            int step = 0;
+            bool addingCharacter = true;
+
+            // Loop for adding character using step
+            while (addingCharacter)
             {
                 Console.Clear();
                 AnsiConsole.MarkupLine($"[underline #FFA500]Create New Character[/]");
                 AnsiConsole.MarkupLine("[grey italic]Type 'B' to go back or 'E' to exit[/]");
                 Console.WriteLine();
 
-                if (step >= 1) AnsiConsole.MarkupLine($"[#FFA500]Name:[/] {name}");
-                if (step >= 2) AnsiConsole.MarkupLine($"[#FFA500]Race:[/] {race}");
-                if (step >= 3) AnsiConsole.MarkupLine($"[#FFA500]Class:[/] {charClass}");
-                if (step >= 4) AnsiConsole.MarkupLine($"[#FFA500]Level:[/] {level}");
-                if (step >= 5) AnsiConsole.MarkupLine($"[#FFA500]Strength:[/] {str}");
-                if (step >= 6) AnsiConsole.MarkupLine($"[#FFA500]Dexterity:[/] {dex}");
-                if (step >= 7) AnsiConsole.MarkupLine($"[#FFA500]Constitution:[/] {con}");
-                if (step >= 8) AnsiConsole.MarkupLine($"[#FFA500]Intelligence:[/] {intel}");
-                if (step >= 9) AnsiConsole.MarkupLine($"[#FFA500]Wisdom:[/] {wis}");
-                if (step >= 10) AnsiConsole.MarkupLine($"[#FFA500]Charisma:[/] {cha}");
-                if (step >= 11) AnsiConsole.MarkupLine($"[#FFA500]Backstory:[/] {backstory}");
-                if (step >= 12) AnsiConsole.MarkupLine($"[#FFA500]Personality:[/] {personality}");
+                // Show current inputs based on step
+                if (step >= 1) AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{name}[/]");
+                if (step >= 2) AnsiConsole.MarkupLine($"[grey]Race:[/] [#FFA500]{race}[/]");
+                if (step >= 3) AnsiConsole.MarkupLine($"[grey]Description:[/] [#FFA500]{description}[/]");
+                if (step >= 4) AnsiConsole.MarkupLine($"[grey]Gender:[/] [#FFA500]{gender}[/]");
+                if (step >= 5) AnsiConsole.MarkupLine($"[grey]Age:[/] [#FFA500]{age}[/]");
+                if (step >= 6) AnsiConsole.MarkupLine($"[grey]Level:[/] [#FFA500]{level}[/]");
+                if (step >= 7) AnsiConsole.MarkupLine($"[grey]Class:[/] [#FFA500]{characterClass}[/]");
+                if (step >= 8) AnsiConsole.MarkupLine($"[grey]Other info:[/] [#FFA500]{otherInfo}[/]");
 
-                string prompt = step switch
+                string input;
+
+                // Handle each step input
+                switch (step)
                 {
-                    0 => "Character Name:",
-                    1 => "Race:",
-                    2 => "Class:",
-                    3 => "Level:",
-                    4 => "Strength:",
-                    5 => "Dexterity:",
-                    6 => "Constitution:",
-                    7 => "Intelligence:",
-                    8 => "Wisdom:",
-                    9 => "Charisma:",
-                    10 => "Backstory:",
-                    11 => "Personality:",
-                    12 => "Equipment:",
-                    _ => ""
-                };
+                    case 0:
+                        // Name: textinput
+                        Console.Write("Name: ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        break;
+                    case 1:
+                        // Race: textinput
+                        Console.Write("Race: ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        break;
+                    case 2:
+                        // Description: long textinput
+                        Console.Write("Description: ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        break;
+                    case 3:
+                        // Gender: textinput
+                        Console.Write("Gender: ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        break;
+                    case 4:
+                        // Age: number, empty = 0
+                        Console.Write("Age (leave empty for 0): ");
+                        input = ConsoleHelpers.ReadBackOrExit();
 
-                if (step == 13)
-                {
-                    var confirm = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("[#FFA500]Are you happy with this character?[/]")
-                            .HighlightStyle(new Style(Color.Orange1))
-                            .AddChoices("Yes", "No (Start over)", "Exit")
-                    );
+                        // if not exit or back, try parse
+                        if (input != "E" && input != "B")
+                        {
+                            if (string.IsNullOrWhiteSpace(input)) { age = 0; step++; continue; }
+                            if (!int.TryParse(input.Trim(), out age))
+                            {
+                                Console.WriteLine("Invalid number — please enter an integer or leave empty.");
 
-                    if (confirm == "Exit") return;
-                    if (confirm == "No (Start over)") { step = 0; continue; }
+                                continue;
+                            }
+                        }
+                        break;
+                    case 5:
+                        // Level: same logic as age
+                        Console.Write("Level (leave empty for 0): ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        if (input != "E" && input != "B")
+                        {
+                            if (string.IsNullOrWhiteSpace(input)) { level = 0; step++; continue; }
+                            if (!int.TryParse(input.Trim(), out level))
+                            {
+                                Console.WriteLine("Invalid number — please enter an integer or leave empty.");
+                                ;
+                                continue;
+                            }
+                        }
+                        break;
+                    case 6:
+                        // Class: textinput
+                        Console.Write("Class: ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        break;
+                    case 7:
+                        // Other info: textinput
+                        Console.Write("Other info: ");
+                        input = ConsoleHelpers.ReadBackOrExit();
+                        break;
+                    case 8:
+                        // Confirmation step
+                        Project project = null;
+                        var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
+                        if (confirm == "No") { step = 0; continue; }
+                        if (confirm == "Yes")
+                        {
+                            // Get current project to add character to
+                            if (currentUser != null)
+                            {
+                                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
+                                {
+                                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
+                                }
+                                if (project == null && currentUser.Projects != null)
+                                {
+                                    project = currentUser.Projects.FirstOrDefault();
+                                }
+                            }
 
-                    if (confirm == "Yes")
-                    {
-                        this.Name = name;
-                        this.Race = race;
-                        this.Class = charClass;
-                        this.Level = level;
-                        this.Strength = str;
-                        this.Dexterity = dex;
-                        this.Constitution = con;
-                        this.Intelligence = intel;
-                        this.Wisdom = wis;
-                        this.Charisma = cha;
-                        this.Backstory = backstory;
-                        this.Personality = personality;
-                        this.Equipment = equipment;
-                        this.orderInProject = (project.Characters?.Count ?? 0) + 1;
+                            // Handla null project
+                            if (project == null)
+                            {
 
-                        project.Characters.Add(this);
-                        userService.SaveUserService();
+                                Console.WriteLine("No project found. Create or select a project before adding characters.");
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey(true);
+                                return;
+                            }
 
-                        AnsiConsole.MarkupLine($"[orange1]Character '{this.Name}' has been saved![/]");
-                        Thread.Sleep(1200);
+                            // Create new character object for adding
+                            var newCharacter = new Character
+                            {
+                                Name = name,
+                                Race = race,
+                                Description = description,
+                                Gender = gender,
+                                Age = age,
+                                Level = level,
+                                Class = characterClass,
+                                OtherInfo = otherInfo,
+                            };
+
+                            try
+                            {
+                                // Try to add character to project
+                                project.AddCharacter(newCharacter, userService);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // If error occurs, shows message and restart
+                                Console.WriteLine(ex.Message);
+                                Console.WriteLine("Press any key to try again...");
+                                Console.ReadKey(true);
+                                step = 0;
+                                continue;
+                            }
+
+                            Console.WriteLine();
+                            Console.WriteLine($"Character '{name}' created.");
+
+                            ConsoleHelpers.DelayAndClear();
+
+                            return;
+                        }
+                        // Should not reach here, but just in case
+                        continue;
+                    default:
                         return;
-                    }
+                }
+
+                // Handle special commands "E" and "B"
+                if (input == "E")
+                {
+                    
+                    addingCharacter = false;
+                    Console.Clear();
+                    return;
                 }
 
                 string input = AskStepInput.AskStepInputs(prompt);
@@ -116,10 +205,12 @@ namespace _404_not_founders.Models
                 if (input == "E") return;
                 if (input == "B")
                 {
+
                     if (step > 0) step--;
                     continue;
                 }
 
+                // Store input based on step
                 switch (step)
                 {
                     case 0: name = input; break;
@@ -137,12 +228,57 @@ namespace _404_not_founders.Models
                     case 12: equipment = input; break;
                 }
 
+                // Advance to next step
                 step++;
             }
         }
 
         public void EditCharacter(UserService userService)
         {
+            // Check that project is not null
+            if (project == null)
+            {
+                AnsiConsole.MarkupLine("[red]No project provided.[/]");
+                ConsoleHelpers.DelayAndClear();
+                return;
+            }
+
+            // Ensure there are characters to show
+            if (project.Characters == null || project.Characters.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]No characters in this project.[/]");
+                ConsoleHelpers.DelayAndClear();
+                return;
+            }
+
+            // Give user a selection of characters to choose from
+            var selected = AnsiConsole.Prompt(
+                new SelectionPrompt<Character>()
+                    .Title($"[#FFA500]Select character to show[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .PageSize(10)
+                    .AddChoices(project.Characters)
+                    .UseConverter(c => string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)
+            );
+
+            Console.Clear();
+            ShowInfoCard.ShowObject(selected);
+            Console.WriteLine();
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey(true);
+            ConsoleHelpers.DelayAndClear();
+        }
+        public void Show()
+        {
+            ShowInfoCard.ShowObject(this);
+        }
+
+        public void EditCharacter(Project project, UserService userService)
+        {
+            var original = SelectCharacter(project, "Choose character to edit");
+            if (original == null) return;
+
+            // Create a temporary copy to edit
             var temp = new Character
             {
                 Name = this.Name,
@@ -160,10 +296,36 @@ namespace _404_not_founders.Models
                 Equipment = this.Equipment
             };
 
+            void ShowSummary(Character c)
+            {
+                // Build a multiline markup string for the panel so the summary is visible above the prompt
+                var sb = new StringBuilder(); 
+                sb.AppendLine("[underline #FFA500]Character summary:[/]");
+                sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)}[/]");
+                sb.AppendLine($"[grey]Race:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Race) ? "-" : c.Race)}[/]");
+                sb.AppendLine($"[grey]Description:[/] [#FFA500]{(string.IsNullOrWhiteSpace(c.Description) ? "-" : c.Description)}[/]");
+                sb.AppendLine($"[grey]Gender:[/]     [#FFA500]{(string.IsNullOrWhiteSpace(c.Gender) ? "-" : c.Gender)}[/]");
+                sb.AppendLine($"[grey]Age:[/]        [#FFA500]{c.Age}[/]");
+                sb.AppendLine($"[grey]Level:[/]      [#FFA500]{c.Level}[/]");
+                sb.AppendLine($"[grey]Class:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(c.Class) ? "-" : c.Class)}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(c.OtherInfo) ? "-" : c.OtherInfo)}[/]");
+
+                var panel = new Panel(new Markup(sb.ToString()))
+                {
+                    Border = BoxBorder.Rounded,
+                    Padding = new Padding(1, 0, 1, 0),
+                };
+
+                AnsiConsole.Write(panel);
+                Console.WriteLine();
+            }
+
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit character: [#FFA500]{temp.Name}[/]");
+
+                ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -171,6 +333,7 @@ namespace _404_not_founders.Models
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Name", "Race", "Class", "Level", "Stats", "Backstory", "Personality", "Equipment", "Done"));
 
+                // Helper methods for input validation
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -181,6 +344,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Prompt for integer with validation
                 int PromptInt(string prompt)
                 {
                     while (true)
@@ -191,33 +355,27 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // If done, show summary and confirmation options
                 if (choice == "Done")
                 {
                     Console.Clear();
                     ConsoleHelpers.Info("Character summary:");
-                    AnsiConsole.MarkupLine($"[grey]Name:[/] [#FFA500]{temp.Name}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Race:[/] {temp.Race}");
-                    AnsiConsole.MarkupLine($"[grey]Class:[/] {temp.Class}");
-                    AnsiConsole.MarkupLine($"[grey]Level:[/] {temp.Level}");
-                    AnsiConsole.MarkupLine($"[grey]STR:[/] {temp.Strength} [grey]DEX:[/] {temp.Dexterity} [grey]CON:[/] {temp.Constitution}");
-                    AnsiConsole.MarkupLine($"[grey]INT:[/] {temp.Intelligence} [grey]WIS:[/] {temp.Wisdom} [grey]CHA:[/] {temp.Charisma}");
-                    AnsiConsole.MarkupLine($"[grey]Backstory:[/] {temp.Backstory}");
-                    AnsiConsole.MarkupLine($"[grey]Personality:[/] {temp.Personality}");
-                    AnsiConsole.MarkupLine($"[grey]Equipment:[/] {temp.Equipment}");
+                    ShowSummary(temp);
 
-                    Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Are you happy with this character?[/]")
                             .HighlightStyle(new Style(Color.Orange1))
                             .AddChoices("Yes", "No (Start over)", "Exit"));
 
+                    // If exit, return without saving
                     if (confirm == "Exit")
                     {
                         Console.Clear();
                         return;
                     }
 
+                    // If start over, reset temp to original and continue editing
                     if (confirm == "No (Start over)")
                     {
                         temp.Name = this.Name;
@@ -236,6 +394,7 @@ namespace _404_not_founders.Models
                         continue;
                     }
 
+                    // If yes, save changes to original and exit
                     if (confirm == "Yes")
                     {
                         this.Name = temp.Name;
@@ -260,6 +419,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Handle editing each field
                 switch (choice)
                 {
                     case "Name": temp.Name = PromptNonEmpty("[#FFA500]New name:[/]"); break;
@@ -281,10 +441,26 @@ namespace _404_not_founders.Models
             }
         }
 
-        public void Show()
+
+        private Character? SelectCharacter(Project project, string title)
         {
-            ShowInfoCard.ShowObject(this);
+            // Ensure there are characters to select from
+            if (project.Characters == null || project.Characters.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[grey]No characters yet.[/]");
+                Console.ReadKey(true);
+                return null;
+            }
+
+            // Prompt user to select a character
+            return AnsiConsole.Prompt(
+                new SelectionPrompt<Character>()
+                    .Title($"[#FFA500]{title}[/]")
+                    .HighlightStyle(new Style(Color.Orange1))
+                    .AddChoices(project.Characters)
+                    .UseConverter(c => $"{c.Name} ({c.Race})"));
         }
+
 
         public void DeleteCharacter(Project project, UserService userService)
         {

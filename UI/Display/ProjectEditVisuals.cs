@@ -1,18 +1,14 @@
 ﻿using _404_not_founders.Models;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace _404_not_founders.UI
+namespace _404_not_founders.UI.Display
 {
     public class ProjectEditVisuals
     {
         public static string ShowEditMenu(Project project)
         {
-            
+
+            // Setting a short description if it's too long
             var shortDesc = project.description?.Length > 25
             ? project.description.Substring(0, 25) + "..."
             : project.description;

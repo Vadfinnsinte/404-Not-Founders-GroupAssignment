@@ -1,6 +1,9 @@
-﻿using _404_not_founders.Menus;
+﻿
+
+using System.Text;
 using _404_not_founders.Services;
-using _404_not_founders.UI;
+using _404_not_founders.UI.Display;
+using _404_not_founders.UI.Helpers;
 using Spectre.Console;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -58,6 +61,7 @@ namespace _404_not_founders.Models
                             .HighlightStyle(new Style(Color.Orange1))
                             .AddChoices("Yes", "No (Start over)", "Exit"));
 
+                    // Handle confirmation choices
                     if (confirm == "Exit") return;
                     if (confirm == "No (Start over)") { step = 0; continue; }
 
@@ -71,6 +75,7 @@ namespace _404_not_founders.Models
                         OtherInfo = otherInfo;
                         orderInProject = (project.Worlds?.Count ?? 0) + 1;
 
+                        // Add world to project and save
                         project.Worlds.Add(this);
                         userService.SaveUserService();
 
@@ -105,6 +110,7 @@ namespace _404_not_founders.Models
 
         public void EditWorld(UserService userService)
         {
+            // Create a temporary copy of the world to edit
             var temp = new World
             {
                 Name = this.Name,
@@ -115,10 +121,37 @@ namespace _404_not_founders.Models
                 OtherInfo = this.OtherInfo
             };
 
+            void ShowSummary(World w)
+            {
+                // Build a multiline markup string for the panel so the summary is visible above the prompt
+                var sb = new StringBuilder();
+                sb.AppendLine("[underline #FFA500]World summary:[/]");
+                sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(w.Name) ? "(unnamed)" : w.Name)}[/]");
+                sb.AppendLine($"[grey]Climate:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Climate) ? "-" : w.Climate)}[/]");
+                sb.AppendLine($"[grey]Regions:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Regions) ? "-" : w.Regions)}[/]");
+                sb.AppendLine($"[grey]Enemies:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Enemies) ? "-" : w.Enemies)}[/]");
+                sb.AppendLine($"[grey]Factions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : w.Factions)}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : w.OtherInfo)}[/]");
+
+                // Create and fix the panel
+                var panel = new Panel(new Markup(sb.ToString()))
+                {
+                    Border = BoxBorder.Rounded,
+                    Padding = new Padding(1, 0, 1, 0),
+                };
+
+                AnsiConsole.Write(panel);
+                Console.WriteLine();
+            }
+
+            // Loop until user is done editing
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit world: [#FFA500]{Markup.Escape(temp.Name)}[/]");
+
+                // Show live summary before presenting choices
+                ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -126,6 +159,7 @@ namespace _404_not_founders.Models
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Name", "Climate", "Regions", "Enemies", "Factions", "Other info", "Done"));
 
+                // Helper function to prompt for non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -139,15 +173,9 @@ namespace _404_not_founders.Models
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    ConsoleHelpers.Info("World summary:");
-                    AnsiConsole.MarkupLine($"[grey]Name:[/]      [#FFA500]{Markup.Escape(temp.Name)}[/]");
-                    AnsiConsole.MarkupLine($"[grey]Climate:[/]   {Markup.Escape(temp.Climate)}");
-                    AnsiConsole.MarkupLine($"[grey]Regions:[/]   {Markup.Escape(temp.Regions)}");
-                    AnsiConsole.MarkupLine($"[grey]Enemies:[/]   {Markup.Escape(temp.Enemies)}");
-                    AnsiConsole.MarkupLine($"[grey]Factions:[/]  {Markup.Escape(temp.Factions)}");
-                    AnsiConsole.MarkupLine($"[grey]Other info:[/] {Markup.Escape(temp.OtherInfo)}");
+                    // Re-show summary for final confirmation (consistent with live preview) and ask for confirmation
+                    ShowSummary(temp);
 
-                    Console.WriteLine();
                     var confirm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("[#FFA500]Are you happy with this world?[/]")
@@ -161,6 +189,7 @@ namespace _404_not_founders.Models
                         return;
                     }
 
+                    // Restart editing from the beginning
                     if (confirm == "No (Start over)")
 
                     {
@@ -173,6 +202,7 @@ namespace _404_not_founders.Models
                         continue;
                     }
 
+                    // Save changes to the original world
                     if (confirm == "Yes")
                     {
                         this.Name = temp.Name;
@@ -190,6 +220,7 @@ namespace _404_not_founders.Models
                     }
                 }
 
+                // Handle individual field edits
                 switch (choice)
                 {
                     case "Name": temp.Name = PromptNonEmpty("[#FFA500]New name:[/]"); break;

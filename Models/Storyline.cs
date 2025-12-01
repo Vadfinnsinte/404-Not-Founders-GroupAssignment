@@ -7,6 +7,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+
+using _404_not_founders.Services;
+using _404_not_founders.UI.Display;
+using Spectre.Console;
+
 namespace _404_not_founders.Models
 {
     public class Storyline
@@ -23,19 +28,11 @@ namespace _404_not_founders.Models
         public List<Character> chracters;
         public DateTime dateOfLastEdit;
 
-        public void Add()
-        {
-            Console.WriteLine("Coming soon");
-        }
+
 
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
-        }
-
-        public void Change()
-        {
-            Console.WriteLine("Coming soon");
         }
 
         public void DeleteStoryline(Project project, UserService userService)

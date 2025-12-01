@@ -1,23 +1,19 @@
-﻿using _404_not_founders.Models;         // User, Project, Character, World, Storyline
-using _404_not_founders.Services;       // UserService, ProjectService
-using _404_not_founders.UI;             // ConsoleHelpers, MenuChoises
-using System;                           // Console, ArgumentNullException
-using System.Collections.Generic;       // List
-using System.Linq;                      // FirstOrDefault
-using System.Text;                      // StringBuilder
-using System.Threading.Tasks;           // Async/await
+﻿using _404_not_founders.Models;
+using _404_not_founders.Services;
+using _404_not_founders.UI.Helpers;
+
 
 namespace _404_not_founders.Menus
 {
-    // ----- APPENS START/HUVUDLOOP -----
+    // ----- The START/MAIN LOOP of the application -----
     public class RunApp
     {
-        private readonly UserService _userService; // Användartjänst
-        private User? _currentUser; // Aktuell inloggad användare
-        private readonly ProjectService _projectService; // Projekttjänst
+        private readonly UserService _userService;
+        private User? _currentUser;
+        private readonly ProjectService _projectService;
         private readonly GeminiAIService _aiService; // AI-tjänst
-
-        public RunApp(UserService userService, ProjectService projectService, GeminiAIService aiService) // Konstruktör
+        // Constructor with dependency injection
+        public RunApp(UserService userService, ProjectService projectService, GeminiAIService aiService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService)); // Kontrollera null
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService)); // Kontrollera null
@@ -38,18 +34,17 @@ namespace _404_not_founders.Menus
 
             while (running)
             {
+                // If not logged in
                 if (!loggedIn)
                 {
-                    // Meny för login/register, tuple-retur
-                    var result = await menuHelper.ShowLoginRegisterMenu(users); // Async anrop
-                    loggedIn = result.loggedIn; // Uppdatera inloggningsstatus
-                    currentUser = result.currentUser; // Uppdatera aktuell användare
-                    running = result.running; // Uppdatera körstatus
+                    // Show login/register menu
+                    menuHelper.ShowLoginRegisterMenu(users, out loggedIn, out currentUser, ref running);
 
                     // Om man lyckats logga in eller registrera, sätt aktuell användare
                     if (loggedIn && currentUser != null)
                     {
-                        var user = users.FirstOrDefault(u => u.Username == currentUser); // Hitta användaren
+                        // Get the logged-in user object and set it in the logged-in menu
+                        var user = users.FirstOrDefault(u => u.Username == currentUser);
                         if (user != null)
                         {
                             loggedInMenu.SetCurrentUser(user); // Sätt aktuell användare i menyn
@@ -57,6 +52,7 @@ namespace _404_not_founders.Menus
                         }
                     }
                 }
+                // If logged in
                 else
                 {
                     // Meny för inloggat läge (t.ex. projekt, edit user)

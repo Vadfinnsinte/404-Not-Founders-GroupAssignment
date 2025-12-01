@@ -1,6 +1,7 @@
 ﻿using _404_not_founders.Models;
 using _404_not_founders.Services;
-using _404_not_founders.UI;
+using _404_not_founders.UI.Display;
+using _404_not_founders.UI.Helpers;
 using Spectre.Console;
 
 namespace _404_not_founders.Menus
@@ -13,6 +14,7 @@ namespace _404_not_founders.Menus
         private User? _currentUser;
         private readonly ProjectService _projectService;
 
+        // Constructor with dependency injection
         public MenuHelper(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -23,45 +25,27 @@ namespace _404_not_founders.Menus
 
         public User? CurrentUser => _currentUser;
 
-        // ----- HUVUDMENY (login/reg/avsluta) -----
-        public async Task<(bool loggedIn, string currentUser, bool running)> ShowLoginRegisterMenu(List<User> users)
+        // ----- MAIN MENU (login/reg/exit) -----
+        public void ShowLoginRegisterMenu(List<User> users, out bool loggedIn, out string currentUser, ref bool running)
         {
-            // Variabler för status och nuvarande användare
-            bool loggedIn = false;
-            string currentUser = null;
-            bool running = true;
-
-            // Loopa tills användaren är inloggad eller exit
-            while (running && !loggedIn)
+            loggedIn = false; currentUser = null;
+            // Login/Register Menu Loop
+            while (running)
             {
                 Console.Clear();
-                // Visa valmeny
+                // Displays the main menu choices and handles user selection
                 var choice = MenuChoises.Menu("Choose an option", "Log in", "Sign up", "Exit");
 
                 // Avsluta programmet direkt om användaren väljer Exit
                 if (choice == "Exit")
                 {
-                    running = false;
-                    return (loggedIn, currentUser, running);
+                    loggedIn = true;
+                    Console.Clear();
+                    break;
                 }
-
-                // Logga in-funktionen
-                if (choice == "Log in")
-                {
-                    var loginResult = LoginMenu(users); // Tuple-retur här!
-                    if (loginResult.success)
-                    {
-                        loggedIn = true;
-                        currentUser = loginResult.loggedInUser;
-                        Console.Clear();
-                        // Man kan här sätta _currentUser om det används
-                        return (loggedIn, currentUser, running);
-                    }
-                    // Om login misslyckades – loopen fortsätter tills rätt/försök igen.
-                }
-
-                // Registrera användare-funktionen
-                if (choice == "Sign up")
+                // create new user and adds to the users list
+                string newUser = null;
+                if (choice == "Sign up" && User.RegisterUser(users, out newUser, _userService))
                 {
                     var regResult = User.RegisterUser(users, _userService); // Tuple-retur här!
                     if (regResult.success)
@@ -81,35 +65,56 @@ namespace _404_not_founders.Menus
         }
 
 
-        // ----- INLOGGNING (med stegbaserad backa och återanvändbar vy) -----
-        /// Logga in. Returnerar tuple (om inlogg lyckas, och inloggat username)
-        public (bool success, string loggedInUser) LoginMenu(List<User> users)
+        // ----- LOGIN MENU (using steps for the login process) -----
+        public bool LoginMenu(List<User> users, out string loggedInUser)
         {
-            Console.Clear();
-            ConsoleHelpers.Info("[#FFA500]Log in[/]");
-            ConsoleHelpers.InputInstruction();
-
-            string username = ConsoleHelpers.AskInput("[#FFA500]Username:[/]");
-            if (string.IsNullOrWhiteSpace(username) || username.Trim() == "E")
-                return (false, null);
-
-            string password = ConsoleHelpers.AskInput("[#FFA500]Password:[/]", true);
-            if (string.IsNullOrWhiteSpace(password) || password.Trim() == "E")
-                return (false, null);
-
-            var existingUser = users.FirstOrDefault(u => u.Username == username && u.Password == password);
-            if (existingUser != null)
+            loggedInUser = null;
+            string username = "", password = ""; int step = 0;
+            // Login Menu Loop
+            while (true)
             {
-                ConsoleHelpers.Result(true, $"Welcome back, {username}!");
-                ConsoleHelpers.DelayAndClear(800);
-                return (true, username);
-            }
-            else
-            {
-                ConsoleHelpers.Result(false, "Invalid username or password.");
-                ConsoleHelpers.DelayAndClear(1200);
-                return (false, null);
+                Console.Clear();
+                ConsoleHelpers.Info("Log in");
+                ConsoleHelpers.InputInstruction(true);
+                if (step >= 1)
+                    AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
+
+                // Ask for username or password based on the current step
+                string value = step == 0
+                    ? ConsoleHelpers.AskInput("[#FFA500]Username:[/]")
+                    : ConsoleHelpers.AskInput("[#FFA500]Password:[/]", true);
+
+                // Handle back and exit commands
+                if (value == null) return false;
+                if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (step > 0) { if (step == 1) username = ""; step--; }
+                    continue;
+                }
+
+                // Handle input based on the current step, step 0 = username, step 1 = password
+                if (step == 0) { username = value; step++; }
+                else if (step == 1) { password = value; step++; }
+
+                // Step 2 validates the credentials and logs in the user if valid
+                if (step == 2)
+                {
+                    var user = users.Find(u => u.Username == username);
+                    if (user != null && user.Password == password)
+                    {
+                        ConsoleHelpers.Result(true, "Logging in…");
+                        ConsoleHelpers.DelayAndClear();
+                        loggedInUser = username;
+                        _currentUser = user;
+                        return true;
+                    }
+                    // Invalid credentials, reset to step 1
+                    ConsoleHelpers.Result(false, "Wrong username or password!");
+                    ConsoleHelpers.DelayAndClear(1200);
+                    password = ""; step = 1;
+                }
             }
         }
     }
 }
+
