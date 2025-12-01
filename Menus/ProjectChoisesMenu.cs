@@ -29,14 +29,14 @@ namespace _404_not_founders.Menus
         // --- FIX: async Task ---
         public async Task ShowProjectMenu()
         {
-            if (_currentUser == null)
+            if (_currentUser == null) // Safety check
             {
                 AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
                 await Task.CompletedTask;
                 return;
             }
             bool runProjectMenu = true;
-            while (runProjectMenu)
+            while (runProjectMenu) // Loop för Project Menu
             {
                 Console.Clear();
                 var choice = AnsiConsole.Prompt(
@@ -56,7 +56,7 @@ namespace _404_not_founders.Menus
 
                 if (choice == "Show all projects")
                 {
-                    var list = _projectService.GetAll(_currentUser);
+                    var list = _projectService.GetAll(_currentUser); // Hämta alla projekt för användaren
 
                     if (list == null || list.Count == 0)
                     {
@@ -69,16 +69,16 @@ namespace _404_not_founders.Menus
                     if (selected == null)
                         continue;
 
-                    _projectService.SetLastSelected(_currentUser, selected.Id);
-                    await ProjectEditMenu(selected, _userService);
+                    _projectService.SetLastSelected(_currentUser, selected.Id); // Spara som senaste valda projekt
+                    await ProjectEditMenu(selected, _userService); // Gå till redigeringsmenyn för valt projekt
                     // INGEN runProjectMenu = false här – så menyn loopar kvar
                 }
                 else if (choice == "Search projects")
                 {
-                    var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
-                    var hits = _projectService.Search(_currentUser, term);
+                    var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim(); // Be om sökterm
+                    var hits = _projectService.Search(_currentUser, term); // Sök projekt
 
-                    if (hits == null || hits.Count == 0)
+                    if (hits == null || hits.Count == 0) // Inga träffar
                     {
                         AnsiConsole.MarkupLine("[red]No results[/]");
                         AnsiClearHelper.WaitForKeyAndClear();
@@ -86,10 +86,10 @@ namespace _404_not_founders.Menus
                     }
 
                     var selected = SelectFromList(hits, $"Select from search results for \"{term}\"");
-                    if (selected == null)
+                    if (selected == null) // Användaren valde "Back"
                         continue;
 
-                    _projectService.SetLastSelected(_currentUser, selected.Id);
+                    _projectService.SetLastSelected(_currentUser, selected.Id); // Spara som senaste valda projekt
                     AnsiConsole.Clear();
                     await ProjectEditMenu(selected, _userService);
                     // INGEN runProjectMenu = false här heller!
@@ -98,13 +98,13 @@ namespace _404_not_founders.Menus
             await Task.CompletedTask;
         }
 
-        private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
+        private Project? SelectFromList(IReadOnlyList<Project> projects, string title) // Hjälpmetod för att välja projekt från lista
         {
             if (projects == null || projects.Count == 0)
                 return null;
 
-            var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList();
-            var displayList = sorted.Select(p => p.title).ToList();
+            var sorted = projects.OrderByDescending(p => p.DateOfCreation).ToList(); // Sortera efter skapelsedatum, nyast först
+            var displayList = sorted.Select(p => p.title).ToList(); // Skapa lista med titlar
             displayList.Add("Back");
 
             var selectedTitle = AnsiConsole.Prompt(
@@ -120,13 +120,13 @@ namespace _404_not_founders.Menus
                 return null;
             }
 
-            var selectedProject = sorted.First(p => p.title == selectedTitle);
+            var selectedProject = sorted.First(p => p.title == selectedTitle); // Hitta valt projekt baserat på titel
             AnsiConsole.Clear();
-            return selectedProject;
+            return selectedProject; // Returnera valt projekt
         }
 
         // --- FIX: async Task ---
-        public async Task ProjectEditMenu(Project project, UserService userService)
+        public async Task ProjectEditMenu(Project project, UserService userService) // Meny för att redigera valt projekt
         {
             bool runEdit = true;
 
@@ -134,14 +134,14 @@ namespace _404_not_founders.Menus
             {
                 Console.Clear(); // <-- Rensa alltid inför varje menyval!
 
-                var choice = ProjectEditVisuals.ShowEditMenu(project);
+                var choice = ProjectEditVisuals.ShowEditMenu(project); // Visa menyn och få användarens val
 
                 switch (choice)
                 {
                     case "Edit/Add Characters":
                         {
-                            var characterChoisesMenu = new CharacterChoisesMenu(_currentUser, _projectService, _userService);
-                            await characterChoisesMenu.ChracterMenu(project, userService);
+                            var characterChoisesMenu = new CharacterChoisesMenu(_currentUser, _projectService, _userService); // Skapa instans av CharacterChoisesMenu
+                            await characterChoisesMenu.ChracterMenu(project, userService); // Gå till karaktärsmenyn för valt projekt
                             // Efter undermeny: tillbaks till ProjectEditMenu, som nu är ren!
                         }
                         break;
@@ -150,8 +150,8 @@ namespace _404_not_founders.Menus
                         {
                             if (_currentUser != null)
                             {
-                                var worldChoisesMenu = new WorldChoisesMenu(_userService);
-                                await worldChoisesMenu.WorldMenu(_currentUser, project, _userService);
+                                var worldChoisesMenu = new WorldChoisesMenu(_userService); // Skapa instans av WorldChoisesMenu
+                                await worldChoisesMenu.WorldMenu(_currentUser, project, _userService); // Gå till världsmenyn för valt projekt
                                 // Efter undermeny: tillbaks till ProjectEditMenu, som nu är ren!
                             }
                             else
@@ -164,8 +164,8 @@ namespace _404_not_founders.Menus
 
                     case "Edit/Add Storylines":
                         {
-                            var storylineMenu = new StorylineChoisesMenu(_userService);
-                            await storylineMenu.StorylineMenu(project, _userService);
+                            var storylineMenu = new StorylineChoisesMenu(_userService); // Skapa instans av StorylineChoisesMenu
+                            await storylineMenu.StorylineMenu(project, _userService); // Gå till berättelsemenyn för valt projekt
                             // Efter undermeny: tillbaks till ProjectEditMenu, som nu är ren!
                         }
                         break;
@@ -179,8 +179,8 @@ namespace _404_not_founders.Menus
                         break;
 
                     case "Back to main menu":
-                        Console.Clear();
-                        runEdit = false;
+                        Console.Clear(); // Rensa innan tillbaks
+                        runEdit = false; // Avsluta loopen för ProjectEditMenu
                         break;
 
                     default:
@@ -191,24 +191,24 @@ namespace _404_not_founders.Menus
                         break;
                 }
             }
-            await Task.CompletedTask;
+            await Task.CompletedTask; // Avsluta async metoden
         }
 
 
         // --- FIX: async Task ---
-        public async Task ShowLastProjectMenu(User currentUser)
+        public async Task ShowLastProjectMenu(User currentUser) // Meny för att visa senaste valda projekt
         {
             Console.Clear();
             ConsoleHelpers.Info("Last selected Project");
 
-            var last = _projectService.GetLastSelected(currentUser);
+            var last = _projectService.GetLastSelected(currentUser); // Hämta senaste valda projekt
 
             if (last == null)
             {
                 AnsiConsole.MarkupLine("[grey]You have no last selected Project yet.[/]");
                 AnsiConsole.MarkupLine("[grey]Open a Project from \"Show Projects\" first.[/]");
                 Console.ReadKey(true);
-                await Task.CompletedTask;
+                await Task.CompletedTask; // FIX: await Task.CompletedTask
                 return;
             }
 
@@ -219,7 +219,7 @@ namespace _404_not_founders.Menus
             AnsiConsole.MarkupLine("");
 
             var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
+                new SelectionPrompt<string>() // Prompt för val
                     .Title("[#FFA500]What do you want to do with this Project?[/]")
                     .HighlightStyle(new Style(Color.Orange1))
                     .AddChoices("Open Project", "Back"));
@@ -228,11 +228,11 @@ namespace _404_not_founders.Menus
             {
                 Console.WriteLine("Going to Project...");
                 ConsoleHelpers.DelayAndClear();
-                await ProjectEditMenu(last, _userService);
+                await ProjectEditMenu(last, _userService); // Gå till redigeringsmenyn för senaste projektet
             }
             else
             {
-                await Task.CompletedTask;
+                await Task.CompletedTask; // FIX: await Task.CompletedTask
                 return;
             }
         }

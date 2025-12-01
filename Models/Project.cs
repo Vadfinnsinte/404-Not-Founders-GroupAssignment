@@ -264,20 +264,20 @@ namespace _404_not_founders.Models
             });
         }
 
-        public async Task<Project?> GenerateProjectWithGeminiAI(User currentUser, UserService userService)
+        public async Task<Project?> GenerateProjectWithGeminiAI(User currentUser, UserService userService) // async
         {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .Build();
-            var googleApiKey = config["GoogleAI:ApiKey"];
-            var aiService = new GeminiAIService(googleApiKey);
+            var config = new ConfigurationBuilder() // Konfigurationsbyggare för att läsa inställningar
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Laddar inställningar från appsettings.json
+                .Build(); // Bygger konfigurationsobjektet
+            var googleApiKey = config["GoogleAI:ApiKey"]; // Hämtar Google AI API-nyckeln från konfigurationen
+            var aiService = new GeminiAIService(googleApiKey); // Skapar en instans av GeminiAIService med API-nyckeln
 
             while (true)
             {
-                string userContext = AiHelper.AskOptionalUserContext("Generate Project with AI");
-                if (userContext == "E") return null;
+                string userContext = AiHelper.AskOptionalUserContext("Generate Project with AI"); // Frågar användaren om valfri kontext för AI-generering
+                if (userContext == "E") return null; // Om användaren väljer att avsluta, returnera null
 
-                string prompt = string.IsNullOrWhiteSpace(userContext)
+                string prompt = string.IsNullOrWhiteSpace(userContext) // Om ingen användarkontext anges
                     ? @"You are a D&D campaign designer. Create a complete campaign project.
 
 TASK: Generate a unique RPG campaign that fits a text-based D&D game.
@@ -300,35 +300,35 @@ High Concept: [1-sentence elevator pitch]
 Campaign Goal: [main campaign objective]
 Themes: [themes separated by |]";
 
-                AiHelper.ShowGeneratingText("Project");
+                AiHelper.ShowGeneratingText("Project"); // Visar meddelande om att projekt genereras
 
-                var result = await aiService.GenerateAsync(prompt);
+                var result = await aiService.GenerateAsync(prompt); // Anropar AI-tjänsten för att generera text baserat på prompten
 
-                if (!string.IsNullOrWhiteSpace(result))
+                if (!string.IsNullOrWhiteSpace(result)) // Om AI returnerar ett resultat
                 {
-                    int nextOrder = (currentUser.Projects?.Count ?? 0) + 1;
-                    var newProject = ParseAITextToProject(result, nextOrder);
+                    int nextOrder = (currentUser.Projects?.Count ?? 0) + 1; // Beräknar nästa ordning i projektlistan
+                    var newProject = ParseAITextToProject(result, nextOrder); // Parserar AI-resultatet till ett Project-objekt
 
                     if (newProject != null)
                     {
                         Console.Clear();
                         ConsoleHelpers.Info("Generated Project:");
                         Console.WriteLine();
-                        AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{Markup.Escape(newProject.title)}[/]");
-                        AnsiConsole.MarkupLine($"[grey]Description:[/] {Markup.Escape(newProject.description)}");
-                        AnsiConsole.MarkupLine($"[grey]High Concept:[/] {Markup.Escape(newProject.highConcept)}");
-                        AnsiConsole.MarkupLine($"[grey]Campaign Goal:[/] {Markup.Escape(newProject.campaignGoal)}");
-                        AnsiConsole.MarkupLine($"[grey]Themes:[/] {Markup.Escape(newProject.themes)}");
+                        AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{Markup.Escape(newProject.title)}[/]"); // Visar genererat projekts titel
+                        AnsiConsole.MarkupLine($"[grey]Description:[/] {Markup.Escape(newProject.description)}"); // Visar genererat projekts beskrivning
+                        AnsiConsole.MarkupLine($"[grey]High Concept:[/] {Markup.Escape(newProject.highConcept)}"); // Visar genererat projekts höga koncept
+                        AnsiConsole.MarkupLine($"[grey]Campaign Goal:[/] {Markup.Escape(newProject.campaignGoal)}"); // Visar genererat projekts kampanjmål
+                        AnsiConsole.MarkupLine($"[grey]Themes:[/] {Markup.Escape(newProject.themes)}"); // Visar genererat projekts teman
                         Console.WriteLine();
 
-                        var choice = AiHelper.RetryMenu();
+                        var choice = AiHelper.RetryMenu(); // Visar meny för att behålla, generera om eller avbryta
 
                         if (choice == "Keep")
                         {
-                            currentUser.Projects.Add(newProject);
-                            userService.SaveUserService();
-                            AiHelper.ShowSaved("Project", newProject.title);
-                            return newProject;
+                            currentUser.Projects.Add(newProject); // Lägger till det nya projektet i användarens projektlista
+                            userService.SaveUserService(); // Sparar användartjänsten
+                            AiHelper.ShowSaved("Project", newProject.title); // Visar meddelande om att projektet sparades
+                            return newProject; // Returnerar det nya projektet
                         }
                         else if (choice == "Cancel")
                         {
@@ -338,44 +338,44 @@ Themes: [themes separated by |]";
                     }
                     else
                     {
-                        AiHelper.ShowError("Failed to parse AI response. Retrying...");
+                        AiHelper.ShowError("Failed to parse AI response. Retrying..."); // Visar felmeddelande om parsing misslyckades
                     }
                 }
                 else
                 {
-                    AiHelper.ShowError("AI returned empty response. Retrying...");
+                    AiHelper.ShowError("AI returned empty response. Retrying..."); // Visar felmeddelande om AI inte returnerade något
                 }
             }
         }
 
-        public static Project? ParseAITextToProject(string input, int nextOrderInProject)
+        public static Project? ParseAITextToProject(string input, int nextOrderInProject) // static
         {
-            var project = new Project();
+            var project = new Project(); // skapar en ny instans av Project-klassen
             var lines = input.Replace("\r\n", "\n").Split('\n'); // robust newline-hantering [web:50][web:56]
 
-            foreach (var line in lines)
+            foreach (var line in lines) // loopar genom varje rad i input-texten
             {
                 var cleanLine = line.Trim();
-                if (cleanLine.StartsWith("Title:", StringComparison.OrdinalIgnoreCase))
-                    project.title = cleanLine.Substring(6).Trim();
-                else if (cleanLine.StartsWith("Description:", StringComparison.OrdinalIgnoreCase))
-                    project.description = cleanLine.Substring(12).Trim();
-                else if (cleanLine.StartsWith("High Concept:", StringComparison.OrdinalIgnoreCase))
-                    project.highConcept = cleanLine.Substring(12).Trim();
-                else if (cleanLine.StartsWith("Campaign Goal:", StringComparison.OrdinalIgnoreCase))
-                    project.campaignGoal = cleanLine.Substring(14).Trim();
-                else if (cleanLine.StartsWith("Themes:", StringComparison.OrdinalIgnoreCase))
-                    project.themes = cleanLine.Substring(7).Trim();
+                if (cleanLine.StartsWith("Title:", StringComparison.OrdinalIgnoreCase)) // kollar om raden börjar med "Title:"
+                    project.title = cleanLine.Substring(6).Trim(); // extraherar och tilldelar titeln
+                else if (cleanLine.StartsWith("Description:", StringComparison.OrdinalIgnoreCase)) // kollar om raden börjar med "Description:"
+                    project.description = cleanLine.Substring(12).Trim(); // extraherar och tilldelar beskrivningen
+                else if (cleanLine.StartsWith("High Concept:", StringComparison.OrdinalIgnoreCase)) // kollar om raden börjar med "High Concept:"
+                    project.highConcept = cleanLine.Substring(12).Trim(); // extraherar och tilldelar det höga konceptet
+                else if (cleanLine.StartsWith("Campaign Goal:", StringComparison.OrdinalIgnoreCase)) // kollar om raden börjar med "Campaign Goal:"
+                    project.campaignGoal = cleanLine.Substring(14).Trim(); // extraherar och tilldelar kampanjmålet
+                else if (cleanLine.StartsWith("Themes:", StringComparison.OrdinalIgnoreCase)) // kollar om raden börjar med "Themes:"
+                    project.themes = cleanLine.Substring(7).Trim(); // extraherar och tilldelar teman
             }
 
-            project.orderInProject = nextOrderInProject;
-            project.DateOfCreation = DateTime.Now;
-            project.Storylines = new List<Storyline>();
-            project.Characters = new List<Character>();
-            project.Worlds = new List<World>();
+            project.orderInProject = nextOrderInProject; // tilldelar ordningen i projektet
+            project.DateOfCreation = DateTime.Now; // sätter skapelsedatumet till nuvarande tid
+            project.Storylines = new List<Storyline>(); // initierar listan för storylines
+            project.Characters = new List<Character>(); // initierar listan för karaktärer
+            project.Worlds = new List<World>(); // initierar listan för världar
 
-            return string.IsNullOrWhiteSpace(project.title) || string.IsNullOrWhiteSpace(project.description)
-                ? null : project;
+            return string.IsNullOrWhiteSpace(project.title) || string.IsNullOrWhiteSpace(project.description) // kontrollera att titel och beskrivning inte är tomma
+                ? null : project; // returnerar null om titel eller beskrivning är tomma, annars returneras det skapade projektet
         }
 
         public void Change()

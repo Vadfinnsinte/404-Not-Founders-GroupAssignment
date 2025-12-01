@@ -11,22 +11,22 @@ namespace _404_not_founders
         {
             // 1. Hämta API-nyckeln (säkrare än att skriva den direkt i koden)
             // Från Environment Variable (bäst för säkerhet)
-            var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY");
+            var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY"); // Hämta från miljövariabel
 
             // 2. Initiera AI-tjänsten
-            var aiService = new GeminiAIService(apiKey);
+            var aiService = new GeminiAIService(apiKey); // AI-tjänst
 
             // 3. Initiera övriga tjänster
-            var userService = new UserService();
-            var projectService = new ProjectService(userService);
+            var userService = new UserService(); // Användartjänst
+            var projectService = new ProjectService(userService); // Projekttjänst
 
-            userService.LoadUserService();
+            userService.LoadUserService(); // Ladda användardata
 
             // 4. Skicka med aiService till RunApp!
             // OBS: Du behöver uppdatera konstruktorn i RunApp.cs för att ta emot denna parameter.
-            var runApp = new RunApp(userService, projectService, aiService);
+            var runApp = new RunApp(userService, projectService, aiService); // Huvudmeny
 
-            await runApp.Run();
+            await runApp.Run(); // Starta appen
         }
     }
 }
