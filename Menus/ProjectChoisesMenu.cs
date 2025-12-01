@@ -16,6 +16,7 @@ namespace _404_not_founders.Menus
         private readonly ProjectService _projectService;
         private readonly UserService _userService;
 
+        // Constructor with dependency injection
         public ProjectChoisesMenu(User currentUser, ProjectService projectService, UserService userService)
         {
             _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
@@ -24,31 +25,36 @@ namespace _404_not_founders.Menus
         }
         public void ShowProjectMenu()
         {
+            // Ensure user is logged in
             if (_currentUser == null)
             {
                 AnsiConsole.MarkupLine("[red]You must be logged in to view projects.[/]");
                 return;
             }
+            // Main project menu loop
             bool runProjectMenu = true;
             while (runProjectMenu)
             {
+                // Display project menu options
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[#FFA500]Project Menu[/]")
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Show all projects", "Search projects", "Back"));
 
+                // Sends user back to main menu
                 if (choice == "Back")
                 {
                     runProjectMenu = false;
                     break;
-
                 }
 
+                // Shows a list of all projects
                 if (choice == "Show all projects")
                 {
                     var list = _projectService.GetAll(_currentUser);
 
+                    // Handle empty project list
                     if (list == null || list.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[yellow]No projects yet.[/]");
@@ -61,15 +67,19 @@ namespace _404_not_founders.Menus
                     if (selected == null)
                         continue; // Back pressed
 
+                    // Open the selected project
                     _projectService.SetLastSelected(_currentUser, selected.Id);
                     runProjectMenu = false;
                     ProjectEditMenu(selected);
                 }
+
+                // Search for projects by title or description
                 else if (choice == "Search projects")
                 {
                     var term = AnsiConsole.Ask<string>("Searchterm (title/description):").Trim();
                     var hits = _projectService.Search(_currentUser, term);
 
+                    // Handles no search results
                     if (hits == null || hits.Count == 0)
                     {
                         AnsiConsole.MarkupLine("[red]No results[/]");
@@ -82,6 +92,7 @@ namespace _404_not_founders.Menus
                     if (selected == null)
                         continue; // Back pressed
 
+                    // Open the selected project
                     _projectService.SetLastSelected(_currentUser, selected.Id);
                     AnsiConsole.Clear();
                     runProjectMenu = false;
@@ -91,6 +102,7 @@ namespace _404_not_founders.Menus
             }
         }
 
+        // Method to select a project from a list
         private Project? SelectFromList(IReadOnlyList<Project> projects, string title)
         {
             if (projects == null || projects.Count == 0)
@@ -121,6 +133,7 @@ namespace _404_not_founders.Menus
             AnsiConsole.Clear();
             return selectedProject;
         }
+
         public void ProjectEditMenu(Project project)
         {
             Character character = new Character();
@@ -128,10 +141,12 @@ namespace _404_not_founders.Menus
             bool runEdit = true;
             string user = _currentUser?.Username ?? ""; // Add this if needed for ShowLoggedInMenu
 
+            // Main edit menu loop
             while (runEdit)
             {
                 var choice = ProjectEditVisuals.ShowEditMenu(project);
 
+                // Handle user choices and navigate to appropriate menus
                 switch (choice)
                 {
                     case "Edit/Add Characters":
@@ -139,6 +154,7 @@ namespace _404_not_founders.Menus
                         characterChoisesMenu.ChracterMenu(project);
                         break;
                     case "Edit/Add worlds":
+                        // Ensure user is logged in and open world menu
                         if (_currentUser != null)
                         {
                             WorldChoisesMenu worldChoisesMenu = new WorldChoisesMenu(_userService);
@@ -160,7 +176,6 @@ namespace _404_not_founders.Menus
                         break;
                     case "Back to main menu":
                         Console.Clear();
-                        
                         runEdit = false;
                         break;
                     default:
@@ -175,9 +190,10 @@ namespace _404_not_founders.Menus
             Console.Clear();
             ConsoleHelpers.Info("Last selected project");
 
-            // hämta senaste valda projektet för den här användaren
+            // Get last selected project
             var last = _projectService.GetLastSelected(currentUser);
 
+            // Handle no last selected project
             if (last == null)
             {
                 AnsiConsole.MarkupLine("[grey]You have no last selected project yet.[/]");
@@ -186,13 +202,14 @@ namespace _404_not_founders.Menus
                 return;
             }
 
-            // Visa lite info om projektet
+            // Show last selected project details
             AnsiConsole.MarkupLine("");
             AnsiConsole.MarkupLine($"[grey]Title:[/] [#FFA500]{last.title}[/]");
             AnsiConsole.MarkupLine($"[grey]Description:[/] {last.description}");
             AnsiConsole.MarkupLine($"[grey]Created:[/] {last.DateOfCreation:yyyy-MM-dd}");
             AnsiConsole.MarkupLine("");
 
+            // Prompt user for action on last selected project
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[#FFA500]What do you want to do with this project?[/]")
@@ -201,14 +218,14 @@ namespace _404_not_founders.Menus
 
             if (choice == "Open project")
             {
-                // gå direkt till samma meny som när man valt projekt via listan
+                // Open the last selected projects edit menu
                 Console.WriteLine("Going to project...");
                 ConsoleHelpers.DelayAndClear();
                 ProjectEditMenu(last);
             }
             else
             {
-                // Back – bara gå tillbaka till huvudmenyn
+                // Go back to previous menu
                 return;
             }
         }

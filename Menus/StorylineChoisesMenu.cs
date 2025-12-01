@@ -15,6 +15,7 @@ namespace _404_not_founders.Menus
 
         private readonly UserService _userService;
 
+        // Constructor with dependency injection
         public StorylineChoisesMenu(UserService userService)
         {
 
@@ -22,15 +23,18 @@ namespace _404_not_founders.Menus
         }
         public void StorylineMenu(Project project)
         {
+            // Storyline menu loop
             bool runStoryline = true;
             while (runStoryline)
             {
+                // Show storyline menu choices
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[bold]Storylines[/]")
                         .AddChoices("Add Storyline", "Show Storylines", "Edit Storyline", "Remove Storyline", "Back")
                         .HighlightStyle(Color.Orange1));
 
+                // Handle storyline menu choices and call appropriate methods
                 switch (choice)
                 {
                     case "Add Storyline":
@@ -46,6 +50,7 @@ namespace _404_not_founders.Menus
                         EditStoryline(project);
                         break;
                     case "Delete Storyline":
+                        // Handle if no storylines exist
                         if (project.Storylines == null || project.Storylines.Count == 0)
                         {
                             AnsiConsole.MarkupLine("[grey]No Storylines to remove.[/]");
@@ -53,23 +58,27 @@ namespace _404_not_founders.Menus
                             break;
                         }
 
+                        // Show list of storylines to delete
                         var storylineChoices = project.Storylines.Select(w => w.Title).ToList();
 
+                        // Add option to go back to menu
                         storylineChoices.Add("Back to Menu");
 
+                        // Prompt user to select storyline to delete or go back
                         var selectedStoryline = AnsiConsole.Prompt(
                             new SelectionPrompt<string>()
                                 .Title("[#FFA500]Choose storyline to Remove[/]")
                                 .HighlightStyle(new Style(Color.Orange1))
                                 .AddChoices(storylineChoices));
 
+                        // Handle going back to menu
                         if (selectedStoryline == "Back to Menu")
                         {
                             break;
                         }
 
+                        // Find and delete the selected storyline
                         var storylineToDelete = project.Storylines.First(w => w.Title == selectedStoryline);
-
                         storylineToDelete.DeleteStoryline(project, _userService);
                         break;
 
@@ -87,6 +96,7 @@ namespace _404_not_founders.Menus
             string title = "", synopsis = "", theme = "", genre = "", story = "", ideaNotes = "", otherInfo = "";
             int step = 0;
 
+            // Loop for storyline details using steps
             while (true)
             {
                 Console.Clear();
@@ -131,7 +141,7 @@ namespace _404_not_founders.Menus
                     continue;
                 }
 
-                // Save input
+                // Save input to appropriate variable
                 switch (step)
                 {
                     case 0: title = input; break;
@@ -146,11 +156,12 @@ namespace _404_not_founders.Menus
                 step++;
             }
 
-            // Ask for order in project
+            // Checks that storyline list is initialized and determine order
             project.Storylines ??= new List<Storyline>();
             int maxOrder = project.Storylines.Count + 1;
             int orderInProject = 1;
 
+            // Asks what order the storyline should have in the project
             if (maxOrder == 1)
             {
                 orderInProject = 1;
@@ -192,11 +203,12 @@ namespace _404_not_founders.Menus
                 AddStorylineToProject(project); // Restart
                 return;
             }
-         
-            // Adjust order
+
+            // Adjust storyline order
             foreach (var sl in project.Storylines.Where(sl => sl.orderInProject >= orderInProject))
                 sl.orderInProject++;
 
+            // Create and add storyline to project
             var s = new Storyline
             {
                 Title = title,
@@ -218,9 +230,9 @@ namespace _404_not_founders.Menus
         }
         private void EditStoryline(Project project)
         {
+            // Select storyline to edit and create a temporary copy for editing
             var original = SelectStoryline(project, "Choose storyline to edit");
             if (original == null) return;
-
 
             var temp = new Storyline
             {
@@ -235,11 +247,13 @@ namespace _404_not_founders.Menus
                 dateOfLastEdit = original.dateOfLastEdit
             };
 
+            // Edit loop
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
 
+                // Let user choose what to edit
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("What do you want to change?")
@@ -259,6 +273,7 @@ namespace _404_not_founders.Menus
 
                 string PromptNonEmpty(string prompt)
                 {
+                    // Loop until a non-empty value is provided
                     while (true)
                     {
                         var value = AnsiConsole.Ask<string>(prompt);
@@ -269,6 +284,7 @@ namespace _404_not_founders.Menus
                     }
                 }
 
+                // If done, show summary and confirm changes
                 if (choice == "Done")
                 {
                     Console.Clear();
@@ -295,6 +311,7 @@ namespace _404_not_founders.Menus
                         return;
                     }
 
+                    // If user choose no, revert changes and continue editing
                     if (confirm == "No (Start over)")
                     {
                         temp.Title = original.Title;
@@ -308,6 +325,7 @@ namespace _404_not_founders.Menus
                         continue;
                     }
 
+                    // If user choose yes, save changes to original storyline
                     if (confirm == "Yes")
                     {
                         original.Title = temp.Title;
@@ -322,6 +340,7 @@ namespace _404_not_founders.Menus
                         int oldOrder = original.orderInProject;
                         int newOrder = temp.orderInProject;
 
+                        // Adjust order of other storylines if order has changed
                         if (newOrder != oldOrder)
                         {
                             if (newOrder < oldOrder)
@@ -348,6 +367,7 @@ namespace _404_not_founders.Menus
                             original.orderInProject = newOrder;
                         }
 
+                        // Save changes and tell user
                         _userService.SaveUserService();
                         ConsoleHelpers.Info("Storyline updated!");
                         ConsoleHelpers.DelayAndClear();
@@ -355,7 +375,7 @@ namespace _404_not_founders.Menus
                     }
                 }
 
-
+                // Handle editing of each field
                 switch (choice)
                 {
                     case "Title":
@@ -381,6 +401,7 @@ namespace _404_not_founders.Menus
                         break;
                     case "Order in project":
                         int maxOrder = project.Storylines.Count;
+                        // Prompt until valid order is provided
                         while (true)
                         {
                             var input = AnsiConsole.Ask<string>(
@@ -400,6 +421,7 @@ namespace _404_not_founders.Menus
         }
         private Storyline? SelectStoryline(Project project, string title)
         {
+            // Handle if no storylines exist
             if (project.Storylines == null || project.Storylines.Count == 0)
             {
                 AnsiConsole.MarkupLine("[grey]No storylines yet.[/]");
@@ -409,6 +431,7 @@ namespace _404_not_founders.Menus
                 return null;
             }
 
+            // Show sorted list of storylines to select from
             var sorted = project.Storylines
                 .OrderBy(s => s.orderInProject)
                 .ToList();
