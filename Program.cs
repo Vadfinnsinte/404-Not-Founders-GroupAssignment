@@ -1,7 +1,7 @@
 ﻿using _404_not_founders.Menus;
 using _404_not_founders.Models;
 using _404_not_founders.Services;
-using Microsoft.Extensions.Configuration; // Kräver paket: Microsoft.Extensions.Configuration.Json
+using Microsoft.Extensions.Configuration;
 
 namespace _404_not_founders
 {
@@ -10,24 +10,31 @@ namespace _404_not_founders
         static async Task Main(string[] args)
         {
             // 1. Hämta API-nyckeln (säkrare än att skriva den direkt i koden)
-            // Från Environment Variable (bäst för säkerhet)
-            var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY"); // Hämta från miljövariabel
+            var apiKey = Environment.GetEnvironmentVariable("GOOGLE_AI_KEY");
+
+            // Om miljövariabeln inte finns, försök läsa från appsettings.json
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                var config = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+                apiKey = config["GoogleAI:ApiKey"];
+            }
 
             // 2. Initiera AI-tjänsten
-            var aiService = new GeminiAIService(apiKey); // AI-tjänst
+            var aiService = new GeminiAIService(apiKey);
 
             // 3. Initiera övriga tjänster
-            var userService = new UserService(); // Användartjänst
-            var projectService = new ProjectService(userService); // Projekttjänst
+            var userService = new UserService();
+            var projectService = new ProjectService(userService);
 
-            userService.LoadUserService(); // Ladda användardata
+            userService.LoadUserService();
 
-            // 4. Skicka med aiService till RunApp!
-            // OBS: Du behöver uppdatera konstruktorn i RunApp.cs för att ta emot denna parameter.
-            var runApp = new RunApp(userService, projectService, aiService); // Huvudmeny
+            // 4. Skapa och kör appen
+            var runApp = new RunApp(userService, projectService, aiService);
 
-            // Start the application's main loop
-            runApp.Run();
+            // Start the application's main loop (await eftersom Run() är async)
+            await runApp.Run();
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace _404_not_founders.UI
+namespace _404_not_founders.UI.Helpers
 {
     public static class AiHelper
     {

@@ -4,14 +4,12 @@ using _404_not_founders.UI.Helpers;
 using Spectre.Console;
 using System.Text;
 
-
 namespace _404_not_founders.UI.CRUD.Storylines
 {
     public class EditStoryline
     {
         public static void Edit(Project project, Storyline original, UserService userService)
         {
-            // Create a temporary copy of the original storyline to edit
             var temp = new Storyline
             {
                 Title = original.Title,
@@ -21,25 +19,22 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 Story = original.Story,
                 IdeaNotes = original.IdeaNotes,
                 OtherInfo = original.OtherInfo,
-                orderInProject = original.orderInProject,
-                dateOfLastEdit = original.dateOfLastEdit
+                orderInProject = original.orderInProject
             };
 
             void ShowSummary(Storyline s)
             {
-                // Build a multiline markup string for the panel so the summary is visible above the prompt
                 var sb = new StringBuilder();
                 sb.AppendLine("[underline #FFA500]Storyline summary:[/]");
-                sb.AppendLine($"[grey]Title:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Title) ? "(untitled)" : s.Title)}[/]");
-                sb.AppendLine($"[grey]Synopsis:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(s.Synopsis) ? "-" : s.Synopsis)}[/]");
-                sb.AppendLine($"[grey]Theme:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Theme) ? "-" : s.Theme)}[/]");
-                sb.AppendLine($"[grey]Genre:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Genre) ? "-" : s.Genre)}[/]");
-                sb.AppendLine($"[grey]Story:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Story) ? "-" : s.Story)}[/]");
-                sb.AppendLine($"[grey]Idea notes:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.IdeaNotes) ? "-" : s.IdeaNotes)}[/]");
-                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.OtherInfo) ? "-" : s.OtherInfo)}[/]");
-                sb.AppendLine($"[grey]Order in project:[/] [#FFA500]{s.orderInProject}[/]");
+                sb.AppendLine($"[grey]Title:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Title) ? "(untitled)" : Markup.Escape(s.Title))}[/]");
+                sb.AppendLine($"[grey]Synopsis:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(s.Synopsis) ? "-" : Markup.Escape(s.Synopsis))}[/]");
+                sb.AppendLine($"[grey]Theme:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Theme) ? "-" : Markup.Escape(s.Theme))}[/]");
+                sb.AppendLine($"[grey]Genre:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Genre) ? "-" : Markup.Escape(s.Genre))}[/]");
+                sb.AppendLine($"[grey]Story:[/]      [#FFA500]{(string.IsNullOrWhiteSpace(s.Story) ? "-" : Markup.Escape(s.Story))}[/]");
+                sb.AppendLine($"[grey]Idea notes:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.IdeaNotes) ? "-" : Markup.Escape(s.IdeaNotes))}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(s.OtherInfo) ? "-" : Markup.Escape(s.OtherInfo))}[/]");
+                sb.AppendLine($"[grey]Order:[/]      [#FFA500]{s.orderInProject}[/]");
 
-                // Create and render the panel
                 var panel = new Panel(new Markup(sb.ToString()))
                 {
                     Border = BoxBorder.Rounded,
@@ -50,13 +45,11 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 Console.WriteLine();
             }
 
-            // Loop until the user is done editing
             while (true)
             {
                 Console.Clear();
-                ConsoleHelpers.Info($"Edit storyline: [#FFA500]{temp.Title}[/]");
+                ConsoleHelpers.Info($"Edit storyline: [#FFA500]{Markup.Escape(temp.Title)}[/]");
 
-                // Show live summary before presenting choices
                 ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
@@ -72,11 +65,8 @@ namespace _404_not_founders.UI.CRUD.Storylines
                             "Idea notes",
                             "Other info",
                             "Order in project",
-                            "Done")
-                        .HighlightStyle(Color.Orange1));
+                            "Done"));
 
-
-                // Local function to ensure non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -92,7 +82,6 @@ namespace _404_not_founders.UI.CRUD.Storylines
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    // Re-show summary for final confirmation and ask for confirmation
                     ShowSummary(temp);
 
                     var confirm = AnsiConsole.Prompt(
@@ -107,7 +96,6 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         return;
                     }
 
-                    // Reset temp to original if starting over
                     if (confirm == "No (Start over)")
                     {
                         temp.Title = original.Title;
@@ -121,7 +109,6 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         continue;
                     }
 
-                    // Apply changes to the original storyline
                     if (confirm == "Yes")
                     {
                         original.Title = temp.Title;
@@ -131,12 +118,10 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         original.Story = temp.Story;
                         original.IdeaNotes = temp.IdeaNotes;
                         original.OtherInfo = temp.OtherInfo;
-                        original.dateOfLastEdit = DateTime.Now;
 
                         int oldOrder = original.orderInProject;
                         int newOrder = temp.orderInProject;
 
-                        // Adjust orders of other storylines if the order has changed
                         if (newOrder != oldOrder)
                         {
                             if (newOrder < oldOrder)
@@ -170,7 +155,6 @@ namespace _404_not_founders.UI.CRUD.Storylines
                     }
                 }
 
-                // Handle individual field edits
                 switch (choice)
                 {
                     case "Title":
@@ -196,7 +180,6 @@ namespace _404_not_founders.UI.CRUD.Storylines
                         break;
                     case "Order in project":
                         int maxOrder = project.Storylines.Count;
-                        // Prompt for new order with validation
                         while (true)
                         {
                             var input = AnsiConsole.Ask<string>(

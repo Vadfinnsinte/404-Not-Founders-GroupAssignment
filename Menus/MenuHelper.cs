@@ -8,13 +8,11 @@ namespace _404_not_founders.Menus
 {
     public class MenuHelper
     {
-
         public const string MainTitleColor = "#FFA500";
         private readonly UserService _userService;
         private User? _currentUser;
         private readonly ProjectService _projectService;
 
-        // Constructor with dependency injection
         public MenuHelper(UserService userService, ProjectService projectService)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -25,52 +23,59 @@ namespace _404_not_founders.Menus
 
         public User? CurrentUser => _currentUser;
 
-        // ----- MAIN MENU (login/reg/exit) -----
-        public void ShowLoginRegisterMenu(List<User> users, out bool loggedIn, out string currentUser, ref bool running)
+        public (bool loggedIn, string currentUser, bool running) ShowLoginRegisterMenu(List<User> users, bool running)
         {
-            loggedIn = false; currentUser = null;
-            // Login/Register Menu Loop
+            bool loggedIn = false;
+            string currentUser = null;
+
             while (running)
             {
                 Console.Clear();
-                // Displays the main menu choices and handles user selection
                 var choice = MenuChoises.Menu("Choose an option", "Log in", "Sign up", "Exit");
 
-                // Avsluta programmet direkt om användaren väljer Exit
                 if (choice == "Exit")
                 {
-                    loggedIn = true;
+                    running = false;
                     Console.Clear();
                     break;
                 }
-                // create new user and adds to the users list
-                string newUser = null;
-                if (choice == "Sign up" && User.RegisterUser(users, out newUser, _userService))
+
+                if (choice == "Sign up")
                 {
-                    var regResult = User.RegisterUser(users, _userService); // Tuple-retur här!
+                    var regResult = User.RegisterUser(users, _userService);
                     if (regResult.success)
                     {
                         loggedIn = true;
                         currentUser = regResult.registeredUser;
-                        _currentUser = users.FirstOrDefault(u => u.Username == currentUser); // Sätt nuvarande användare om du vill
+                        _currentUser = users.FirstOrDefault(u => u.Username == currentUser);
                         Console.Clear();
                         return (loggedIn, currentUser, running);
                     }
-                    // Vid misslyckad registrering – fortsätt loopen så man kan försöka igen
                 }
-                // Loopen fortsätter tills logga in eller exit.
+
+                if (choice == "Log in")
+                {
+                    var loginResult = LoginMenu(users);
+                    if (loginResult.success)
+                    {
+                        loggedIn = true;
+                        currentUser = loginResult.loggedInUser;
+                        _currentUser = users.FirstOrDefault(u => u.Username == currentUser);
+                        Console.Clear();
+                        return (loggedIn, currentUser, running);
+                    }
+                }
             }
-            // Returnera status om vi brutit loopen utan inlogg/registrering
+
             return (loggedIn, currentUser, running);
         }
 
-
-        // ----- LOGIN MENU (using steps for the login process) -----
-        public bool LoginMenu(List<User> users, out string loggedInUser)
+        public (bool success, string loggedInUser) LoginMenu(List<User> users)
         {
-            loggedInUser = null;
-            string username = "", password = ""; int step = 0;
-            // Login Menu Loop
+            string loggedInUser = null;
+            string username = "", password = "";
+            int step = 0;
+
             while (true)
             {
                 Console.Clear();
@@ -79,24 +84,32 @@ namespace _404_not_founders.Menus
                 if (step >= 1)
                     AnsiConsole.MarkupLine($"[grey]Username:[/] [#FFA500]{username}[/]");
 
-                // Ask for username or password based on the current step
                 string value = step == 0
                     ? ConsoleHelpers.AskInput("[#FFA500]Username:[/]")
                     : ConsoleHelpers.AskInput("[#FFA500]Password:[/]", true);
 
-                // Handle back and exit commands
-                if (value == null) return false;
+                if (value == null) return (false, null);
                 if (value.Equals("B", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (step > 0) { if (step == 1) username = ""; step--; }
+                    if (step > 0)
+                    {
+                        if (step == 1) username = "";
+                        step--;
+                    }
                     continue;
                 }
 
-                // Handle input based on the current step, step 0 = username, step 1 = password
-                if (step == 0) { username = value; step++; }
-                else if (step == 1) { password = value; step++; }
+                if (step == 0)
+                {
+                    username = value;
+                    step++;
+                }
+                else if (step == 1)
+                {
+                    password = value;
+                    step++;
+                }
 
-                // Step 2 validates the credentials and logs in the user if valid
                 if (step == 2)
                 {
                     var user = users.Find(u => u.Username == username);
@@ -106,15 +119,15 @@ namespace _404_not_founders.Menus
                         ConsoleHelpers.DelayAndClear();
                         loggedInUser = username;
                         _currentUser = user;
-                        return true;
+                        return (true, loggedInUser);
                     }
-                    // Invalid credentials, reset to step 1
+
                     ConsoleHelpers.Result(false, "Wrong username or password!");
                     ConsoleHelpers.DelayAndClear(1200);
-                    password = ""; step = 1;
+                    password = "";
+                    step = 1;
                 }
             }
         }
     }
 }
-

@@ -1,16 +1,8 @@
-﻿using _404_not_founders.Services;               // UserService, ProjectService, DungeonMasterAI
-using _404_not_founders.UI;                     // ConsoleHelpers, ShowInfoCard, AiHelper
-using Spectre.Console;                          // Meny, markeringar och prompts
-using Microsoft.Extensions.Configuration;       // För API-nyckel och config
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-
-using _404_not_founders.Services;
+﻿using _404_not_founders.Services;
 using _404_not_founders.UI.Display;
+using _404_not_founders.UI.Helpers;
 using Spectre.Console;
+using Microsoft.Extensions.Configuration;
 
 namespace _404_not_founders.Models
 {
@@ -24,11 +16,6 @@ namespace _404_not_founders.Models
         public string IdeaNotes { get; set; }
         public string OtherInfo { get; set; }
         public int orderInProject { get; set; }
-        public List<World> worlds;
-        public List<Character> chracters;
-        public DateTime dateOfLastEdit;
-
-
 
         public void Show()
         {
@@ -49,7 +36,15 @@ namespace _404_not_founders.Models
             {
                 if (project.Storylines.Contains(this))
                 {
+                    int deletedOrder = this.orderInProject;
                     project.Storylines.Remove(this);
+
+                    // Adjust order of remaining storylines
+                    foreach (var sl in project.Storylines.Where(s => s.orderInProject > deletedOrder))
+                    {
+                        sl.orderInProject--;
+                    }
+
                     userService.SaveUserService();
 
                     AnsiConsole.MarkupLine($"The storyline '[orange1]{Markup.Escape(this.Title)}[/]' has been deleted!");
@@ -79,13 +74,11 @@ namespace _404_not_founders.Models
 
             while (true)
             {
-                // Samma UX som Character: optional user context via AiHelper
                 string userContext = AiHelper.AskOptionalUserContext("Generate Storyline with AI");
                 if (userContext == "E")
                     return null;
 
-                string basePrompt = $@"
-You are a creative Storyline generator for a text-based Dungeons & Dragons RPG project.
+                string basePrompt = $@"You are a creative Storyline generator for a text-based Dungeons & Dragons RPG project.
 
 PROJECT CONTEXT:
 {currentProject.description}
@@ -101,13 +94,13 @@ RULES:
 - Return ONLY the formatted text below. No explanations, no markdown, no asterisks.
 
 FORMAT (NO markdown or asterisks, only plain text!):
-Title: ...
-Synopsis: ...
-Theme: ...
-Genre: ...
-Story: ...
-IdeaNotes: ...
-OtherInfo: ...";
+Title: [unique storyline title]
+Synopsis: [2-3 sentence summary]
+Theme: [central theme]
+Genre: [fantasy subgenre]
+Story: [detailed story description]
+IdeaNotes: [ideas for encounters, NPCs, twists]
+OtherInfo: [pacing, tone, future hooks]";
 
                 string prompt = string.IsNullOrWhiteSpace(userContext)
                     ? basePrompt
@@ -122,11 +115,11 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
 
                 var result = await aiService.GenerateAsync(prompt);
 
-                int nextOrder = (currentProject.Storylines?.Count ?? 0) + 1;
-
                 if (!string.IsNullOrWhiteSpace(result))
                 {
+                    int nextOrder = (currentProject.Storylines?.Count ?? 0) + 1;
                     var newStoryline = ParseAITextToStoryline(result, nextOrder);
+
                     if (newStoryline != null)
                     {
                         Console.Clear();
@@ -145,10 +138,10 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
 
                         if (choice == "Keep")
                         {
-                            newStoryline.dateOfLastEdit = DateTime.Now;
                             currentProject.Storylines.Add(newStoryline);
                             userService.SaveUserService();
                             AiHelper.ShowSaved("Storyline", newStoryline.Title);
+                            AnsiClearHelper.WaitForKeyAndClear();
                             return newStoryline;
                         }
                         else if (choice == "Cancel")
@@ -169,7 +162,6 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
             }
         }
 
-        // Robust parser: alltid alla fält!
         public static Storyline? ParseAITextToStoryline(string input, int nextOrderInProject)
         {
             var storyline = new Storyline();
@@ -192,12 +184,6 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
                     storyline.IdeaNotes = cleanLine.Substring(10).Trim();
                 else if (cleanLine.StartsWith("OtherInfo:", StringComparison.OrdinalIgnoreCase))
                     storyline.OtherInfo = cleanLine.Substring(10).Trim();
-                else if (cleanLine.StartsWith("orderInProject", StringComparison.OrdinalIgnoreCase))
-                {
-                    var order = 0;
-                    if (int.TryParse(cleanLine.Substring(14).Trim(' ', ':'), out order))
-                        storyline.orderInProject = order;
-                }
             }
 
             storyline.Title ??= "";
@@ -216,8 +202,7 @@ Adapt the Storyline to the user request, but keep the exact same headers and for
             if (string.IsNullOrWhiteSpace(storyline.OtherInfo))
                 storyline.OtherInfo = "Notes for pacing, tone, and possible future hooks.";
 
-            storyline.orderInProject = storyline.orderInProject > 0 ? storyline.orderInProject : nextOrderInProject;
-            storyline.dateOfLastEdit = DateTime.Now;
+            storyline.orderInProject = nextOrderInProject;
 
             if (string.IsNullOrWhiteSpace(storyline.Title) || string.IsNullOrWhiteSpace(storyline.Synopsis))
                 return null;

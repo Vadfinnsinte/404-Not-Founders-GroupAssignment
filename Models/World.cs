@@ -1,16 +1,9 @@
-﻿
-
-using System.Text;
-using _404_not_founders.Services;
+﻿using _404_not_founders.Services;
 using _404_not_founders.UI.Display;
 using _404_not_founders.UI.Helpers;
-using Spectre.Console;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Spectre.Console;
+using System.Text;
 
 namespace _404_not_founders.Models
 {
@@ -22,7 +15,6 @@ namespace _404_not_founders.Models
         public string Enemies { get; set; }
         public string Factions { get; set; }
         public string OtherInfo { get; set; }
-        public int orderInProject { get; set; }
 
         public void Add(User user, Project project, UserService userService)
         {
@@ -61,7 +53,6 @@ namespace _404_not_founders.Models
                             .HighlightStyle(new Style(Color.Orange1))
                             .AddChoices("Yes", "No (Start over)", "Exit"));
 
-                    // Handle confirmation choices
                     if (confirm == "Exit") return;
                     if (confirm == "No (Start over)") { step = 0; continue; }
 
@@ -73,9 +64,7 @@ namespace _404_not_founders.Models
                         Enemies = enemies;
                         Factions = factions;
                         OtherInfo = otherInfo;
-                        orderInProject = (project.Worlds?.Count ?? 0) + 1;
 
-                        // Add world to project and save
                         project.Worlds.Add(this);
                         userService.SaveUserService();
 
@@ -110,7 +99,6 @@ namespace _404_not_founders.Models
 
         public void EditWorld(UserService userService)
         {
-            // Create a temporary copy of the world to edit
             var temp = new World
             {
                 Name = this.Name,
@@ -123,17 +111,15 @@ namespace _404_not_founders.Models
 
             void ShowSummary(World w)
             {
-                // Build a multiline markup string for the panel so the summary is visible above the prompt
                 var sb = new StringBuilder();
                 sb.AppendLine("[underline #FFA500]World summary:[/]");
-                sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(w.Name) ? "(unnamed)" : w.Name)}[/]");
-                sb.AppendLine($"[grey]Climate:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Climate) ? "-" : w.Climate)}[/]");
-                sb.AppendLine($"[grey]Regions:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Regions) ? "-" : w.Regions)}[/]");
-                sb.AppendLine($"[grey]Enemies:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Enemies) ? "-" : w.Enemies)}[/]");
-                sb.AppendLine($"[grey]Factions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : w.Factions)}[/]");
-                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : w.OtherInfo)}[/]");
+                sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(w.Name) ? "(unnamed)" : Markup.Escape(w.Name))}[/]");
+                sb.AppendLine($"[grey]Climate:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Climate) ? "-" : Markup.Escape(w.Climate))}[/]");
+                sb.AppendLine($"[grey]Regions:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Regions) ? "-" : Markup.Escape(w.Regions))}[/]");
+                sb.AppendLine($"[grey]Enemies:[/]    [#FFA500]{(string.IsNullOrWhiteSpace(w.Enemies) ? "-" : Markup.Escape(w.Enemies))}[/]");
+                sb.AppendLine($"[grey]Factions:[/]   [#FFA500]{(string.IsNullOrWhiteSpace(w.Factions) ? "-" : Markup.Escape(w.Factions))}[/]");
+                sb.AppendLine($"[grey]Other info:[/] [#FFA500]{(string.IsNullOrWhiteSpace(w.OtherInfo) ? "-" : Markup.Escape(w.OtherInfo))}[/]");
 
-                // Create and fix the panel
                 var panel = new Panel(new Markup(sb.ToString()))
                 {
                     Border = BoxBorder.Rounded,
@@ -144,13 +130,11 @@ namespace _404_not_founders.Models
                 Console.WriteLine();
             }
 
-            // Loop until user is done editing
             while (true)
             {
                 Console.Clear();
                 ConsoleHelpers.Info($"Edit world: [#FFA500]{Markup.Escape(temp.Name)}[/]");
 
-                // Show live summary before presenting choices
                 ShowSummary(temp);
 
                 var choice = AnsiConsole.Prompt(
@@ -159,7 +143,6 @@ namespace _404_not_founders.Models
                         .HighlightStyle(new Style(Color.Orange1))
                         .AddChoices("Name", "Climate", "Regions", "Enemies", "Factions", "Other info", "Done"));
 
-                // Helper function to prompt for non-empty input
                 string PromptNonEmpty(string prompt)
                 {
                     while (true)
@@ -173,7 +156,6 @@ namespace _404_not_founders.Models
                 if (choice == "Done")
                 {
                     Console.Clear();
-                    // Re-show summary for final confirmation (consistent with live preview) and ask for confirmation
                     ShowSummary(temp);
 
                     var confirm = AnsiConsole.Prompt(
@@ -189,9 +171,7 @@ namespace _404_not_founders.Models
                         return;
                     }
 
-                    // Restart editing from the beginning
                     if (confirm == "No (Start over)")
-
                     {
                         temp.Name = this.Name;
                         temp.Climate = this.Climate;
@@ -202,7 +182,6 @@ namespace _404_not_founders.Models
                         continue;
                     }
 
-                    // Save changes to the original world
                     if (confirm == "Yes")
                     {
                         this.Name = temp.Name;
@@ -220,7 +199,6 @@ namespace _404_not_founders.Models
                     }
                 }
 
-                // Handle individual field edits
                 switch (choice)
                 {
                     case "Name": temp.Name = PromptNonEmpty("[#FFA500]New name:[/]"); break;
@@ -348,8 +326,7 @@ OtherInfo: [any extra world details]";
 
                 if (!string.IsNullOrWhiteSpace(result))
                 {
-                    int nextOrder = (currentProject.Worlds?.Count ?? 0) + 1;
-                    var newWorld = ParseAITextToWorld(result, nextOrder);
+                    var newWorld = ParseAITextToWorld(result);
 
                     if (newWorld != null)
                     {
@@ -392,7 +369,7 @@ OtherInfo: [any extra world details]";
             }
         }
 
-        public static World? ParseAITextToWorld(string input, int nextOrderInProject)
+        public static World? ParseAITextToWorld(string input)
         {
             var world = new World();
             var lines = input.Replace("\r\n", "\n").Split('\n');
@@ -420,8 +397,6 @@ OtherInfo: [any extra world details]";
             world.Enemies ??= "";
             world.Factions ??= "";
             world.OtherInfo ??= "";
-
-            world.orderInProject = nextOrderInProject;
 
             if (string.IsNullOrWhiteSpace(world.Name) || string.IsNullOrWhiteSpace(world.Climate))
                 return null;
