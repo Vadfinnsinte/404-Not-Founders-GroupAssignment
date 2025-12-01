@@ -2,6 +2,7 @@
 using Spectre.Console;
 using _404_not_founders.UI.Helpers;
 using _404_not_founders.UI.Display;
+using System.Text;
 
 namespace _404_not_founders.Models
 {

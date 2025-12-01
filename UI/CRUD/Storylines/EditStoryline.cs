@@ -2,6 +2,7 @@
 using _404_not_founders.Services;
 using _404_not_founders.UI.Helpers;
 using Spectre.Console;
+using System.Text;
 
 
 namespace _404_not_founders.UI.CRUD.Storylines

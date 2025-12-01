@@ -4,6 +4,9 @@ using Spectre.Console;
 using _404_not_founders.UI.Helpers;
 using _404_not_founders.UI.Display;
 
+using System.Text;
+
+
 namespace _404_not_founders.Models
 {
     public class Character
@@ -269,7 +272,7 @@ namespace _404_not_founders.Models
             void ShowSummary(Character c)
             {
                 // Build a multiline markup string for the panel so the summary is visible above the prompt
-                var sb = new StringBuilder();
+                var sb = new StringBuilder(); 
                 sb.AppendLine("[underline #FFA500]Character summary:[/]");
                 sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)}[/]");
                 sb.AppendLine($"[grey]Race:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Race) ? "-" : c.Race)}[/]");
