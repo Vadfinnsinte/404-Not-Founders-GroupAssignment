@@ -1,7 +1,7 @@
 ﻿
 
 using _404_not_founders.Services;
-using _404_not_founders.UI;
+using _404_not_founders.UI.Display;
 using Spectre.Console;
 
 namespace _404_not_founders.Models
@@ -22,18 +22,11 @@ namespace _404_not_founders.Models
 
 
 
-        public void Add()
-        {
-            Console.WriteLine("Coming soon");
-        }
         public void Show()
         {
             ShowInfoCard.ShowObject(this);
         }
-        public void Change()
-        {
-            Console.WriteLine("Coming soon");
-        }
+
         public void DeleteStoryline(Project project, UserService userService)
         {
             Console.Clear();

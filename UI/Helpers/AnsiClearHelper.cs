@@ -1,12 +1,9 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace _404_not_founders.UI
+
+namespace _404_not_founders.UI.Helpers
 {
+    // Waits for a key press, then fully clears the console (including scrollback).
     public static class AnsiClearHelper
     {
         public static void WaitForKeyAndClear()
@@ -15,7 +12,7 @@ namespace _404_not_founders.UI
             Console.ReadKey(true);
 
          
-            Console.Write("\u001b[3J");
+            Console.Write("\u001b[3J"); // added because of duplcation issues with BigHeader in show everything.
             Console.Clear();
         }
     }

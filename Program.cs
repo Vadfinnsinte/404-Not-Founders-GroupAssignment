@@ -8,17 +8,17 @@ namespace _404_not_founders
     {
         static void Main(string[] args)
         {
-            // Skapa och initiera UserService (laddar/läser JSON - en gång vid start)
+            // Create and initialize UserService (loads/reads JSON – once at startup)
             var userService = new UserService();
             var projectService = new ProjectService(userService);
 
             userService.LoadUserService();
 
-            // Skapa huvudmenyn och skicka med userService så att den kan hantera användare och sparning
+            // Create the app and pass in userService so it can manage users and saving
             var runApp = new RunApp(userService, projectService);
-                
 
-            // Starta applikationens huvudloop
+
+            // Start the application's main loop
             runApp.Run();
         }
     }

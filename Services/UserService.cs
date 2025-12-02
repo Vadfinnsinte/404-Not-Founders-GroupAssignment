@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿
 using System.Text.Json;
-using System.Threading.Tasks;
 using _404_not_founders.Models;
-using _404_not_founders.Menus;
+
 
 namespace _404_not_founders.Services
 {
@@ -19,14 +15,14 @@ namespace _404_not_founders.Services
 
         public UserService()
         {
-            //  Hitta användarens AppData eller motsvarande mapp på alla plattformar
+            //  Find the base folder the user's AppData
             string baseFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            //  Skapa en undermapp för din app
+            // Create a subfolder for the application
             _folderPath = Path.Combine(baseFolder, "Adventurer’s Journal");
             Directory.CreateDirectory(_folderPath);
 
-            //  Filväg till JSON-filen
+            // File path for storing JSON data
             _filePath = Path.Combine(_folderPath, "user.json");
 
         }
@@ -35,10 +31,11 @@ namespace _404_not_founders.Services
         {
             try
             {
-                // Serialisera hela UserService-objektet till JSON och skriv till fil
+                // Serialize the entire UserService to JSON and save to file
                 string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(_filePath, json);
             }
+            // Handle any exceptions that may occur
             catch (Exception ex)
             {
                 Console.WriteLine($"Fel vid sparande av fil: {ex.Message}");
@@ -47,7 +44,7 @@ namespace _404_not_founders.Services
 
         public void LoadUserService()
         {
-            // Ladda och deserialisera hela UserService från filen
+            // Load and deserialize the UserService from JSON file
             if (!File.Exists(_filePath)) return;
             try
             {
@@ -67,7 +64,7 @@ namespace _404_not_founders.Services
             }
         }
 
-        // Ta bort användare per användarnamn och spara
+        // Removes a user by username and saves the updated user list
         public bool RemoveUser(string username)
         {
             int countBefore = Users.Count;
