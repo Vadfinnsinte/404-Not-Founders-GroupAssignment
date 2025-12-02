@@ -134,15 +134,6 @@ namespace _404_not_founders.Models
                         //    }
                         if (confirm == "Yes")
                         {
-                            // Kontrollera att projekt finns
-                            if (project == null)
-                            {
-                                Console.WriteLine("No project found. Create or select a project before adding characters.");
-                                Console.WriteLine("Press any key to continue...");
-                                Console.ReadKey(true);
-                                return;
-                            }
-
 
                             // Handla null project
                             if (project == null)
