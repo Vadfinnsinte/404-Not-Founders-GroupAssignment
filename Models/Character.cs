@@ -1,9 +1,8 @@
 ﻿
 using _404_not_founders.Services;
-using Spectre.Console;
-using _404_not_founders.UI.Helpers;
 using _404_not_founders.UI.Display;
-
+using _404_not_founders.UI.Helpers;
+using Spectre.Console;
 using System.Text;
 
 
@@ -21,7 +20,7 @@ namespace _404_not_founders.Models
         public string OtherInfo { get; set; }
 
 
-        public void Add(User currentUser, ProjectService projectService, UserService userService)
+        public void Add(User currentUser, ProjectService projectService, UserService userService, Project project)
         {
 
             string name = "", race = "", description = "", gender = "", characterClass = "", otherInfo = "";
@@ -116,23 +115,25 @@ namespace _404_not_founders.Models
                         break;
                     case 8:
                         // Confirmation step
-                        Project project = null;
+                        //Project project = null;
                         var confirm = MenuChoises.Menu("Confirm character creation", "Yes", "No");
                         if (confirm == "No") { step = 0; continue; }
+                        //if (confirm == "Yes")
+                        //{
+                        //    // Get current project to add character to
+                        //    if (currentUser != null)
+                        //    {
+                        //        if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
+                        //        {
+                        //            project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
+                        //        }
+                        //        if (project == null && currentUser.Projects != null)
+                        //        {
+                        //            project = currentUser.Projects.FirstOrDefault();
+                        //        }
+                        //    }
                         if (confirm == "Yes")
                         {
-                            // Get current project to add character to
-                            if (currentUser != null)
-                            {
-                                if (currentUser.Projects != null && currentUser.LastSelectedProjectId.HasValue)
-                                {
-                                    project = currentUser.Projects.FirstOrDefault(p => p.Id == currentUser.LastSelectedProjectId.Value);
-                                }
-                                if (project == null && currentUser.Projects != null)
-                                {
-                                    project = currentUser.Projects.FirstOrDefault();
-                                }
-                            }
 
                             // Handla null project
                             if (project == null)
@@ -188,7 +189,7 @@ namespace _404_not_founders.Models
                 // Handle special commands "E" and "B"
                 if (input == "E")
                 {
-                    
+
                     addingCharacter = false;
                     Console.Clear();
                     return;
@@ -280,7 +281,7 @@ namespace _404_not_founders.Models
             void ShowSummary(Character c)
             {
                 // Build a multiline markup string for the panel so the summary is visible above the prompt
-                var sb = new StringBuilder(); 
+                var sb = new StringBuilder();
                 sb.AppendLine("[underline #FFA500]Character summary:[/]");
                 sb.AppendLine($"[grey]Name:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Name) ? "(unnamed)" : c.Name)}[/]");
                 sb.AppendLine($"[grey]Race:[/]       [#FFA500]{(string.IsNullOrWhiteSpace(c.Race) ? "-" : c.Race)}[/]");

@@ -37,7 +37,7 @@ namespace _404_not_founders.Menus
                 {
                     case "Add Character":
                         // Call method to add a new character
-                        newCharacter.Add(currentUser, _projectService, _userService);
+                        newCharacter.Add(currentUser, _projectService, _userService, currentProject);
 
                         break;
                     case "Show Character":
